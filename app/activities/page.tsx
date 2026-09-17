@@ -1,0 +1,168 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { Eyebrow, SiteIcon } from '@/design-system'
+import { getContent } from '@/content'
+import { fmt } from '@/content/types'
+import { IMG } from '@/lib/assets'
+import { ogImage } from '@/lib/seo'
+import { Parallax, Reveal } from '@/motion'
+import { BandInquiry } from '@/sections/shared/BandCta'
+
+export const metadata: Metadata = {
+  title: 'What you can do',
+  description:
+    'Cultural and historical, mindfulness and retreat, nature and walking — the three kinds of day our journeys are built from, and which journeys carry them.',
+  openGraph: { images: ogImage(IMG.meditation) },
+}
+
+export default async function ActivitiesPage() {
+  const content = getContent()
+  const [activities, trips] = await Promise.all([content.activities.list(), content.trips.list()])
+  const bySlug = new Map(trips.map((t) => [t.slug, t]))
+
+  return (
+    <main>
+      {/* The band at the foot of the page is full-bleed, so the container sits
+          on this wrapper rather than on <main>. */}
+      <div
+        style={{
+          position: 'relative',
+          padding: 'var(--space-8) var(--gutter) 0',
+          maxWidth: 'var(--container)',
+          margin: '0 auto',
+        }}
+      >
+        <Reveal>
+          <Eyebrow number="Activities">What you can do</Eyebrow>
+          <h1 style={{ fontSize: 'var(--text-h1)', marginTop: 20, maxWidth: '20ch' }}>
+            Three kinds of day
+          </h1>
+        </Reveal>
+
+        <Reveal delay={200}>
+          <p
+            style={{
+              marginTop: 20,
+              fontSize: 'var(--text-lead)',
+              lineHeight: 'var(--leading-lead)',
+              maxWidth: 'var(--measure-narrow)',
+              color: 'var(--text-muted)',
+            }}
+          >
+            Every journey holds some of all three. The difference between them is the proportion, and how
+            far you walk.
+          </p>
+        </Reveal>
+
+        <div style={{ display: 'grid', gap: 'var(--space-11)', margin: 'var(--space-9) 0 var(--space-10)' }}>
+          {activities.map((activity, i) => {
+            const flipped = i % 2 === 1
+            const journeys = activity.tripSlugs
+              .map((slug) => bySlug.get(slug))
+              .filter((trip) => trip !== undefined)
+
+            return (
+              <article
+                key={activity.slug}
+                id={activity.slug}
+                className="lp-article"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 'var(--space-9)',
+                  alignItems: 'center',
+                  direction: flipped ? 'rtl' : 'ltr',
+                }}
+              >
+                <Reveal y={40} style={{ direction: 'ltr' }}>
+                  <Parallax
+                    src={activity.image}
+                    speed={0.5}
+                    sizes="(max-width: 900px) 100vw, 50vw"
+                    style={{ aspectRatio: flipped ? '4/5' : '3/2', borderRadius: 'var(--radius-sm)' }}
+                  />
+                </Reveal>
+
+                <div style={{ direction: 'ltr' }}>
+                  <Reveal delay={240}>
+                    <SiteIcon name={activity.icon} size={40} color="var(--maroon)" />
+                    <h2 style={{ fontSize: 'var(--text-h2)', marginTop: 20, maxWidth: '16ch' }}>
+                      {activity.name}
+                    </h2>
+                  </Reveal>
+
+                  <Reveal delay={420}>
+                    <p
+                      style={{
+                        marginTop: 20,
+                        color: 'var(--text-muted)',
+                        maxWidth: 'var(--measure)',
+                        fontSize: 'var(--text-lead)',
+                        lineHeight: 'var(--leading-lead)',
+                      }}
+                    >
+                      {activity.blurb}
+                    </p>
+                  </Reveal>
+
+                  <Reveal delay={580}>
+                    <ul
+                      style={{
+                        listStyle: 'none',
+                        margin: 'var(--space-6) 0 0',
+                        padding: 0,
+                        display: 'grid',
+                        gap: 12,
+                        maxWidth: 'var(--measure)',
+                      }}
+                    >
+                      {activity.examples.map((example) => (
+                        <li key={example} style={{ display: 'grid', gridTemplateColumns: '18px 1fr', gap: 14 }}>
+                          <span aria-hidden="true" style={{ color: 'var(--gold)' }}>
+                            ·
+                          </span>
+                          <span style={{ color: 'var(--text-muted)' }}>{example}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Reveal>
+
+                  {journeys.length > 0 && (
+                    <Reveal delay={720}>
+                      <div style={{ marginTop: 'var(--space-6)', display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                        {journeys.map((trip) => (
+                          <Link
+                            key={trip.slug}
+                            href={`/trips/${trip.slug}`}
+                            style={{
+                              padding: '8px 16px',
+                              border: '1px solid var(--border-gold)',
+                              borderRadius: 'var(--radius-pill)',
+                              textDecoration: 'none',
+                              color: 'inherit',
+                              fontSize: 'var(--text-small)',
+                            }}
+                          >
+                            {trip.title.split(':')[0]} · {fmt.duration(trip)}
+                          </Link>
+                        ))}
+                      </div>
+                    </Reveal>
+                  )}
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </div>
+
+      <BandInquiry
+        src={IMG.uphill}
+        height="66vh"
+        eyebrow="Or none of the above"
+        title="Tell us which of these you want more of"
+        body="Departures are small, so the balance of a week can shift. More sitting, more walking, or more time doing nothing at all."
+      />
+    </main>
+  )
+}

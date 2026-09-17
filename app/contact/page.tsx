@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { CSSProperties, ReactNode } from 'react'
 import { Divider, Eyebrow } from '@/design-system'
 import { getContent } from '@/content'
 import { ogImage } from '@/lib/seo'
@@ -9,9 +10,11 @@ import { EnquiryForm } from '@/sections/shared/EnquiryForm'
 export const metadata: Metadata = {
   title: 'Contact',
   description:
-    'Tell us what you are hoping for. A festival, a long walk, some days of silence. We write back personally, within two days.',
+    'Tell us what you are hoping for. A festival, a long walk, some days of silence. Write to info@lotuspeak.org, call +975 17984485, or use the form — we reply personally, within two days.',
   openGraph: { images: ogImage(IMG.dzong) },
 }
+
+const LINK: CSSProperties = { color: 'inherit', textDecorationColor: 'var(--gold)', textUnderlineOffset: 4 }
 
 export default async function ContactPage() {
   const content = getContent()
@@ -22,11 +25,35 @@ export default async function ContactPage() {
     { label: 'Not sure yet', value: 'unsure' },
   ]
 
-  const aside: [string, string][] = [
-    ['Call', settings.contact.phone],
-    ['Write', 'Use the form; it reaches us directly'],
-    ['Find us', 'lotuspeak.org · Facebook'],
-    ['Reply', 'We write back personally, within two days.'],
+  /* The real contact details, from lotuspeak.org. The email and phone are
+     links — on a phone the second one dials. */
+  const aside: [string, ReactNode][] = [
+    [
+      'Call',
+      <a key="phone" href={`tel:${settings.contact.phone.replace(/\s+/g, '')}`} style={LINK}>
+        {settings.contact.phone}
+      </a>,
+    ],
+    [
+      'Email',
+      <a key="email" href={`mailto:${settings.contact.email}`} style={LINK}>
+        {settings.contact.email}
+      </a>,
+    ],
+    [
+      'Facebook',
+      <a
+        key="fb"
+        href="https://www.facebook.com/profile.php?id=61588546391091"
+        rel="noreferrer noopener"
+        target="_blank"
+        style={LINK}
+      >
+        Lotus Peak Tours &amp; Travel
+      </a>,
+    ],
+    ['Where', 'Thimphu, Bhutan'],
+    ['Reply', settings.contact.replyPromise === 'Personally, within two days' ? 'We write back personally, within two days.' : settings.contact.replyPromise],
   ]
 
   return (

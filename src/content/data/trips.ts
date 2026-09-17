@@ -2,7 +2,7 @@ import { IMG } from '@/lib/assets'
 import type { Trip } from '../types'
 
 /**
- * The four journeys.
+ * The five journeys.
  *
  * `valleys` is verbatim from the design project. The itineraries, highlights,
  * inclusions and FAQ for `meditation`, `festival` and `jomolhari` do not exist
@@ -503,6 +503,121 @@ export const TRIPS: Trip[] = [
       [IMG.dzong, '16/10', '42vw'],
       [IMG.chorten, '1/1', '28vw'],
       [IMG.bridge, '16/10', '42vw'],
+    ],
+  },
+
+  /**
+   * Carried over from lotuspeak.org, where it runs as "Bhutan Cultural & Nature
+   * Journey – Paro Tshechu Special" (trip code BCNJ, US$ 3,500). The itinerary,
+   * price, inclusions and exclusions are the site's own.
+   *
+   * Its length is recorded inconsistently upstream: the duration field says
+   * 5 days / 6 nights, the description says seven days, and the itinerary has
+   * seven days in it. Seven days and six nights is what the itinerary
+   * describes, so that is what is here — CONFIRM WITH LOTUS PEAK.
+   */
+  {
+    slug: 'tshechu',
+    title: 'Paro Tshechu: a cultural and nature journey',
+    excerpt:
+      'Seven days timed to the Paro festival, then out to Phobjikha for the quiet, and up to Taktsang at the end.',
+    type: 'festival',
+    order: 5,
+    regions: ['Paro', 'Thimphu', 'Phobjikha', 'Punakha'],
+    durationDays: 7,
+    nights: 6,
+    highPointMetres: 3120,
+    difficulty: 'Moderate',
+    priceFromUsd: 3500,
+    seasonLabel: 'Timed to Paro Tshechu',
+    paceNote: 'Balanced pace',
+    journeyLabel: 'Festival journey',
+    heroImage: IMG.chamMaskedDance,
+    overview: [
+      'A week built around the Paro Tshechu, with the festival in the middle of it rather than at the end, so there is time to sit with what you have seen.',
+      'Paro and Thimphu first, for the temples, the dzongs and the markets, with short mindfulness practice written into each day. Then the road east over the passes to Punakha and out to Phobjikha, where the valley is open and empty and the walking is level.',
+      'The last morning is the climb to Taktsang. It is the hardest thing in the week and it comes when you are ready for it.',
+    ],
+    highlights: [
+      'Paro Tshechu at Rinpung Dzong: cham dances, ritual, and the whole valley in its best kira and gho',
+      'Kyichu Lhakhang, one of the oldest temples in the country, on the first afternoon',
+      'Ta Dzong, the National Museum, in the old watchtower above the dzong',
+      'Buddha Dordenma on the ridge above Thimphu, and the Memorial Chorten below it',
+      'The drive to Phobjikha over the passes, and a nature walk on the valley floor',
+      'Gangtey Goenpa, and sitting with the chanting if the timing allows',
+      'The walk to Taktsang on the last morning, with an early sitting at the top',
+    ],
+    itinerary: [
+      {
+        day: 1,
+        title: 'Arrive in Paro',
+        meta: '2,200 m',
+        body: 'Met at the airport and taken to the hotel to rest after the flight. In the afternoon, a short walk through the town and along the river, then Kyichu Lhakhang. Fifteen minutes of sitting practice before dinner, to let the altitude and the journey settle. A hot stone bath if you want one.',
+      },
+      {
+        day: 2,
+        title: 'Paro Tshechu',
+        meta: 'Rinpung Dzong · full day',
+        body: 'The festival, from the morning. Cham dances in the dzong courtyard, the rituals around them, and the crowd, which is most of the valley. Midday among the stalls. The afternoon is yours: stay for the dancing or take a table above the courtyard. A short sitting in the evening for anyone who wants it.',
+      },
+      {
+        day: 3,
+        title: 'Paro, then Thimphu',
+        meta: '1½ h drive',
+        body: 'Rinpung Dzong in the morning without the crowd, then Ta Dzong, the National Museum, in the round watchtower above it. Ten minutes of sitting before the drive. Thimphu in the afternoon: the Memorial Chorten, the market, the handicraft shops. Evening prayers at a local monastery if the timing works.',
+      },
+      {
+        day: 4,
+        title: 'Thimphu, then Phobjikha',
+        meta: '4–5 h drive',
+        body: 'Buddha Dordenma first, for the whole valley laid out below it. Then the road east over Dochula, where the hundred and eight chortens stand on the pass, and down through Wangdue to the glacial valley at Phobjikha. A gentle walk on the valley floor before dark, and the stars afterwards.',
+      },
+      {
+        day: 5,
+        title: 'Phobjikha',
+        meta: '2,900 m · full day',
+        body: 'The nature trail in the morning, with birds — black-necked cranes if you are here in the winter months. Late morning at Gangtey Goenpa, with time to sit while the chanting is going on. Drechagling hermitage in the afternoon, then the valley at your own pace.',
+      },
+      {
+        day: 6,
+        title: 'Back to Paro',
+        meta: '5–6 h drive',
+        body: 'A slow breakfast with the valley in front of you, then the long scenic drive west. Lunch on the way. Dzongdrakha, the cliff temples above the Paro valley, or a farmhouse visit, depending on the day. Farewell dinner in Paro.',
+      },
+      {
+        day: 7,
+        title: 'Taktsang, and departure',
+        meta: '3,120 m · 4–5 h',
+        body: 'Early start for the walk up to Taktsang, through the pine forest and up the stone steps, with a tea break at the viewpoint. Sitting at the top before the day fills up. Down, lunch in Paro, and to the airport.',
+      },
+    ],
+    included: SHARED_INCLUDED,
+    excluded: SHARED_EXCLUDED,
+    faq: [
+      {
+        question: 'Are the festival dates fixed?',
+        answer:
+          'The tshechu follows the lunar calendar, so the dates move each year. Paro Tshechu falls in spring, usually March or April. We set the departure around it and confirm the dates with you before anything is booked.',
+      },
+      {
+        question: 'How hard is the walk to Taktsang?',
+        answer:
+          'Four to five hours there and back, climbing about 900 m, on a good path with a teahouse halfway. It is the one demanding morning in the week. Ponies go as far as the teahouse. Nobody is left behind, and nobody has to go.',
+      },
+      {
+        question: 'Will we see the cranes?',
+        answer:
+          'Only in winter. The black-necked cranes are in Phobjikha from late October to February. Paro Tshechu is in spring, so on this journey the valley is green rather than full of cranes.',
+      },
+      ...SHARED_FAQ,
+    ],
+    gallery: [
+      [IMG.chamMaskedDance, '16/10', '44vw'],
+      [IMG.atsara, '3/4', '26vw'],
+      [IMG.paroDzong, '4/3', '32vw'],
+      [IMG.phobjikhaValley, '16/10', '42vw'],
+      [IMG.gangteyGoenpa, '3/4', '26vw'],
+      [IMG.taktshang, '16/10', '42vw'],
     ],
   },
 ]

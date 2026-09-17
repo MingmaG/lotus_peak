@@ -26,7 +26,12 @@ export function useInquiry() {
 }
 
 /** Routes that open with a full-bleed hero and need white-on-image nav. */
-const INVERSE = (path: string) => path === '/' || path === '/culture' || /^\/trips\/[^/]+$/.test(path)
+const INVERSE = (path: string) =>
+  path === '/' ||
+  path === '/culture' ||
+  path === '/destinations' ||
+  /^\/trips\/[^/]+$/.test(path) ||
+  /^\/journal\/[^/]+$/.test(path)
 
 export function SiteChrome({
   settings,

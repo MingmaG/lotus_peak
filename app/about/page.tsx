@@ -11,30 +11,30 @@ import { InquiryButton } from '@/sections/shared/InquiryButton'
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Lotus Peak is a Bhutanese tour company running small-group journeys built around meditation, pilgrimage and time with local teachers.',
+    'Lotus Peak is a Bhutanese tour company running small-group journeys built around meditation, pilgrimage, the living arts and time with local teachers. Thirty percent of our income supports a monastery in the hills above Paro.',
   openGraph: { images: ogImage(IMG.taktshang) },
 }
 
 const COMMITMENTS: [string, string][] = [
-  ['Mindfulness guide', 'We teach meditation as a lifelong skill. It opens the mind to see the world as it is.'],
-  ['Peaceful journey', 'Loving compassion opens the heart. We travel that way, and so will you.'],
+  ['Mindfulness guide', 'We teach meditation as a lifelong skill, not a holiday activity. It opens the mind to see the world as it is.'],
+  ['Peaceful journey', 'Loving compassion opens the heart. We travel that way, and you are welcome to.'],
 ]
 
 const PURPOSES: [string, string, string][] = [
   [
-    'Mindful travel.',
-    'Each journey is designed around intention and awareness, connecting you with Bhutan’s landscapes and living traditions.',
-    IMG.hike,
+    'Travel with heart.',
+    'A journey is not the reaching of a destination. Every day is built around intention, awareness and going slowly enough to notice — the landscapes and the living traditions, and also what they do to you while you are in them.',
+    IMG.rainbow,
   ],
   [
-    'Guided by teachers.',
-    'Journeys are shaped with Rinpoches and Lams: meditation in monasteries, pilgrimage walks and time in silence.',
-    IMG.chorten,
+    'Travel with guided principles.',
+    'The journeys are shaped with Rinpoches and Lams, and rooted in their teaching. You meditate in the monasteries, walk the pilgrimage paths, and sit in silence where people have sat for eight hundred years. The lineage is doing the work; we are only arranging the days around it.',
+    IMG.recitation,
   ],
   [
-    'Living arts.',
-    'Jomzo is the Bhutanese art of sculpting clay, copper and gold. Watch artisans at work and take part yourself.',
-    IMG.tashichho,
+    'Arts, crafts and living Jomzo.',
+    'Zorig Chusum, the thirteen arts. Jomzo is the one that shapes clay, copper and gold into sacred images, and the workshops are open: you can stand at the bench while a figure comes up out of the clay, and try it yourself. Not an exhibition — a trade still being practised.',
+    IMG.jomzo,
   ],
 ]
 
@@ -84,7 +84,8 @@ export default async function AboutPage() {
               <Reveal delay={200}>
                 <p style={{ fontSize: 'var(--text-lead)', lineHeight: 'var(--leading-lead)' }}>
                   We are a Bhutanese tour company. We run small-group journeys built around meditation,
-                  pilgrimage and time with local teachers.
+                  pilgrimage and time with local teachers, in a country where the ancient practice and
+                  ordinary modern life are the same thing.
                 </p>
               </Reveal>
               <div style={{ display: 'grid', gap: 28, marginTop: 'var(--space-8)' }}>

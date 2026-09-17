@@ -1,0 +1,24 @@
+{
+  "id": 1581,
+  "type": "page",
+  "slug": "my-account-2-2",
+  "url": "https://lotuspeak.org/my-account-2-2/",
+  "title": "My account",
+  "date": "2025-07-07T05:40:07",
+  "modified": "2025-07-07T05:40:07",
+  "excerpt": "",
+  "featured_image": null,
+  "featured_media_id": 0,
+  "seo": {
+    "title": "Bhutaneses Culture - Lotus Peak",
+    "description": "Bhutan, often called the Last Himalayan Kingdom, is a land of stunning landscapes, spiritual depth, and a rich cultural tapestry that has been preserved for centuries. Nestled between India and China, this small Himalayan nation has managed to retain its traditions, making it a living museum of heritage and spiritual practices. From colorful festivals to unique customs, Bhutanese culture is vibrant, deeply spiritual, and closely intertwined with daily life.",
+    "og_image": [
+      "https://lotuspeak.org/wp-content/uploads/2025/07/dance-300x200.webp"
+    ]
+  },
+  "content_html": "<div class=\"wpte-lrf-wrap wpte-login\">\n<div class=\"wpte-lrf-top\">\n<form class=\"wpte-lrf\" method=\"post\">\n<div class=\"wpte-lrf-right\">\n<div class=\"wpte-lrf-head\">\n<h2 class=\"wpte-lrf-title\">\n\t\t\t\t\t\t\tLog into Your Account\t\t\t\t\t\t</h2>\n</div>\n<div class=\"wpte-form-field wpte-material-ui-input-control\">\n<label for=\"username\">Username or Email<span class=\"required\">*</span></label>\n<input data-parsley-required-message=\"Please enter your valid email or username\" id=\"username\" name=\"username\" placeholder=\"Email or username\" required=\"\" type=\"text\" value=\"\"/>\n<fieldset>\n<legend>\n<span>Username or Email<span class=\"required\">*</span></span>\n</legend>\n</fieldset>\n</div>\n<div class=\"wpte-form-field wpte-material-ui-input-control\">\n<label>Password<span class=\"required\">*</span></label>\n<input data-parsley-required-message=\"Please enter your password\" name=\"password\" placeholder=\"Password\" required=\"\" type=\"password\" value=\"\"/>\n<fieldset>\n<legend>\n<span>Password<span class=\"required\">*</span></span>\n</legend>\n</fieldset>\n</div>\n<div class=\"wpte-form-field lrf-rememberme\">\n<div>\n<input id=\"wp-travel-engine-login-nonce\" name=\"wp-travel-engine-login-nonce\" type=\"hidden\" value=\"b05c2e3c50\"/><input name=\"_wp_http_referer\" type=\"hidden\" value=\"/wp-json/wp/v2/pages?per_page=100&amp;page=1&amp;status=publish\"/> <label for=\"rememberme\">\n<input class=\"\" id=\"rememberme\" name=\"rememberme\" type=\"checkbox\" value=\"forever\"/>\n\t\t\t\t\t\t\t\tRemember me\t\t\t\t\t\t\t</label>\n</div>\n<a href=\"https://lotuspeak.org/my-account/?action=lost-pass\">Forgot Password?</a>\n</div>\n<div class=\"wpte-form-field wpte-form-submit\">\n<input name=\"login\" type=\"submit\" value=\"Log In\"/>\n</div>\n</div>\n</form>\n</div>\n</div>\n",
+  "content_markdown": "## Log into Your Account\n\nUsername or Email\\*\n\n\n\nUsername or Email\\*\n\nPassword\\*\n\n\n\nPassword\\*\n\nRemember me\n\n[Forgot Password?](https://lotuspeak.org/my-account/?action=lost-pass)",
+  "images": [
+    "https://lotuspeak.org/wp-content/uploads/2025/07/dance.webp"
+  ]
+}

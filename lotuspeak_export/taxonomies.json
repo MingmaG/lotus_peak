@@ -1,0 +1,210 @@
+{
+  "destination": [
+    {
+      "id": 20,
+      "slug": "bhutan",
+      "name": "Bhutan",
+      "description": "",
+      "count": 5
+    },
+    {
+      "id": 40,
+      "slug": "bumthang",
+      "name": "Bumthang",
+      "description": "",
+      "count": 2
+    },
+    {
+      "id": 24,
+      "slug": "india",
+      "name": "India",
+      "description": "",
+      "count": 0
+    },
+    {
+      "id": 29,
+      "slug": "nepal",
+      "name": "Nepal",
+      "description": "",
+      "count": 0
+    },
+    {
+      "id": 37,
+      "slug": "paro",
+      "name": "Paro",
+      "description": "",
+      "count": 5
+    },
+    {
+      "id": 39,
+      "slug": "punakha",
+      "name": "Punakha",
+      "description": "",
+      "count": 4
+    },
+    {
+      "id": 38,
+      "slug": "thimphu",
+      "name": "Thimphu",
+      "description": "",
+      "count": 5
+    },
+    {
+      "id": 41,
+      "slug": "trongsa",
+      "name": "Trongsa",
+      "description": "",
+      "count": 2
+    }
+  ],
+  "activities": [
+    {
+      "id": 19,
+      "slug": "adventure-activities",
+      "name": "Adventure Activities",
+      "description": "",
+      "count": 4
+    },
+    {
+      "id": 31,
+      "slug": "cultural-historical-activities",
+      "name": "Cultural &amp; Historical Activities",
+      "description": "",
+      "count": 4
+    },
+    {
+      "id": 22,
+      "slug": "relaxation-nature-activities",
+      "name": "Relaxation &amp; Nature Activities",
+      "description": "",
+      "count": 4
+    }
+  ],
+  "trip_types": [
+    {
+      "id": 42,
+      "slug": "festivals-cultural-heritage-tours",
+      "name": "Festivals, Cultural &amp; Heritage Tours",
+      "description": "",
+      "count": 1
+    },
+    {
+      "id": 43,
+      "slug": "spiritual-wellness-retreats-with-mindfulness-practices",
+      "name": "Spiritual &amp; Wellness Retreats with Mindfulness Practices",
+      "description": "",
+      "count": 2
+    },
+    {
+      "id": 44,
+      "slug": "trekking-adventure-trips",
+      "name": "Trekking &amp; Adventure Trips",
+      "description": "",
+      "count": 2
+    }
+  ],
+  "difficulty": [
+    {
+      "id": 5,
+      "slug": "easy",
+      "name": "Easy",
+      "description": "The trip is easy and suitable for everyone, including children and older people. It does not require any skills in mountain climbing or traversing difficult terrain.",
+      "count": 0
+    },
+    {
+      "id": 8,
+      "slug": "extreme",
+      "name": "Extreme",
+      "description": "This level is for mountaineering, backcountry and expeditions. It requires more serious physical preparation and previous experience in similar activities like climbing skills. The preliminary stage starts 3-6 months before heading out so that you can get acclimated by running exercises which will help increase endurance. You will need special clothes and gear.",
+      "count": 0
+    },
+    {
+      "id": 7,
+      "slug": "hard",
+      "name": "Hard",
+      "description": "Physical training before the trip should begin no later than 2 months before, as you will have a height of 3,000 meters above sea level and more. Hiking is from 6 km daily with an average pace that can be maintained for hours. It is important to have physical fitness &amp; endurance. You will also need the right gear and clothes according to the weather.",
+      "count": 2
+    },
+    {
+      "id": 6,
+      "slug": "medium",
+      "name": "Medium",
+      "description": "You need to have good physical condition and be in top form. You'll also require the right clothes for weather conditions and food items such as snacks or lunch breaks from your hiking adventure; water is essential too! This type of activity takes time, so ensure you're physically able to get enough rest before starting any trips.",
+      "count": 0
+    }
+  ],
+  "categories": [
+    {
+      "id": 9,
+      "slug": "hotel-booking",
+      "name": "Hotel Booking",
+      "description": "",
+      "count": 0
+    },
+    {
+      "id": 10,
+      "slug": "tour-travel",
+      "name": "Tour &amp; Travel",
+      "description": "",
+      "count": 2
+    },
+    {
+      "id": 11,
+      "slug": "travel-tourism",
+      "name": "Travel &amp; Tourism",
+      "description": "",
+      "count": 4
+    },
+    {
+      "id": 1,
+      "slug": "uncategorized",
+      "name": "Uncategorized",
+      "description": "",
+      "count": 1
+    }
+  ],
+  "tags": [
+    {
+      "id": 12,
+      "slug": "booking",
+      "name": "Booking",
+      "description": "",
+      "count": 1
+    },
+    {
+      "id": 13,
+      "slug": "hotel",
+      "name": "Hotel",
+      "description": "",
+      "count": 1
+    },
+    {
+      "id": 14,
+      "slug": "luxury",
+      "name": "Luxury",
+      "description": "",
+      "count": 1
+    },
+    {
+      "id": 15,
+      "slug": "parking",
+      "name": "Parking",
+      "description": "",
+      "count": 0
+    },
+    {
+      "id": 16,
+      "slug": "swimgpool",
+      "name": "Swimgpool",
+      "description": "",
+      "count": 0
+    },
+    {
+      "id": 17,
+      "slug": "tour",
+      "name": "Tour",
+      "description": "",
+      "count": 1
+    }
+  ]
+}

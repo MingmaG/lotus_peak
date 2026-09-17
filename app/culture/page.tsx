@@ -10,7 +10,7 @@ import { heroOffset } from '@/sections/shared/Section'
 export const metadata: Metadata = {
   title: 'Culture',
   description:
-    'Tshechu, dzongs, textiles, Jomzo and the thirteen arts, Gross National Happiness, kira and gho — what you will see on a journey with us, and a little of what it means.',
+    'Tshechu, dzongs, textiles, Jomzo and the thirteen arts, Gross National Happiness, kira and gho, archery, and what is on the table — what you will see on a journey with us, and a little of what it means.',
   openGraph: { images: ogImage(IMG.tshechu) },
 }
 
@@ -131,13 +131,13 @@ export default async function CulturePage() {
       </section>
 
       <BandLink
-        href="/trips/festival"
-        src={IMG.dzong}
+        href="/trips/tshechu"
+        src={IMG.chamMaskedDance}
         height="76vh"
         eyebrow="See it"
         title="Festival journeys are timed to a tshechu"
-        body="Sacred rhythms of Bhutan: five days around a festival in Paro, Thimphu or Punakha."
-        cta="See the festival journey"
+        body="Seven days around Paro Tshechu, then out to Phobjikha for the quiet. Or five, in Thimphu or Punakha."
+        cta="See the festival journeys"
       />
     </main>
   )

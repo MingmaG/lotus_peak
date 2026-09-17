@@ -12,7 +12,7 @@ import { TYPE_OF, toFilterLabel, type FilterLabel } from '@/sections/trips/filte
 export const metadata: Metadata = {
   title: 'Our trips',
   description:
-    'Four journeys through Bhutan: mindfulness, meditation, festival and the Jomolhari trek. Prices include all permits, meals, accommodation and a guide throughout.',
+    'Five journeys through Bhutan: mindfulness, meditation, two around a festival, and the Jomolhari trek. Prices include all permits, meals, accommodation, the Sustainable Development Fee and a guide throughout.',
   openGraph: { images: ogImage(IMG.hike) },
 }
 
@@ -42,7 +42,7 @@ export default async function TripsPage({
       <Reveal>
         <Eyebrow number="Our trips">Journeys in Bhutan</Eyebrow>
         <h1 style={{ fontSize: 'var(--text-h1)', marginTop: 20, maxWidth: '20ch' }}>
-          Four ways through the kingdom
+          Five ways through the kingdom
         </h1>
       </Reveal>
 

@@ -1,4 +1,15 @@
-import type { CultureArticle, Destination, Reflection, Season, SiteSettings, Trip, TripType } from './types'
+import type {
+  Activity,
+  CultureArticle,
+  Destination,
+  GalleryImage,
+  Post,
+  Reflection,
+  Season,
+  SiteSettings,
+  Trip,
+  TripType,
+} from './types'
 
 export type EnquiryInput = {
   name: string
@@ -35,7 +46,17 @@ export interface ContentRepository {
     bySlug(slug: string): Promise<Trip | null>
     slugs(): Promise<string[]>
   }
-  destinations: { list(): Promise<Destination[]> }
+  posts: {
+    list(opts?: { limit?: number; exclude?: string }): Promise<Post[]>
+    bySlug(slug: string): Promise<Post | null>
+    slugs(): Promise<string[]>
+  }
+  destinations: {
+    list(): Promise<Destination[]>
+    bySlug(slug: string): Promise<Destination | null>
+  }
+  activities: { list(): Promise<Activity[]> }
+  gallery: { list(opts?: { limit?: number }): Promise<GalleryImage[]> }
   seasons: { list(): Promise<Season[]> }
   culture: {
     list(): Promise<CultureArticle[]>

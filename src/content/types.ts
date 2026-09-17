@@ -43,6 +43,61 @@ export type Destination = {
   name: string
   icon: SiteIconName
   blurb: string
+  /** A paragraph for the destinations index. The blurb is the one-line form. */
+  detail: string
+  image: string
+  /** Journeys that go there, in the order they should be offered. */
+  tripSlugs: string[]
+  order: number
+}
+
+export type Activity = {
+  slug: string
+  name: string
+  blurb: string
+  icon: SiteIconName
+  image: string
+  /** What the day actually consists of — three to five items. */
+  examples: string[]
+  tripSlugs: string[]
+  order: number
+}
+
+/**
+ * A journal entry.
+ *
+ * The body is a list of typed blocks rather than a markdown string. The entries
+ * came out of WordPress as markdown, but rendering markdown at runtime would
+ * mean a parser, a sanitiser and a set of prose styles that drift from the
+ * design system. Blocks are validated by the compiler, render through the same
+ * components as the rest of the site, and map cleanly onto a CMS rich-text
+ * field when one arrives (docs/specs/04-content-model.md).
+ */
+export type PostBlock =
+  | { kind: 'text'; body: string }
+  | { kind: 'heading'; text: string }
+  | { kind: 'list'; items: string[] }
+  | { kind: 'quote'; text: string }
+  | { kind: 'image'; src: string; ratio?: string }
+  | { kind: 'facts'; title: string; rows: [label: string, value: string][] }
+
+export type Post = {
+  slug: string
+  title: string
+  standfirst: string
+  /** ISO date, for `dateTime` and for sorting. `order` is the editorial order. */
+  date: string
+  region: string
+  heroImage: string
+  body: PostBlock[]
+  order: number
+}
+
+export type GalleryImage = {
+  src: string
+  caption: string
+  /** CSS aspect ratio for the masonry cell, e.g. '3/4'. */
+  ratio: string
   order: number
 }
 
@@ -102,4 +157,28 @@ export const fmt = {
   regions: (t: Trip) => t.regions.join(' · '),
   regionsShort: (t: Trip) => t.regions.slice(0, 2).join(' · '),
   length: (t: Trip) => `${t.durationDays} days · ${t.nights} nights`,
+  /**
+   * "14 July 2025". Written out rather than delegated to `toLocaleDateString`,
+   * whose output depends on the ICU data of whichever runtime renders it —
+   * a server/client mismatch React would flag as a hydration error.
+   */
+  date: (iso: string) => {
+    const [y, m, d] = iso.slice(0, 10).split('-')
+    return `${Number(d)} ${MONTHS[Number(m) - 1]} ${y}`
+  },
 }
+
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]

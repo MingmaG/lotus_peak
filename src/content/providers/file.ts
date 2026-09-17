@@ -1,6 +1,7 @@
 import 'server-only'
 
-import { CULTURE, DESTINATIONS, REFLECTIONS, SEASONS, SETTINGS } from '../data/site'
+import { ACTIVITIES, CULTURE, DESTINATIONS, GALLERY, REFLECTIONS, SEASONS, SETTINGS } from '../data/site'
+import { POSTS } from '../data/posts'
 import { TRIPS } from '../data/trips'
 import type { ContentRepository, EnquiryInput } from '../repository'
 
@@ -31,9 +32,39 @@ export function createFileProvider(): ContentRepository {
       },
     },
 
+    posts: {
+      async list({ limit, exclude } = {}) {
+        let out = [...POSTS].sort(byOrder)
+        if (exclude) out = out.filter((p) => p.slug !== exclude)
+        return limit ? out.slice(0, limit) : out
+      },
+      async bySlug(slug) {
+        return POSTS.find((p) => p.slug === slug) ?? null
+      },
+      async slugs() {
+        return [...POSTS].sort(byOrder).map((p) => p.slug)
+      },
+    },
+
     destinations: {
       async list() {
         return [...DESTINATIONS].sort(byOrder)
+      },
+      async bySlug(slug) {
+        return DESTINATIONS.find((d) => d.slug === slug) ?? null
+      },
+    },
+
+    activities: {
+      async list() {
+        return [...ACTIVITIES].sort(byOrder)
+      },
+    },
+
+    gallery: {
+      async list({ limit } = {}) {
+        const out = [...GALLERY].sort(byOrder)
+        return limit ? out.slice(0, limit) : out
       },
     },
 
@@ -79,7 +110,10 @@ export function createFileProvider(): ContentRepository {
     },
 
     async health() {
-      return { ok: TRIPS.length > 0, detail: `${TRIPS.length} journeys` }
+      return {
+        ok: TRIPS.length > 0 && POSTS.length > 0,
+        detail: `${TRIPS.length} journeys, ${POSTS.length} journal entries`,
+      }
     },
   }
 }

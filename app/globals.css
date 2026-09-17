@@ -36,8 +36,27 @@
   .lp-article { grid-template-columns: minmax(0, 1fr) !important; direction: ltr !important }
   .lp-season { grid-template-columns: minmax(0, 1fr) !important }
   .lp-trip-grid { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-three-col { grid-template-columns: minmax(0, 1fr) !important }
   .lp-facts { grid-template-columns: 1fr 1fr !important }
 }
+/* Gallery: a column layout so the photographs keep their own proportions.
+   The Reveal wrappers carry `break-inside: avoid` at their call site. */
+.lp-gallery { column-count: 3; column-gap: var(--space-6) }
+@media (max-width: 1100px) { .lp-gallery { column-count: 2 } }
+@media (max-width: 700px) { .lp-gallery { column-count: 1 } }
+
+/* The reference pages drop their sticky contents column on narrow screens,
+   where a list above the prose is only a second thing to scroll past. */
+@media (max-width: 900px) {
+  .lp-info { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-info-nav { display: none !important }
+}
+
+/* Fact rows in a journal entry stack on narrow screens. */
+@media (max-width: 620px) {
+  .lp-facts-row { grid-template-columns: minmax(0, 1fr) !important; gap: 4px !important }
+}
+
 @media (max-width: 620px) {
   .lp-form-row { grid-template-columns: minmax(0, 1fr) !important }
   .lp-footer-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important }
