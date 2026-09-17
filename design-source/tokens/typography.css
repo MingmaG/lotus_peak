@@ -1,0 +1,28 @@
+:root{
+/* One family. Display = Commissioner Bold (700); body = Regular; labels/nav = Medium; card titles = SemiBold. */
+--font-display:"Commissioner","Helvetica Neue",Arial,sans-serif;
+--font-serif-display:var(--font-display);
+--font-sans-body:"Commissioner","Helvetica Neue",Arial,sans-serif;
+--weight-display:700;
+--weight-semibold:600;
+/* Scale — generous: 18px body, bold headings, readable labels */
+--text-display:clamp(3rem,6.5vw,5.5rem);
+--text-h1:clamp(2.5rem,4.5vw,4rem);
+--text-h2:clamp(2rem,3.2vw,2.875rem);
+--text-h3:1.75rem;
+--text-lead:1.375rem;
+--text-body-size:1.125rem;
+--text-small:1rem;
+--text-label:.875rem;
+--text-micro:.75rem;
+--leading-display:1.05;
+--leading-heading:1.2;
+--leading-body:1.65;
+--leading-lead:1.55;
+--tracking-display:-.01em;
+--tracking-label:.16em;
+--tracking-nav:.1em;
+--weight-body:400;
+--weight-medium:500;
+--weight-light:300;
+}

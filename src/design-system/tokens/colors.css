@@ -1,0 +1,51 @@
+:root{
+/* Base — premium white, stone, wood. Never cream/beige page grounds. */
+--paper:#FFFFFF;
+--paper-2:#F7F7F6;
+--paper-3:#ECECEA;
+--stone-1:#8A857C;
+--stone-2:#5E5A53;
+--wood:#4B3A2F;
+--ink:#1F1D1A;
+--white:#FFFFFF;
+/* Accent — monk robe */
+--saffron:#D98A2B;
+--saffron-2:#E8A23C;
+--saffron-soft:#F3DDBC;
+--maroon:#7A1F2B;
+--maroon-2:#5E1620;
+/* Accent — Himalayan */
+--pine:#2F4032;
+--pine-2:#1F2B22;
+--pine-soft:#D6DCD3;
+--slate:#4A5A66;
+--slate-soft:#D9DEE2;
+/* Gold leaf — thin lines only */
+--gold:#B9975B;
+--gold-soft:#E6D8B8;
+/* Prayer flag sequence — easter egg only */
+--flag-blue:#4C78A8;
+--flag-white:#F4F4F2;
+--flag-red:#B8433D;
+--flag-green:#4E7D5B;
+--flag-yellow:#E0B23F;
+/* Semantic */
+--surface-page:var(--paper);
+--surface-raised:var(--white);
+--surface-sunken:var(--paper-2);
+--surface-ground:var(--pine);
+--surface-ground-deep:var(--pine-2);
+--text-body:var(--ink);
+--text-muted:var(--stone-2);
+--text-faint:var(--stone-1);
+--text-on-ground:var(--paper);
+--text-accent:var(--maroon);
+--border-hairline:rgba(31,29,26,.12);
+--border-strong:rgba(31,29,26,.32);
+--border-gold:var(--gold);
+--cta-bg:var(--saffron);
+--cta-bg-hover:#C97A20;
+--cta-fg:var(--ink);
+--focus-ring:var(--saffron);
+--protection:linear-gradient(to top,rgba(31,29,26,.55),rgba(31,29,26,0) 60%);/* @kind other */
+}

@@ -1,0 +1,9 @@
+/* Brand font: Commissioner (supplied TTFs). One family, weights 100–900. */
+@font-face{font-family:"Commissioner";src:url("../assets/fonts/Commissioner-Thin.ttf") format("truetype");font-weight:100;font-display:swap}
+@font-face{font-family:"Commissioner";src:url("../assets/fonts/Commissioner-ExtraLight.ttf") format("truetype");font-weight:200;font-display:swap}
+@font-face{font-family:"Commissioner";src:url("../assets/fonts/Commissioner-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"Commissioner";src:url("../assets/fonts/Commissioner-Medium.ttf") format("truetype");font-weight:500;font-display:swap}
+@font-face{font-family:"Commissioner";src:url("../assets/fonts/Commissioner-SemiBold.ttf") format("truetype");font-weight:600;font-display:swap}
+@font-face{font-family:"Commissioner";src:url("../assets/fonts/Commissioner-Bold.ttf") format("truetype");font-weight:700;font-display:swap}
+@font-face{font-family:"Commissioner";src:url("../assets/fonts/Commissioner-ExtraBold.ttf") format("truetype");font-weight:800;font-display:swap}
+@font-face{font-family:"Commissioner";src:url("../assets/fonts/Commissioner-Black.ttf") format("truetype");font-weight:900;font-display:swap}

@@ -1,0 +1,44 @@
+@import url("../src/design-system/tokens/fonts.css");
+@import url("../src/design-system/tokens/colors.css");
+@import url("../src/design-system/tokens/typography.css");
+@import url("../src/design-system/tokens/spacing.css");
+@import url("../src/design-system/tokens/motion.css");
+@import url("../src/design-system/tokens/base.css");
+@import url("../src/motion/motion.css");
+
+:root {
+  /* Written at runtime by NavBar (audit B8). The initial value matches the
+     unscrolled desktop nav so the server-rendered heroes sit correctly. */
+  --nav-h: 88px;
+}
+
+*, *::before, *::after { box-sizing: border-box }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 14px 20px;
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.skip-link:focus { left: 0 }
+
+/* Section grids collapse to one column on narrow screens. The prototype is
+   desktop-only; these are the responsive rules it never had. */
+@media (max-width: 900px) {
+  .lp-split,
+  .lp-two-col,
+  .lp-article { grid-template-columns: minmax(0, 1fr) !important; direction: ltr !important }
+  .lp-season { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-trip-grid { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-facts { grid-template-columns: 1fr 1fr !important }
+}
+@media (max-width: 620px) {
+  .lp-form-row { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-footer-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important }
+}
