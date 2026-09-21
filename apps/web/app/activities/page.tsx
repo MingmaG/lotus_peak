@@ -77,6 +77,7 @@ export default async function ActivitiesPage() {
                 <Reveal y={40} style={{ direction: 'ltr' }}>
                   <Parallax
                     src={activity.image}
+                    alt={activity.imageAlt}
                     speed={0.5}
                     sizes="(max-width: 900px) 100vw, 50vw"
                     style={{ aspectRatio: flipped ? '4/5' : '3/2', borderRadius: 'var(--radius-sm)' }}

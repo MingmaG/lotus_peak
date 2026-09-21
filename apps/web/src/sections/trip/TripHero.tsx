@@ -6,11 +6,13 @@ import { heroOffset } from '../shared/Section'
 
 export function TripHero({
   image,
+  alt,
   title,
   meta,
   regions,
 }: {
   image: string
+  alt?: string
   title: string
   meta: string
   regions: string
@@ -18,6 +20,7 @@ export function TripHero({
   return (
     <Parallax
       src={image}
+      alt={alt}
       speed={0.6}
       priority
       style={{

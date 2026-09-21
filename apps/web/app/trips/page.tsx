@@ -96,6 +96,7 @@ export default async function TripsPage({
                 size="lg"
                 kera={false}
                 image={t.heroImage}
+                imageAlt={t.heroAlt}
                 title={t.title}
                 region={fmt.regions(t)}
                 days={fmt.duration(t)}

@@ -71,6 +71,7 @@ function SeasonRow({ season, index }: { season: Season; index: number }) {
 
       <Parallax
         src={season.image}
+        alt={season.imageAlt}
         speed={0.4}
         sizes="(max-width: 900px) 100vw, 50vw"
         style={{

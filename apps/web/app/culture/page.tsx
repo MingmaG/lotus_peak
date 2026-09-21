@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Eyebrow, SiteIcon } from '@/design-system'
 import { getContent } from '@/content'
 import { ogImage } from '@/lib/seo'
-import { IMG } from '@/lib/assets'
+import { IMG, altFor } from '@/lib/assets'
 import { Parallax, Reveal, ScrollCue } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
 import { heroOffset } from '@/sections/shared/Section'
@@ -21,6 +21,7 @@ export default async function CulturePage() {
     <main>
       <Parallax
         src={IMG.tashichho}
+        alt={altFor(IMG.tashichho)}
         speed={0.6}
         priority
         style={{ height: '92svh', minHeight: 600, display: 'flex', alignItems: 'flex-end', ...heroOffset }}
@@ -100,6 +101,7 @@ export default async function CulturePage() {
                 <Reveal y={40} style={{ direction: 'ltr' }}>
                   <Parallax
                     src={a.image}
+                    alt={a.imageAlt}
                     speed={0.5}
                     sizes="(max-width: 900px) 100vw, 50vw"
                     style={{ aspectRatio: flipped ? '4/5' : '3/2', borderRadius: 'var(--radius-sm)' }}

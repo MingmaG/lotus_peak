@@ -103,7 +103,7 @@ function Block({ block }: { block: PostBlock }) {
       )
 
     case 'image':
-      return <Figure src={block.src} ratio={block.ratio ?? '3/2'} />
+      return <Figure src={block.src} alt={block.alt} ratio={block.ratio ?? '3/2'} />
 
     case 'facts':
       return (
@@ -137,21 +137,25 @@ function Block({ block }: { block: PostBlock }) {
  * picture and its description cannot drift apart — an image with no record
  * renders as decorative rather than described wrongly (src/lib/assets.ts).
  */
-function Figure({ src, ratio }: { src: string; ratio: string }) {
+function Figure({ src, alt, ratio }: { src: string; alt?: string; ratio: string }) {
+  /* `alt` arrives on the block now; `media()` is still consulted for the
+     dimensions, and as the fallback for an image the content model has no
+     description for. */
   const asset = media(src)
+  const description = alt ?? asset?.alt ?? ''
   return (
     <figure style={{ margin: 'var(--space-4) 0', maxWidth: 'var(--container-text)' }}>
       <div style={{ position: 'relative', aspectRatio: ratio, borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
         <Image
           src={src}
-          alt={asset?.alt ?? ''}
-          aria-hidden={asset ? undefined : true}
+          alt={description}
+          aria-hidden={description ? undefined : true}
           fill
           sizes="(max-width: 900px) 100vw, 70vw"
           style={{ objectFit: 'cover' }}
         />
       </div>
-      {asset && (
+      {description && (
         <figcaption
           style={{
             marginTop: 12,
@@ -160,7 +164,7 @@ function Figure({ src, ratio }: { src: string; ratio: string }) {
             maxWidth: 'var(--measure-narrow)',
           }}
         >
-          {asset.alt}
+          {description}
         </figcaption>
       )}
     </figure>

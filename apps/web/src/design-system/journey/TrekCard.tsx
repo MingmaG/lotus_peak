@@ -7,6 +7,14 @@ import { Divider } from '../core/Divider'
 import { altFor } from '@/lib/assets'
 
 export type TrekCardProps = {
+  /**
+   * The photograph's description.
+   *
+   * Passed in rather than looked up, because this is a client component and
+   * the descriptions come from the media payload the server fetched. Omit it
+   * only where the image genuinely has no record.
+   */
+  imageAlt?: string
   image?: string
   region?: string
   title: string
@@ -36,6 +44,7 @@ export function TrekCard({
   title,
   days,
   altitude,
+  imageAlt,
   difficulty,
   price,
   excerpt,
@@ -87,7 +96,7 @@ export function TrekCard({
         {image && (
           <Image
             src={image}
-            alt={altFor(image)}
+            alt={imageAlt ?? altFor(image)}
             fill
             sizes={sizes}
             priority={priority}

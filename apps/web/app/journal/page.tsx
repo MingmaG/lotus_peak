@@ -102,7 +102,7 @@ function Entry({ post, lead = false }: { post: Post; lead?: boolean }) {
       >
         <Image
           src={post.heroImage}
-          alt={altFor(post.heroImage)}
+          alt={post.heroAlt ?? altFor(post.heroImage)}
           fill
           sizes={lead ? '(max-width: 900px) 100vw, 55vw' : '(max-width: 900px) 100vw, 45vw'}
           style={{ objectFit: 'cover' }}

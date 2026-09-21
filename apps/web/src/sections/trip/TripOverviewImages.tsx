@@ -11,7 +11,16 @@ import { Parallax, Reveal } from '@/motion'
  * `main` is the same photograph as the page hero, so it stays decorative here —
  * describing it twice on one page tells a screen-reader user nothing new.
  */
-export function TripOverviewImages({ main, inset }: { main: string; inset: string }) {
+export function TripOverviewImages({
+  main,
+  inset,
+  insetAlt,
+}: {
+  main: string
+  inset: string
+  /** The inset photograph's description. See TrekCard's `imageAlt`. */
+  insetAlt?: string
+}) {
   return (
     <div style={{ position: 'relative', paddingBottom: '22%', paddingRight: '18%' }}>
       <Reveal y={40}>
@@ -27,7 +36,7 @@ export function TripOverviewImages({ main, inset }: { main: string; inset: strin
         <div style={{ position: 'relative', aspectRatio: '3/4' }}>
           <Image
             src={inset}
-            alt={altFor(inset)}
+            alt={insetAlt ?? altFor(inset)}
             fill
             sizes="(max-width: 900px) 43vw, 21vw"
             style={{

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Badge, Button, Divider, Eyebrow, Reflection, SiteIcon, Tooltip } from '@/design-system'
 import { getContent } from '@/content'
 import { fmt } from '@/content/types'
-import { IMG } from '@/lib/assets'
+import { IMG, altFor } from '@/lib/assets'
 import { ogImage } from '@/lib/seo'
 import { Reveal, Strip } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
@@ -67,6 +67,7 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
     <main>
       <TripHero
         image={trip.heroImage}
+        alt={trip.heroAlt}
         title={trip.title}
         meta={`${fmt.duration(trip)} · ${fmt.nights(trip)}`}
         regions={fmt.regions(trip)}
@@ -85,7 +86,7 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
             marginTop: 'var(--space-8)',
           }}
         >
-          <TripOverviewImages main={trip.heroImage} inset={IMG.hike} />
+          <TripOverviewImages main={trip.heroImage} inset={IMG.hike} insetAlt={altFor(IMG.hike)} />
 
           <div>
             <Reveal>

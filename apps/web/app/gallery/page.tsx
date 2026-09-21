@@ -67,7 +67,7 @@ export default async function GalleryPage() {
               >
                 <Image
                   src={image.src}
-                  alt={altFor(image.src)}
+                  alt={image.alt ?? altFor(image.src)}
                   fill
                   sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
                   style={{ objectFit: 'cover' }}

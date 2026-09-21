@@ -431,8 +431,19 @@ export function serialiseMedia(
     id: media.id,
     url,
     alt: media.alt,
-    width: best?.width ?? media.width,
-    height: best?.height ?? media.height,
+    /**
+     * The **original** dimensions, not the rendition's.
+     *
+     * The url above points at the largest WebP rendition, so the obvious thing
+     * is to report its size — and it is wrong. These numbers are what a
+     * consumer reserves the box with, and resizing preserves the aspect ratio,
+     * so the original's pair is correct for every rendition and is also the
+     * true intrinsic size of the photograph. Reporting the rendition's would
+     * make the same picture change dimensions when a bigger rendition is
+     * built, which is a layout that shifts because a background job finished.
+     */
+    width: media.width,
+    height: media.height,
     blurDataUrl: media.blurDataUrl,
     focal: [media.focalX, media.focalY],
     decorative: media.isDecorative,

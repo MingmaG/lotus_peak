@@ -780,20 +780,39 @@ model Destination {
   @@map("destinations")
 }
 
-/// Which journeys go where, in the order they should be offered.
+/// Which journeys go where.
 ///
-/// `sortOrder` is on this table and not derived from the journey's own order,
-/// because the region line on a journey card reads "Paro · Bumthang · Trongsa"
-/// and that is the order of the route, not of the catalogue.
+/// **Two sort columns, because the join is read from both ends and the two
+/// answers are different.** A journey page lists its places in the order the
+/// route passes through them — Paro, then Bumthang, then Trongsa. A
+/// destination page lists the journeys that go there in the order the office
+/// wants them offered, which is an editorial decision about what to sell
+/// first and has nothing to do with anybody's route.
+///
+/// One column cannot carry both. The first version of this had one, ordered by
+/// the route, and the destinations page silently reordered every journey list
+/// on it — which the HTML diff caught and nothing else would have.
 model TripOnDestination {
   tripId        String
   trip          Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
   destinationId String
   destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
-  sortOrder     Int         @default(0)
+
+  /// This destination's position in the journey's route.
+  routeOrder Int @default(0)
+
+  /// This journey's position in the destination's list of journeys.
+  ///
+  /// **Null means the journey passes through and the destination does not
+  /// offer it**, which is a real state and not a missing value. The festival
+  /// journey's route goes through Paro, and the Paro page does not sell it —
+  /// a deliberate editorial choice in the content this site moved from, and
+  /// one a "passes through implies offered" rule silently reversed.
+  offerOrder Int?
 
   @@id([tripId, destinationId])
-  @@index([destinationId])
+  @@index([destinationId, offerOrder])
+  @@index([tripId, routeOrder])
   @@map("trip_on_destinations")
 }
 

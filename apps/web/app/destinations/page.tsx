@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Eyebrow, SiteIcon } from '@/design-system'
 import { getContent } from '@/content'
 import { fmt } from '@/content/types'
-import { IMG } from '@/lib/assets'
+import { IMG, altFor } from '@/lib/assets'
 import { ogImage } from '@/lib/seo'
 import { Parallax, Reveal, ScrollCue } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
@@ -25,6 +25,7 @@ export default async function DestinationsPage() {
     <main>
       <Parallax
         src={IMG.paroDzong}
+        alt={altFor(IMG.paroDzong)}
         speed={0.6}
         priority
         style={{ height: '82svh', minHeight: 560, display: 'flex', alignItems: 'flex-end', ...heroOffset }}
@@ -108,6 +109,7 @@ export default async function DestinationsPage() {
                 <Reveal y={40} style={{ direction: 'ltr' }}>
                   <Parallax
                     src={destination.image}
+                    alt={destination.imageAlt}
                     speed={0.5}
                     sizes="(max-width: 900px) 100vw, 50vw"
                     style={{ aspectRatio: flipped ? '4/5' : '3/2', borderRadius: 'var(--radius-sm)' }}

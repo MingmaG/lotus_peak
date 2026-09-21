@@ -363,7 +363,7 @@ const TRIP_INCLUDE = {
     include: { media: { include: MEDIA_INCLUDE } },
   },
   destinations: {
-    orderBy: { sortOrder: 'asc' },
+    orderBy: { routeOrder: 'asc' },
     include: { destination: { select: { slug: true, name: true } } },
   },
   departures: {
@@ -473,18 +473,25 @@ function serialiseTrip(trip: TripRow): ApiTrip {
 /**
  * Numbers the itinerary.
  *
- * The number is computed from position, skipping rest days, because storing it
- * means an inserted arrival day makes every stored number after it wrong. This
- * is the one piece of derived data the website is not allowed to derive itself:
- * the admin panel's editor shows live numbers as the office drags days around,
- * and both have to count the same way or the preview lies.
+ * Computed from position rather than stored, because an itinerary with an
+ * arrival day inserted at the front is an itinerary where every stored number
+ * after it is wrong.
+ *
+ * **A rest day takes a number; it just does not print one.** The Jomolhari
+ * trek is the proof: a rest day at Jangothang sits at position six, and the
+ * walk to Lingshi after it is Day 7. Counting only the days that print a
+ * number would call it Day 6 — and a fourteen-day itinerary would end on Day
+ * 12, which is not what the traveller's calendar says. These are dates on a
+ * journey, not entries in a list.
+ *
+ * This is also the one piece of derived data the website is not allowed to
+ * derive for itself: the admin panel's editor shows live numbers as the office
+ * drags days around, and both have to count the same way or the preview lies.
  */
 function numberItinerary(days: TripRow['itinerary']): ApiTrip['itinerary'] {
-  let counter = 0;
-  return days.map((day) => {
-    if (!day.isRest) counter += 1;
+  return days.map((day, index) => {
     return {
-      day: day.isRest ? null : counter,
+      day: day.isRest ? null : index + 1,
       rest: day.isRest,
       title: day.title,
       meta: day.meta,
@@ -633,7 +640,11 @@ export async function listDestinations(): Promise<ApiDestination[]> {
       image: { include: MEDIA_INCLUDE },
       ogImage: { include: MEDIA_INCLUDE },
       trips: {
-        orderBy: { sortOrder: 'asc' },
+        /* The destination's own order, not the route's, and only the journeys
+           it actually offers — a null `offerOrder` is a route that passes
+           through. See `TripOnDestination` in the schema. */
+        where: { offerOrder: { not: null } },
+        orderBy: { offerOrder: 'asc' },
         include: { trip: { select: { slug: true, status: true, deletedAt: true } } },
       },
     },

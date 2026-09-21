@@ -12,6 +12,22 @@ export type ItineraryDayData = {
   body?: string
 }
 
+/**
+ * A photograph's description, carried beside its `src`.
+ *
+ * Every record below that holds an image holds one of these. It looks like
+ * duplication of the media library and is not: the description has to reach a
+ * **client** component — `TrekCard`, `Strip`, `Parallax` and the two heroes are
+ * all `'use client'` — and a module-level lookup there reads the client
+ * bundle's own copy of `src/lib/assets.ts`, which the server's fetch never
+ * touched. Alt text that only exists on the server is alt text that ships as
+ * `alt=""`.
+ *
+ * Optional because the file provider fills it from the static records and a
+ * record with no description is a real state, not a missing field.
+ */
+export type ImageAlt = string | undefined
+
 export type Trip = {
   slug: string
   title: string
@@ -29,13 +45,14 @@ export type Trip = {
   paceNote: string
   journeyLabel: string
   heroImage: string
+  heroAlt?: ImageAlt
   overview: string[]
   highlights: string[]
   itinerary: ItineraryDayData[]
   included: string[]
   excluded: string[]
   faq: { question: string; answer: string }[]
-  gallery: [src: string, ratio?: string, width?: string][]
+  gallery: [src: string, ratio?: string, width?: string, alt?: string][]
 }
 
 export type Destination = {
@@ -46,6 +63,7 @@ export type Destination = {
   /** A paragraph for the destinations index. The blurb is the one-line form. */
   detail: string
   image: string
+  imageAlt?: ImageAlt
   /** Journeys that go there, in the order they should be offered. */
   tripSlugs: string[]
   order: number
@@ -57,6 +75,7 @@ export type Activity = {
   blurb: string
   icon: SiteIconName
   image: string
+  imageAlt?: ImageAlt
   /** What the day actually consists of — three to five items. */
   examples: string[]
   tripSlugs: string[]
@@ -78,7 +97,7 @@ export type PostBlock =
   | { kind: 'heading'; text: string }
   | { kind: 'list'; items: string[] }
   | { kind: 'quote'; text: string }
-  | { kind: 'image'; src: string; ratio?: string }
+  | { kind: 'image'; src: string; ratio?: string; alt?: string }
   | { kind: 'facts'; title: string; rows: [label: string, value: string][] }
 
 export type Post = {
@@ -89,12 +108,14 @@ export type Post = {
   date: string
   region: string
   heroImage: string
+  heroAlt?: ImageAlt
   body: PostBlock[]
   order: number
 }
 
 export type GalleryImage = {
   src: string
+  alt?: ImageAlt
   caption: string
   /** CSS aspect ratio for the masonry cell, e.g. '3/4'. */
   ratio: string
@@ -109,6 +130,7 @@ export type Season = {
   summary: string
   detail: string
   image: string
+  imageAlt?: ImageAlt
   order: number
 }
 
@@ -118,6 +140,7 @@ export type CultureArticle = {
   body: string
   icon: SiteIconName
   image: string
+  imageAlt?: ImageAlt
   order: number
 }
 

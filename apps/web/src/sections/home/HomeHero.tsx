@@ -8,10 +8,11 @@ import { heroOffset } from '../shared/Section'
  * The home hero. Parallax at speed .6 with the 24s `mist` drift layered on top
  * of the transform, under a bottom-weighted gradient, staged 0/240/520/760.
  */
-export function HomeHero({ image }: { image: string }) {
+export function HomeHero({ image, alt }: { image: string; alt?: string }) {
   return (
     <Parallax
       src={image}
+      alt={alt}
       speed={0.6}
       priority
       imgStyle={{ animation: 'mist var(--dur-mist) var(--ease-drift) infinite alternate' }}

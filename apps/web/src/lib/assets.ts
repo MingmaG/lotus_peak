@@ -372,18 +372,60 @@ const RECORDS: Record<string, Omit<MediaAsset, 'src'>> = {
   },
 }
 
+/* ---------------------------------------------------------------------------
+   Images that came from the content API
+   --------------------------------------------------------------------------- */
+
 /**
- * The record for a content image. Unknown paths — a CMS image, or art that has
- * no record yet — come back with empty `alt` and no dimensions, which is the
- * safe reading: an image whose subject we cannot describe is better announced as
- * decorative than described wrongly, and a caller without dimensions uses `fill`.
+ * Descriptions for photographs the content provider has just fetched.
+ *
+ * `RECORDS` above is keyed by `/assets/…` paths and was complete while the
+ * photographs lived in `public/`. They live in the admin panel's media library
+ * now, so a `src` reaching {@link media} is
+ * `https://…/media/<id>/1600.webp` — a key `RECORDS` has never heard of — and
+ * every `altFor()` in the design system would return `''`. That is not a
+ * cosmetic regression: it is twenty-one pages of images announcing themselves
+ * as decorative to anybody using a screen reader.
+ *
+ * Passing the description down instead would mean changing the signature of
+ * `TrekCard`, `WindowFrame`, `Parallax`, `Strip` and four pages — the approved
+ * design's own components — to carry a field they already have a way of
+ * finding. So the provider registers what it fetched, and the existing lookup
+ * finds it.
+ *
+ * ## Why a module-level map is safe here
+ *
+ * It is shared by every request this process handles, which is usually a bug.
+ * It is not one here: the entries are immutable facts about a photograph —
+ * this URL shows this, at these dimensions — keyed by a URL that contains the
+ * media id. Nothing is per-visitor, two requests cannot disagree, and a stale
+ * entry is impossible because replacing the file behind a photograph writes
+ * new rendition keys. It is a cache of the media table, not request state.
+ */
+const REGISTERED = new Map<string, Omit<MediaAsset, 'src'>>()
+
+export function registerMedia(
+  src: string,
+  record: { alt: string; width: number; height: number },
+): void {
+  if (!src) return
+  REGISTERED.set(src, record)
+}
+
+/**
+ * The record for a content image. Unknown paths — art that has no record yet —
+ * come back with empty `alt` and no dimensions, which is the safe reading: an
+ * image whose subject we cannot describe is better announced as decorative than
+ * described wrongly, and a caller without dimensions uses `fill`.
  */
 export function media(src: string): MediaAsset | null {
+  const registered = REGISTERED.get(src)
+  if (registered) return { src, ...registered }
   const record = RECORDS[src]
   return record ? { src, ...record } : null
 }
 
 /** `alt` for a content image, or '' when the image is not a described asset. */
 export function altFor(src: string): string {
-  return RECORDS[src]?.alt ?? ''
+  return REGISTERED.get(src)?.alt ?? RECORDS[src]?.alt ?? ''
 }

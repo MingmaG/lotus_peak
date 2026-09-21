@@ -7,8 +7,15 @@ import { subscribe, type Frame } from './ScrollBroker'
 import { usePrefersReducedMotion } from './hooks'
 import { Reveal } from './Reveal'
 
-/** [src, aspect-ratio, width] — the mixed ratios are what make it read as a contact sheet. */
-export type StripImage = [src: string, ratio?: string, width?: string]
+/**
+ * `[src, aspect-ratio, width, alt]`.
+ *
+ * The mixed ratios are what make it read as a contact sheet. `alt` is fourth
+ * and optional because this is a client component: the description lives in
+ * the media payload the *server* fetched, and a module-level lookup here would
+ * read the client bundle's own empty copy of it. It has to arrive as data.
+ */
+export type StripImage = [src: string, ratio?: string, width?: string, alt?: string]
 
 export type StripProps = {
   images: StripImage[]
@@ -54,14 +61,14 @@ export function Strip({ images, caption }: StripProps) {
     <section aria-label="Gallery" style={{ padding: 'var(--space-9) 0' }}>
       <div ref={frameRef} className="strip" tabIndex={reduced ? 0 : -1}>
         <div ref={trackRef} className="strip-track">
-          {images.map(([src, ratio, width], i) => (
+          {images.map(([src, ratio, width, alt], i) => (
             <Reveal key={src + i} delay={i * 320} style={{ flex: 'none', width: width || '34vw', minWidth: 280 }}>
               {/* The track width is the `width` column of the data, which is
                   exactly the `sizes` the browser needs to pick from the srcset. */}
               <div style={{ position: 'relative', aspectRatio: ratio || '4/3' }}>
                 <Image
                   src={src}
-                  alt={altFor(src)}
+                  alt={alt ?? altFor(src)}
                   fill
                   sizes={width || '34vw'}
                   style={{ objectFit: 'cover' }}

@@ -374,7 +374,7 @@ async function seedDestinations(
 }
 
 /**
- * Which journeys go where, **in the order of the route**.
+ * Which journeys go where, in both orders.
  *
  * The obvious source is `destination.tripSlugs` — every destination already
  * lists the journeys that visit it. Using it produces the right set of links
@@ -445,15 +445,44 @@ async function linkTripsToDestinations(
         data: ordered.map((destinationId, index) => ({
           tripId,
           destinationId,
-          sortOrder: index,
+          routeOrder: index,
+          /* Null until the pass below says the destination offers it. */
+          offerOrder: null,
         })),
         skipDuplicates: true,
       });
     }
   }
 
+  /**
+   * The other end of the join: how each destination orders its journeys.
+   *
+   * From `destination.tripSlugs`, which is where the design kept it — the
+   * order the office wants those journeys offered on that place's page, which
+   * is an editorial decision and not a consequence of anybody's route.
+   */
+  for (const destination of destinations as DestinationJson[]) {
+    const destinationId = destinationIds.get(destination.slug);
+    if (!destinationId) continue;
+
+    for (const [index, slug] of destination.tripSlugs.entries()) {
+      const tripId = tripIds.get(slug);
+      if (!tripId) continue;
+      await db.tripOnDestination
+        .update({
+          where: { tripId_destinationId: { tripId, destinationId } },
+          data: { offerOrder: index },
+        })
+        /* A journey listed by a destination whose own region line does not
+           name that destination has no link to update. Rare, and the
+           destination page simply does not offer it — which is the honest
+           answer, because the journey does not claim to go there. */
+        .catch(() => undefined);
+    }
+  }
+
   console.log(
-    `  trip→place   linked in route order${unmatched ? `, ${unmatched} region name(s) have no destination page` : ''}`,
+    `  trip→place   route order and offer order${unmatched ? `, ${unmatched} region name(s) have no destination page` : ''}`,
   );
 }
 

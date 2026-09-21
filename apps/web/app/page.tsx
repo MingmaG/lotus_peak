@@ -2,7 +2,7 @@ import { Button, Divider, Eyebrow, Reflection, SiteIcon, TrekCard } from '@/desi
 import { getContent } from '@/content'
 import { HOME_PURPOSES as PURPOSES } from '@/content/data/pages'
 import { fmt } from '@/content/types'
-import { IMG } from '@/lib/assets'
+import { IMG, altFor } from '@/lib/assets'
 import { Reveal, Split, Strip } from '@/motion'
 import { HomeHero } from '@/sections/home/HomeHero'
 import { Seasons } from '@/sections/home/Seasons'
@@ -20,7 +20,7 @@ export default async function HomePage() {
 
   return (
     <main>
-      <HomeHero image={IMG.dzong} />
+      <HomeHero image={IMG.dzong} alt={altFor(IMG.dzong)} />
 
       {/* 01 — Our purpose */}
       <section style={{ position: 'relative', padding: 'var(--space-11) var(--gutter) var(--space-10)' }}>
@@ -85,6 +85,7 @@ export default async function HomePage() {
               <TrekCard
                 href={`/trips/${t.slug}`}
                 image={t.heroImage}
+                imageAlt={t.heroAlt}
                 region={fmt.regionsShort(t)}
                 title={t.title}
                 days={fmt.duration(t)}
@@ -181,12 +182,15 @@ export default async function HomePage() {
       </Split>
 
       <Strip
+        /* The fourth element is the description. These five are design
+           assets that still live in public/, so it resolves on the server
+           here — a client component could not look it up. */
         images={[
-          [IMG.chorten, '4/5', '26vw'],
-          [IMG.bridge, '3/2', '44vw'],
-          [IMG.dress, '4/5', '26vw'],
-          [IMG.tashichho, '3/2', '44vw'],
-          [IMG.hike, '4/5', '26vw'],
+          [IMG.chorten, '4/5', '26vw', altFor(IMG.chorten)],
+          [IMG.bridge, '3/2', '44vw', altFor(IMG.bridge)],
+          [IMG.dress, '4/5', '26vw', altFor(IMG.dress)],
+          [IMG.tashichho, '3/2', '44vw', altFor(IMG.tashichho)],
+          [IMG.hike, '4/5', '26vw', altFor(IMG.hike)],
         ]}
         caption="Memorial Chorten, Punakha, a kira at the festival, Tashichho Dzong, the trail below Jomolhari."
       />

@@ -48,6 +48,7 @@ export default async function JournalEntryPage({ params }: { params: Promise<{ s
     <main>
       <Parallax
         src={post.heroImage}
+        alt={post.heroAlt}
         speed={0.6}
         priority
         style={{ height: '78svh', minHeight: 520, display: 'flex', alignItems: 'flex-end', ...heroOffset }}
