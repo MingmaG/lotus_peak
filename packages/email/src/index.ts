@@ -493,8 +493,17 @@ export const DEFAULT_TEMPLATES: EmailTemplate[] = [
     kind: 'ENQUIRY_NOTIFICATION',
     name: 'Enquiry — to the office',
     isActive: true,
-    subject: 'Enquiry {{reference}} — {{name}}{{trip}}',
-    preheader: '{{name}} has written about {{trip}}.',
+    /**
+     * No `{{trip}}` in the subject.
+     *
+     * It was `{{reference}} — {{name}}{{trip}}`, which reads as "Anne
+     * TravellerJomolhari trek" when a journey is named and leaves a dangling
+     * dash when one is not. Tokens substitute, they do not join — so anything
+     * optional belongs in the body, where the summary table already has a row
+     * for it and prints "Not yet chosen" when it is empty.
+     */
+    subject: 'Enquiry {{reference}} — {{name}}',
+    preheader: '{{name}} has written in.',
     eyebrow: 'New enquiry',
     heading: '{{name}} has written',
     intro: 'An enquiry arrived from the {{source}} form.',

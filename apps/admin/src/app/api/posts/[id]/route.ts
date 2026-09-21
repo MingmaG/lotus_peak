@@ -5,7 +5,6 @@ import { changeSlug, problemsPublishingPost, resolvePublishing } from '@/server/
 import { seoColumns } from '@/server/services/catalogue';
 import { revalidateFor } from '@/server/services/revalidate';
 import { postPatchSchema, readingMinutes, type PostPatch } from '@/server/validators/post';
-import { parsePostBody } from '@/server/schema/blocks';
 
 export const GET = route<undefined, { id: string }>({
   permission: 'journal.read',
@@ -156,5 +155,3 @@ export const DELETE = route<undefined, { id: string }>({
     return null;
   },
 });
-
-export { parsePostBody };
