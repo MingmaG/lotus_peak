@@ -5,7 +5,12 @@ import { db } from '@/lib/db';
 export const metadata = { title: 'Reflections' };
 export const dynamic = 'force-dynamic';
 
-export default async function ReflectionsPage() {
+export default async function EditReflectionsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   await requirePermission('reflections.read');
   const [canWrite, canDelete, trips] = await Promise.all([
     hasPermission('reflections.write'),
@@ -17,5 +22,5 @@ export default async function ReflectionsPage() {
     }),
   ]);
 
-  return <ReflectionsScreen canWrite={canWrite} canDelete={canDelete} trips={trips} />;
+  return <ReflectionsScreen canWrite={canWrite} canDelete={canDelete} trips={trips} editId={id} />;
 }

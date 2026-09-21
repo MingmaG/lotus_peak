@@ -1,6 +1,6 @@
 'use client';
 
-import { CatalogueScreen } from './catalogue-screen';
+import { CatalogueScreen } from './catalogue';
 import { IconSelect, StatusSelect } from './icon-select';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field } from '@/components/shared/editor-shell';
@@ -41,14 +41,21 @@ interface Form {
 export function DestinationsScreen({
   canWrite,
   canDelete,
+  editId,
 }: {
   canWrite: boolean;
   canDelete: boolean;
+  /** Undefined draws the list; a string or null draws the editor. */
+  editId?: string | null;
 }) {
   return (
     <CatalogueScreen<Row, Form>
       endpoint="/api/destinations"
       queryKey="destinations"
+      basePath="/destinations"
+      title="Destinations"
+      description="The valleys the journeys pass through. Each gets a panel on /destinations and a link from every journey that goes there. The order here is the order the page shows them in."
+      editId={editId}
       primary={(row) => row.name}
       secondary={(row) =>
         `${row.blurb}${row.trips.length ? ` · ${row.trips.filter((t) => t.offered).length} journeys offered` : ''}`
@@ -58,7 +65,6 @@ export function DestinationsScreen({
       emptyTitle="No places yet"
       emptyDescription="The valleys the journeys pass through. Each one gets a panel on /destinations and a link from every journey that goes there."
       editTitle={(form) => (form.isNew ? 'A new place' : form.name)}
-      editDescription="The order here is the order the page shows them in — drag the list to change it."
       canWrite={canWrite}
       canDelete={canDelete}
       blank={() => ({

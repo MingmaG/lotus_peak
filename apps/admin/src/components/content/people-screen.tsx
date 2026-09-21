@@ -1,6 +1,6 @@
 'use client';
 
-import { CatalogueScreen } from './catalogue-screen';
+import { CatalogueScreen } from './catalogue';
 import { StatusSelect } from './icon-select';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field } from '@/components/shared/editor-shell';
@@ -28,11 +28,24 @@ interface Form {
   isNew: boolean;
 }
 
-export function PeopleScreen({ canWrite, canDelete }: { canWrite: boolean; canDelete: boolean }) {
+export function PeopleScreen({
+  canWrite,
+  canDelete,
+  editId,
+}: {
+  canWrite: boolean;
+  canDelete: boolean;
+  /** Undefined draws the list; a string or null draws the editor. */
+  editId?: string | null;
+}) {
   return (
     <CatalogueScreen<Row, Form>
       endpoint="/api/people"
       queryKey="people"
+      basePath="/people"
+      title="People"
+      description="Guides, teachers and the office. The order here is the order the page shows them in."
+      editId={editId}
       primary={(row) => row.name}
       secondary={(row) => [row.role, row.languages.join(', ')].filter(Boolean).join(' · ')}
       thumbnail={(row) => row.photo?.url ?? null}

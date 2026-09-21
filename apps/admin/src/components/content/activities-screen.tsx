@@ -1,6 +1,6 @@
 'use client';
 
-import { CatalogueScreen } from './catalogue-screen';
+import { CatalogueScreen } from './catalogue';
 import { IconSelect, StatusSelect } from './icon-select';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field } from '@/components/shared/editor-shell';
@@ -37,16 +37,23 @@ interface Form {
 export function ActivitiesScreen({
   canWrite,
   canDelete,
+  editId,
   trips,
 }: {
   canWrite: boolean;
   canDelete: boolean;
+  /** Undefined draws the list; a string or null draws the editor. */
+  editId?: string | null;
   trips: { id: string; title: string }[];
 }) {
   return (
     <CatalogueScreen<Row, Form>
       endpoint="/api/activities"
       queryKey="activities"
+      basePath="/activities"
+      title="What you can do"
+      description="The things a journey is made of. The order here is the order the page shows them in."
+      editId={editId}
       primary={(row) => row.name}
       secondary={(row) => row.blurb}
       thumbnail={(row) => row.image?.url ?? null}

@@ -2,10 +2,10 @@ import { ReflectionsScreen } from '@/components/content/reflections-screen';
 import { hasPermission, requirePermission } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 
-export const metadata = { title: 'Reflections' };
+export const metadata = { title: 'New · Reflections' };
 export const dynamic = 'force-dynamic';
 
-export default async function ReflectionsPage() {
+export default async function NewReflectionsPage() {
   await requirePermission('reflections.read');
   const [canWrite, canDelete, trips] = await Promise.all([
     hasPermission('reflections.write'),
@@ -17,5 +17,5 @@ export default async function ReflectionsPage() {
     }),
   ]);
 
-  return <ReflectionsScreen canWrite={canWrite} canDelete={canDelete} trips={trips} />;
+  return <ReflectionsScreen canWrite={canWrite} canDelete={canDelete} trips={trips} editId={null} />;
 }

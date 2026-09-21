@@ -1,6 +1,6 @@
 'use client';
 
-import { CatalogueScreen } from './catalogue-screen';
+import { CatalogueScreen } from './catalogue';
 import { StatusSelect } from './icon-select';
 import { Field } from '@/components/shared/editor-shell';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -47,16 +47,23 @@ interface Form {
 export function ReflectionsScreen({
   canWrite,
   canDelete,
+  editId,
   trips,
 }: {
   canWrite: boolean;
   canDelete: boolean;
+  /** Undefined draws the list; a string or null draws the editor. */
+  editId?: string | null;
   trips: { id: string; title: string }[];
 }) {
   return (
     <CatalogueScreen<Row, Form>
       endpoint="/api/reflections"
       queryKey="reflections"
+      basePath="/reflections"
+      title="Reflections"
+      description="What travellers said, in their own words. No stars and no ratings — that is a rule of the design, not an omission."
+      editId={editId}
       primary={(row) => `“${row.quote.slice(0, 70)}${row.quote.length > 70 ? '…' : ''}”`}
       secondary={(row) =>
         [row.name, row.detail, row.trip?.title, row.featured ? 'Featured' : null]

@@ -1,6 +1,6 @@
 'use client';
 
-import { CatalogueScreen } from './catalogue-screen';
+import { CatalogueScreen } from './catalogue';
 import { IconSelect, StatusSelect } from './icon-select';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field } from '@/components/shared/editor-shell';
@@ -29,11 +29,24 @@ interface Form {
   isNew: boolean;
 }
 
-export function CultureScreen({ canWrite, canDelete }: { canWrite: boolean; canDelete: boolean }) {
+export function CultureScreen({
+  canWrite,
+  canDelete,
+  editId,
+}: {
+  canWrite: boolean;
+  canDelete: boolean;
+  /** Undefined draws the list; a string or null draws the editor. */
+  editId?: string | null;
+}) {
   return (
     <CatalogueScreen<Row, Form>
       endpoint="/api/culture"
       queryKey="culture"
+      basePath="/culture"
+      title="Culture"
+      description="The short pieces on /culture. The order here is the order the page shows them in."
+      editId={editId}
       primary={(row) => row.title}
       secondary={(row) => row.body.slice(0, 110)}
       thumbnail={(row) => row.image?.url ?? null}

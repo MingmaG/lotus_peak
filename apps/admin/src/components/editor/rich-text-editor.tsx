@@ -67,7 +67,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 import { cleanPastedHtml, looksLikeMarkdown, markdownToHtml } from './paste';
@@ -446,6 +451,16 @@ export function RichTextEditor({
   }
 
   return (
+    /**
+     * The provider is here, not in the app shell.
+     *
+     * Radix throws — it does not degrade — when a `Tooltip` has no provider
+     * above it, and this editor is mounted from a dozen screens, some of which
+     * are their own route. Owning it here means the component works wherever
+     * it is put, which is the property a component used in a dozen places
+     * needs. Nested providers are harmless; a missing one is a blank screen.
+     */
+    <TooltipProvider delayDuration={400}>
     <div className={cn('flex flex-col overflow-hidden rounded-lg border bg-background', className)}>
       <div className="flex shrink-0 flex-wrap items-center gap-0.5 border-b bg-muted/40 p-1">
         <ToolbarButton
@@ -683,5 +698,6 @@ export function RichTextEditor({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </TooltipProvider>
   );
 }

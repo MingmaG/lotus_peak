@@ -5,7 +5,12 @@ import { db } from '@/lib/db';
 export const metadata = { title: 'What you can do' };
 export const dynamic = 'force-dynamic';
 
-export default async function ActivitiesPage() {
+export default async function EditActivitiesPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   await requirePermission('activities.read');
   const [canWrite, canDelete, trips] = await Promise.all([
     hasPermission('activities.write'),
@@ -17,5 +22,5 @@ export default async function ActivitiesPage() {
     }),
   ]);
 
-  return <ActivitiesScreen canWrite={canWrite} canDelete={canDelete} trips={trips} />;
+  return <ActivitiesScreen canWrite={canWrite} canDelete={canDelete} trips={trips} editId={id} />;
 }

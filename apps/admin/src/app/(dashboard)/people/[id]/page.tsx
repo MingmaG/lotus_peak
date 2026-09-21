@@ -4,12 +4,17 @@ import { hasPermission, requirePermission } from '@/lib/auth/session';
 export const metadata = { title: 'People' };
 export const dynamic = 'force-dynamic';
 
-export default async function PeoplePage() {
+export default async function EditPeoplePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   await requirePermission('people.read');
   const [canWrite, canDelete] = await Promise.all([
     hasPermission('people.write'),
     hasPermission('people.delete'),
   ]);
 
-  return <PeopleScreen canWrite={canWrite} canDelete={canDelete} />;
+  return <PeopleScreen canWrite={canWrite} canDelete={canDelete} editId={id} />;
 }
