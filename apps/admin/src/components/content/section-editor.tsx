@@ -16,7 +16,7 @@ import {
 import * as React from 'react';
 
 import { IconSelect } from './icon-select';
-import { RichTextField } from '@/components/editor/rich-text-field';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { MediaMultiPicker, MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field } from '@/components/shared/editor-shell';
 import { SortableList } from '@/components/shared/sortable-list';
@@ -212,7 +212,7 @@ export function SectionEditor({
                     className="h-8 text-sm"
                   />
                 </div>
-                <RichTextField
+                <RichTextEditor
                   value={section.body}
                   onChange={(body) => patch(index, { body })}
                   placeholder="Write…"

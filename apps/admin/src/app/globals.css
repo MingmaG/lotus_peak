@@ -75,44 +75,65 @@
 }
 
 .dark {
-  --background: oklch(0.18 0.004 90);
-  --foreground: oklch(0.94 0.003 90);
+  /**
+   * Black, and green.
+   *
+   * The light theme is Lotus Peak's own palette — stone greys, saffron, gold.
+   * The dark one is not a tinted version of it. A warm-tinted dark surface
+   * reads as brown at low brightness, and an office that works in the evening
+   * asked for black: chroma 0 on every ground here, so `--background` is a
+   * true neutral and the only colour in the interface is the colour that
+   * means something.
+   *
+   * Green carries the primary action rather than saffron. Saffron on black is
+   * a warning colour — it is what `--status-attention` uses four lines down —
+   * and a Save button that looks like a warning is a Save button people
+   * hesitate over.
+   */
+  --background: oklch(0.12 0 0);
+  --foreground: oklch(0.95 0 0);
 
-  --card: oklch(0.22 0.005 90);
-  --card-foreground: oklch(0.94 0.003 90);
-  --popover: oklch(0.22 0.005 90);
-  --popover-foreground: oklch(0.94 0.003 90);
+  --card: oklch(0.16 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.17 0 0);
+  --popover-foreground: oklch(0.95 0 0);
 
-  --primary: oklch(0.72 0.15 58);
-  --primary-foreground: oklch(0.18 0.004 90);
+  /* Evergreen. Light enough to carry white text at better than 4.5:1 and to
+     separate from a near-black ground without glowing. */
+  --primary: oklch(0.7 0.14 158);
+  --primary-foreground: oklch(0.14 0.02 158);
 
-  --secondary: oklch(0.27 0.005 90);
-  --secondary-foreground: oklch(0.94 0.003 90);
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.95 0 0);
 
-  --muted: oklch(0.27 0.005 90);
-  --muted-foreground: oklch(0.68 0.006 88);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.68 0 0);
 
-  --accent: oklch(0.3 0.012 78);
-  --accent-foreground: oklch(0.94 0.003 90);
+  /* The hover ground. Barely green — enough that a hovered row belongs to the
+     same interface as the Save button, not enough to read as a selection. */
+  --accent: oklch(0.26 0.02 158);
+  --accent-foreground: oklch(0.95 0.01 158);
 
-  --destructive: oklch(0.62 0.19 27);
-  --destructive-foreground: oklch(0.97 0.002 90);
+  --destructive: oklch(0.63 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
 
-  --border: oklch(0.3 0.005 90);
-  --input: oklch(0.32 0.005 90);
-  --ring: oklch(0.72 0.15 58);
+  --border: oklch(0.26 0 0);
+  --input: oklch(0.3 0 0);
+  --ring: oklch(0.7 0.14 158);
 
-  --status-draft: oklch(0.65 0.01 85);
+  --status-draft: oklch(0.64 0 0);
   --status-scheduled: oklch(0.68 0.12 250);
-  --status-published: oklch(0.7 0.13 155);
-  --status-archived: oklch(0.6 0.01 85);
-  --status-attention: oklch(0.74 0.15 50);
+  --status-published: oklch(0.72 0.14 158);
+  --status-archived: oklch(0.55 0 0);
+  --status-attention: oklch(0.76 0.15 62);
 
-  --sidebar: oklch(0.21 0.005 90);
-  --sidebar-foreground: oklch(0.9 0.003 90);
-  --sidebar-border: oklch(0.29 0.005 90);
-  --sidebar-accent: oklch(0.27 0.008 85);
-  --sidebar-accent-foreground: oklch(0.95 0.003 90);
+  /* Darker than the page, not lighter: the navigation is the thing the eye
+     should pass over, and the content is the thing it should land on. */
+  --sidebar: oklch(0.09 0 0);
+  --sidebar-foreground: oklch(0.88 0 0);
+  --sidebar-border: oklch(0.22 0 0);
+  --sidebar-accent: oklch(0.24 0.025 158);
+  --sidebar-accent-foreground: oklch(0.96 0.01 158);
 }
 
 @theme inline {
@@ -270,5 +291,112 @@
     background: #ffffff;
     color: #1a1a18;
     color-scheme: light;
+  }
+}
+
+/**
+ * Inside the editor.
+ *
+ * `.lp-prose` above sets the measure and the paragraph rhythm, and everything
+ * here is what a rich-text document can additionally contain: headings at three
+ * sizes, quotes, code, images, films, tables and rules. It is written against
+ * `.tiptap` so it applies to the editing surface only — the published page is
+ * styled by the website's own design system, which is a different set of rules
+ * and deliberately not shared. What these two must agree on is *structure*:
+ * three heading levels, one table shape, one image radius.
+ */
+@layer components {
+  .tiptap :is(h2, h3, h4) {
+    @apply font-medium tracking-tight text-foreground;
+  }
+
+  .tiptap h2 {
+    @apply mb-2 mt-7 text-[21px] leading-snug first:mt-0;
+  }
+
+  .tiptap h3 {
+    @apply mb-1.5 mt-6 text-[17px] leading-snug first:mt-0;
+  }
+
+  .tiptap h4 {
+    @apply mb-1 mt-5 text-[15px] uppercase tracking-[0.08em] text-muted-foreground first:mt-0;
+  }
+
+  .tiptap :is(ul, ol) {
+    @apply my-3 space-y-1 pl-6;
+  }
+
+  .tiptap ul {
+    @apply list-disc;
+  }
+
+  .tiptap ol {
+    @apply list-decimal;
+  }
+
+  .tiptap li > p {
+    @apply my-0;
+  }
+
+  .tiptap blockquote {
+    @apply my-4 border-l-2 border-primary/50 pl-4 italic text-muted-foreground;
+  }
+
+  .tiptap code {
+    @apply rounded bg-muted px-1 py-0.5 font-mono text-[0.9em];
+  }
+
+  .tiptap pre {
+    @apply my-4 overflow-x-auto rounded-lg bg-muted p-3 font-mono text-[13px] leading-relaxed;
+  }
+
+  .tiptap pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .tiptap hr {
+    @apply my-6 border-t;
+  }
+
+  .tiptap img {
+    @apply my-4 h-auto max-w-full rounded-lg border;
+  }
+
+  /* TipTap wraps an embed in a div of its own; the iframe inside it has fixed
+     width and height attributes that would otherwise overflow a narrow field. */
+  .tiptap div[data-youtube-video] {
+    @apply my-4;
+  }
+
+  .tiptap div[data-youtube-video] iframe {
+    @apply aspect-video h-auto w-full rounded-lg border;
+  }
+
+  .tiptap table {
+    @apply my-4 w-full table-fixed border-collapse overflow-hidden text-sm;
+  }
+
+  .tiptap :is(th, td) {
+    @apply relative min-w-[3rem] border p-2 align-top;
+  }
+
+  .tiptap th {
+    @apply bg-muted text-left font-medium;
+  }
+
+  /* The drag handle Table's `resizable` option adds between columns. */
+  .tiptap .column-resize-handle {
+    @apply absolute -bottom-px -right-[2px] top-0 w-1 cursor-col-resize bg-primary;
+  }
+
+  .tiptap .selectedCell::after {
+    content: '';
+    @apply pointer-events-none absolute inset-0 bg-primary/15;
+  }
+
+  /* The placeholder, which only shows on a genuinely empty document. */
+  .tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply pointer-events-none float-left h-0 text-muted-foreground;
   }
 }

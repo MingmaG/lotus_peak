@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { RichTextField } from './rich-text-field';
+import { RichTextEditor } from './rich-text-editor';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { SortableList, StringList } from '@/components/shared/sortable-list';
 import { Button } from '@/components/ui/button';
@@ -114,7 +114,7 @@ export function BlockEditor({
             </span>
 
             {block.kind === 'text' && (
-              <RichTextField
+              <RichTextEditor
                 value={block.body}
                 onChange={(body) => patch(index, { body })}
                 placeholder="Write…"
@@ -150,11 +150,12 @@ export function BlockEditor({
 
             {block.kind === 'quote' && (
               <div className="space-y-2">
-                <RichTextField
+                <RichTextEditor
                   value={block.text}
                   onChange={(text) => patch(index, { text })}
                   placeholder="The quotation"
-                  plain
+                  compact
+                  minHeight="min-h-[90px]"
                 />
                 <Input
                   value={block.attribution ?? ''}

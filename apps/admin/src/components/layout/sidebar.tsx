@@ -48,7 +48,16 @@ export function Sidebar({ permissions, badges, onNavigate, className }: SidebarP
         </span>
       </div>
 
-      <ScrollArea className="flex-1">
+      {/**
+       * `min-h-0` is what makes this scroll.
+       *
+       * A flex child defaults to `min-height: auto`, which means "at least as
+       * tall as my content" — so `flex-1` alone let the scroll area grow past
+       * the sidebar instead of being clipped by it, and the navigation had no
+       * scrollbar of its own. The whole page scrolled instead, which on a
+       * sidebar pinned with `sticky` means the lower half was unreachable.
+       */}
+      <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-6 px-3 py-4">
           {groups.map((group) => (
             <div key={group.label}>
