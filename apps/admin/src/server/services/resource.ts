@@ -17,7 +17,7 @@ import { db } from '@/lib/db';
  * between a gallery image and a reflection is visible.
  */
 
-type SlugTable = 'destination' | 'activity' | 'cultureArticle';
+type SlugTable = 'destination' | 'activity' | 'cultureArticle' | 'post' | 'page';
 
 export async function freeSlug(table: SlugTable, desired: string): Promise<string> {
   const rows =
@@ -25,7 +25,11 @@ export async function freeSlug(table: SlugTable, desired: string): Promise<strin
       ? await db.destination.findMany({ select: { slug: true } })
       : table === 'activity'
         ? await db.activity.findMany({ select: { slug: true } })
-        : await db.cultureArticle.findMany({ select: { slug: true } });
+        : table === 'post'
+          ? await db.post.findMany({ select: { slug: true } })
+          : table === 'page'
+            ? await db.page.findMany({ select: { slug: true } })
+            : await db.cultureArticle.findMany({ select: { slug: true } });
 
   const taken = new Set(rows.map((row) => row.slug));
   const root =
