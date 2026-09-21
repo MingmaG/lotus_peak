@@ -127,6 +127,8 @@ export function NavBar({
         <Link
           href="/"
           onClick={() => setOpen(false)}
+          /* Classed so the very narrow breakpoint can reach it; see globals.css. */
+          className="lp-nav-brand"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -153,6 +155,7 @@ export function NavBar({
             />
           )}
           <span
+            className="lp-nav-wordmark"
             style={{
               fontFamily: 'var(--font-display)',
               fontWeight: 'var(--weight-display)',

@@ -75,7 +75,22 @@ export function InquiryDrawer({
     <div
       aria-hidden={!open}
       {...(!open ? { inert: '' as unknown as boolean } : null)}
-      style={{ position: 'fixed', inset: 0, zIndex: 100, pointerEvents: open ? 'auto' : 'none' }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100,
+        pointerEvents: open ? 'auto' : 'none',
+        /**
+         * The closed drawer sits at `translateX(102%)` — off the right-hand
+         * edge — and a fixed element that overflows to the right still widens
+         * the document in Chrome. On a 390px phone that was 15px of sideways
+         * scroll on every journey page, with nothing visible to explain it.
+         *
+         * `clip` rather than `hidden`: `hidden` makes this a scroll container,
+         * which changes what `position: fixed` inside it resolves against.
+         */
+        overflowX: 'clip',
+      }}
     >
       <div
         onClick={onClose}

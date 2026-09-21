@@ -62,6 +62,29 @@
   .lp-footer-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important }
 }
 
+/* The navigation's search field is a fixed 200px sitting beside the brand and
+   the menu button. Below about 720px the three of them are wider than the
+   viewport, and the whole site scrolled sideways by 174px on a 390px phone —
+   on every page, because it is in the shared chrome.
+
+   It is hidden rather than shrunk: a search box narrow enough to fit beside a
+   menu button is a search box too narrow to type a destination into, and the
+   menu panel already carries the navigation on a phone. */
+@media (max-width: 720px) {
+  .lp-nav-search-wrap { display: none !important }
+}
+
+/* Below 380px the brand and the Menu button are together wider than the
+   screen — an iPhone SE is 320px, and the page scrolled sideways on it.
+   The wordmark loses two points and its letter-spacing, and the gutter
+   halves. Nothing else changes: this is the width at which the design has to
+   give something up, and the two it gives up are the two nobody notices. */
+@media (max-width: 380px) {
+  :root { --gutter: 1rem }
+  .lp-nav-brand { gap: 8px !important }
+  .lp-nav-wordmark { font-size: 1.125rem !important; letter-spacing: 0.02em !important }
+}
+
 /* ---------------------------------------------------------------------------
    Prose from the editor
    --------------------------------------------------------------------------- */

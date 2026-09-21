@@ -140,7 +140,9 @@ export function DeparturesScreen({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      {/* Wraps on a narrow screen: the tab pair and the button are together
+          wider than a 320px viewport. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs value={past ? 'past' : 'ahead'} onValueChange={(value) => setPast(value === 'past')}>
           <TabsList>
             <TabsTrigger value="ahead">Ahead</TabsTrigger>
@@ -189,9 +191,13 @@ export function DeparturesScreen({
                     isPublished: row.isPublished,
                   })
                 }
-                className="flex w-full flex-wrap items-center gap-3 p-4 text-left transition-colors hover:bg-muted/40"
+                className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 p-4 text-left transition-colors hover:bg-muted/40"
               >
-                <div className="min-w-0 flex-1">
+                {/* `basis-full` on a phone: the title and the dates take the
+                    row, and the price, status and visibility wrap under them.
+                    Without it the four sit on one line and a 320px screen
+                    scrolls sideways. */}
+                <div className="min-w-0 basis-full sm:flex-1 sm:basis-auto">
                   <p className="text-sm font-medium">{row.trip.title}</p>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(row.startDate)} – {formatDate(row.endDate)}

@@ -57,8 +57,30 @@ button, a, img, [role=button] { transition-timing-function: var(--ease-inhale) !
 .strip::-webkit-scrollbar { display: none }
 
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important }
+  /**
+   * Animations were already off. Transitions were not, and most of this
+   * design's motion is a transition: `Reveal` fades over 1.4s, the nav
+   * crossfades its ground over 1.2s, the hero's mist drifts over 3.2s. All of
+   * them are inline styles, which a media query cannot override one at a time
+   * — so they are turned off here, together.
+   *
+   * `0.01ms` rather than `none`, because a transition of `none` skips the
+   * `transitionend` event that some of these hooks wait for; a duration too
+   * short to perceive fires it immediately and nothing hangs.
+   */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+
   html { scroll-behavior: auto }
+
+  /* With the scroll broker off, the strip becomes a region somebody can
+     actually scroll rather than one that never moves. */
   .strip { overflow-x: auto; scrollbar-width: none }
   .strip-track { transform: none !important }
 }
