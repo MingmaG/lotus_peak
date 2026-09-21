@@ -222,7 +222,6 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
                   undescribed && 'border-destructive/40',
                 )}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={media.thumbnailUrl}
                   alt=""
@@ -360,7 +359,6 @@ function FocalPicker({
         }}
         className="relative block w-full overflow-hidden rounded-lg border disabled:cursor-not-allowed"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={url} alt="" className="w-full" />
         <span
           className="pointer-events-none absolute size-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,.4)]"
@@ -379,7 +377,6 @@ function FocalPicker({
               className="overflow-hidden rounded border bg-muted"
               style={{ aspectRatio: sample.ratio }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={url}
                 alt=""

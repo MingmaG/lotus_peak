@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ImageIcon, Loader2, Search, Upload, X } from 'lucide-react';
+import { ImageIcon, Loader2, Search, Upload } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -96,7 +96,6 @@ export function MediaPicker({
       >
         {value ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={value.url}
               alt=""
@@ -315,7 +314,6 @@ function MediaDialog({
                   isSelected ? 'ring-2 ring-primary' : 'hover:border-primary/50',
                 )}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={media.url}
                   alt=""

@@ -164,7 +164,6 @@ export function GalleryScreen({ canWrite, canDelete }: { canWrite: boolean; canD
         describeItem={(row) => row.caption || 'photograph'}
         renderItem={(row) => (
           <div className="flex flex-wrap items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={row.media.thumbnailUrl}
               alt=""

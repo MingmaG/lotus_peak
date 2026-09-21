@@ -70,7 +70,6 @@ export function TripGalleryEditor({
         describeItem={(item, index) => item.alt || `photograph ${index + 1}`}
         renderItem={(item, index) => (
           <div className="flex flex-wrap items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={item.url}
               alt=""

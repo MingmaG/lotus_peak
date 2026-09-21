@@ -207,7 +207,6 @@ export function CatalogueScreen<T extends CatalogueRow, TForm>({
             {thumbnail && (
               <span className="size-12 shrink-0 overflow-hidden rounded bg-muted">
                 {thumbnail(row) && (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={thumbnail(row)!}
                     alt=""

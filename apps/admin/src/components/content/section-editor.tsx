@@ -496,7 +496,6 @@ export function SectionEditor({
                       className="group relative"
                       aria-label={`Remove ${item.media.alt || 'this photograph'}`}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item.media.url}
                         alt=""
