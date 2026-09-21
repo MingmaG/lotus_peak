@@ -510,6 +510,23 @@ model Trip {
   /// The opening paragraphs, one row per paragraph in `overview`.
   overview String[] @default([])
 
+  /// The region line, as the card prints it: "Paro · Bumthang · Trongsa".
+  ///
+  /// Its own column although `destinations` below is an ordered join of very
+  /// nearly the same thing, because the two answer different questions and one
+  /// journey proves it. The Jomolhari trek's line reads "Paro · Jomolhari" —
+  /// Jomolhari is a mountain, the route's whole point, and not one of the six
+  /// valleys on /destinations. Deriving the line from the join dropped it, and
+  /// adding a Jomolhari destination row to keep it would have put a mountain
+  /// on the "Where we go" page to satisfy a string.
+  ///
+  /// So: `regions` is editorial — where this journey goes, in the words the
+  /// card uses. `destinations` is navigational — which of the places we sell
+  /// it visits, for the cross-links. The editor builds the first from the
+  /// second with one button and lets the office correct it, which is the only
+  /// arrangement where both stay true.
+  regions  String[] @default([])
+
   heroId String?
   hero   Media?  @relation("TripHero", fields: [heroId], references: [id], onDelete: SetNull)
 

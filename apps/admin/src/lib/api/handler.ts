@@ -72,12 +72,20 @@ export interface RouteOptions<TBody, TParams> {
   handler: (context: HandlerContext<TBody, TParams>) => Promise<unknown>;
 }
 
+/**
+ * What Next hands a route handler as its second argument.
+ *
+ * Not optional, even on a route with no dynamic segment: Next's generated
+ * `.next/types` declares the parameter as required and a handler typed with
+ * `args?:` fails `next build` with a `ParamCheck<RouteContext>` mismatch that
+ * names neither the route nor the optionality.
+ */
 type NextRouteArgs<TParams> = { params: Promise<TParams> };
 
 export function route<TBody = undefined, TParams = Record<string, string>>(
   options: RouteOptions<TBody, TParams>,
 ) {
-  return async (request: NextRequest, args?: NextRouteArgs<TParams>) => {
+  return async (request: NextRequest, args: NextRouteArgs<TParams>) => {
     const pending: ActivityInput[] = [];
 
     try {
@@ -96,6 +104,7 @@ export function route<TBody = undefined, TParams = Record<string, string>>(
       }
 
       const params = ((await args?.params) ?? {}) as TParams;
+
 
       const result = await options.handler({
         request,

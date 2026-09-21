@@ -157,7 +157,8 @@ export async function seedCatalogue(images: ImageMap): Promise<void> {
 
   await seedSeasons(media);
   const tripIds = await seedTrips(media);
-  await seedDestinations(media, tripIds);
+  const destinationIds = await seedDestinations(media);
+  await linkTripsToDestinations(tripIds, destinationIds);
   await seedActivities(media, tripIds);
   await seedCulture(media);
   await seedGallery(media);
@@ -216,6 +217,7 @@ async function seedTrips(
       seasonLabel: trip.seasonLabel,
       seasonKeys: seasonKeysFrom(trip.seasonLabel),
       paceNote: trip.paceNote,
+      regions: trip.regions,
       overview: trip.overview,
       heroId: media(trip.heroImage),
       sortOrder: trip.order,
@@ -343,8 +345,9 @@ function seasonKeysFrom(label: string): SeasonKey[] {
 
 async function seedDestinations(
   media: (src?: string | null) => string | null,
-  tripIds: Map<string, string>,
-): Promise<void> {
+): Promise<Map<string, string>> {
+  const ids = new Map<string, string>();
+
   for (const destination of destinations as DestinationJson[]) {
     const base = {
       name: destination.name,
@@ -363,19 +366,95 @@ async function seedDestinations(
       create: { slug: destination.slug, ...base },
       update: base,
     });
+    ids.set(destination.slug, row.id);
+  }
 
-    await db.tripOnDestination.deleteMany({ where: { destinationId: row.id } });
-    const links = destination.tripSlugs
-      .map((slug, index) => {
-        const tripId = tripIds.get(slug);
-        return tripId ? { tripId, destinationId: row.id, sortOrder: index } : null;
-      })
-      .filter((link): link is NonNullable<typeof link> => link !== null);
-    if (links.length > 0) {
-      await db.tripOnDestination.createMany({ data: links, skipDuplicates: true });
+  console.log(`  destinations ${destinations.length}`);
+  return ids;
+}
+
+/**
+ * Which journeys go where, **in the order of the route**.
+ *
+ * The obvious source is `destination.tripSlugs` — every destination already
+ * lists the journeys that visit it. Using it produces the right set of links
+ * and the wrong order: a journey's region line reads "Paro · Bumthang ·
+ * Trongsa", which is the order the route passes through them, and iterating
+ * destinations produces the order the *destinations* happen to be listed in.
+ * The first run of this seed put Trongsa before Paro on the sacred-valleys
+ * journey, which is backwards along the only road there is.
+ *
+ * So the order comes from `trip.regions`, which the design maintained by hand
+ * for exactly this reason, matched to destinations by name. Anything a journey
+ * visits that its region line does not name is appended afterwards, in
+ * catalogue order, so a link is never silently dropped.
+ */
+async function linkTripsToDestinations(
+  tripIds: Map<string, string>,
+  destinationIds: Map<string, string>,
+): Promise<void> {
+  const byName = new Map<string, string>();
+  for (const destination of destinations as DestinationJson[]) {
+    const id = destinationIds.get(destination.slug);
+    if (id) byName.set(destination.name.toLowerCase(), id);
+  }
+
+  /* destinationId → the journeys that list it, for the append pass. */
+  const visits = new Map<string, Set<string>>();
+  for (const destination of destinations as DestinationJson[]) {
+    const id = destinationIds.get(destination.slug);
+    if (!id) continue;
+    for (const slug of destination.tripSlugs) {
+      const tripId = tripIds.get(slug);
+      if (!tripId) continue;
+      const set = visits.get(tripId) ?? new Set<string>();
+      set.add(id);
+      visits.set(tripId, set);
     }
   }
-  console.log(`  destinations ${destinations.length}`);
+
+  let unmatched = 0;
+
+  for (const trip of trips as TripJson[]) {
+    const tripId = tripIds.get(trip.slug);
+    if (!tripId) continue;
+
+    await db.tripOnDestination.deleteMany({ where: { tripId } });
+
+    const ordered: string[] = [];
+    for (const region of trip.regions) {
+      const id = byName.get(region.toLowerCase());
+      if (!id) {
+        /* A region line naming somewhere that is not a destination row.
+           Jomolhari is the real case: a mountain, the whole point of that
+           route, and not one of the six valleys on /destinations. The line
+           keeps it — `Trip.regions` is the editorial answer — and there is
+           simply no cross-link for it, which is correct. */
+        unmatched += 1;
+        continue;
+      }
+      if (!ordered.includes(id)) ordered.push(id);
+    }
+
+    for (const id of visits.get(tripId) ?? []) {
+      if (!ordered.includes(id)) ordered.push(id);
+    }
+
+    if (ordered.length > 0) {
+      await db.tripOnDestination.createMany({
+        data: ordered.map((destinationId, index) => ({
+          tripId,
+          destinationId,
+          sortOrder: index,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
+
+  console.log(
+    `  trip→place   linked in route order${unmatched ? `, ${unmatched} region name(s) have no destination page` : ''}`,
+  );
 }
 
 async function seedActivities(
