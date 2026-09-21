@@ -201,6 +201,8 @@ export function toPicked(media: WithRenditions | null): PickedMedia | null {
     id: media.id,
     url: pick(media),
     alt: media.alt,
+    caption: media.caption,
+    credit: media.credit,
     width: media.width,
     height: media.height,
     filename: media.filename,

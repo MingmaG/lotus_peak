@@ -1,5 +1,4 @@
 import { Prose } from '@/components/site/Prose'
-import { renderStoredRichText } from '@/lib/rich-text'
 import { Eyebrow } from '@/design-system'
 import type { PageBand } from '@/content/types'
 import { Reveal } from '@/motion'
@@ -138,10 +137,17 @@ export function InfoPage({
                 * `lp-info-prose` rule below gives its `<p>` and `<ul>` exactly
                 * the treatment the mapped version had, including the gold
                 * middot before each list item.
+                *
+                * **Already sanitised**, by the provider that read it, the same
+                * way `PageBands` receives it. This ran `renderStoredRichText`
+                * over it a second time, which is not idempotent where it
+                * matters: the allowlist gives `div` no attributes, so the
+                * second pass stripped `data-video-facade` off every film on
+                * these pages and left a still that did nothing when pressed.
                 */}
               <Prose
                 className="lp-info-prose"
-                html={renderStoredRichText(section.body)}
+                html={section.body}
                 style={{ marginTop: 18, maxWidth: 'var(--measure)' }}
               />
             </Reveal>

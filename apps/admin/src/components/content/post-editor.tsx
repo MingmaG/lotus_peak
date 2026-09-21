@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { BlockEditor, type EditorBlock } from '@/components/editor/block-editor';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { SeoPanel, type SeoValue } from '@/components/content/seo-panel';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import {
@@ -33,7 +33,7 @@ export interface PostFormData {
   title: string;
   standfirst: string;
   region: string;
-  body: EditorBlock[];
+  body: string;
   hero: PickedMedia | null;
   ogImage: PickedMedia | null;
   authorId: string | null;
@@ -43,6 +43,15 @@ export interface PostFormData {
   status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
   publishedAt: string | null;
   seo: SeoValue;
+}
+
+/** The words in a body, for the badge on the Body tab. */
+function countWords(html: string): number {
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean).length;
 }
 
 const TABS = [
@@ -71,6 +80,7 @@ export function PostEditor({
   const [form, setForm] = React.useState(initial);
   const [saved, setSaved] = React.useState(initial);
   const [tab, setTab] = React.useState('entry');
+  const bodyWords = React.useMemo(() => countWords(form.body), [form.body]);
   const [problems, setProblems] = React.useState<Record<string, string>>({});
 
   const dirty = JSON.stringify(form) !== JSON.stringify(saved);
@@ -84,17 +94,10 @@ export function PostEditor({
         slug: form.slug,
         standfirst: form.standfirst,
         region: form.region,
-        /* Blocks lose their editing key and gain their media id on the way
-           out — the column stores a reference, not a copy of the photograph. */
-        body: form.body
-          .map((block) => {
-            const { key: _key, ...rest } = block;
-            if (rest.kind === 'image') {
-              return rest.media ? { kind: 'image', mediaId: rest.media.id, ratio: rest.ratio } : null;
-            }
-            return rest;
-          })
-          .filter(Boolean),
+        /* Sent as the editor wrote it. The derived `src` inside each figure is
+           taken out server-side before the column is written — the column
+           stores the media id, not a copy of the URL. */
+        body: form.body,
         heroId: form.hero?.id ?? null,
         authorId: form.authorId,
         tags: form.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
@@ -148,8 +151,11 @@ export function PostEditor({
       backLabel="Journal"
       title={form.title}
       subtitle={form.slug ? `/journal/${form.slug}` : 'Not saved yet'}
+      /* Words, not `form.body.length`. That counted blocks when the body was
+         an array and counts *characters* now it is a string — a badge reading
+         "1970" on an entry of three hundred words. */
       tabs={TABS.map((item) =>
-        item.value === 'body' ? { ...item, badge: form.body.length } : item,
+        item.value === 'body' ? { ...item, badge: bodyWords } : item,
       )}
       tab={tab}
       onTab={setTab}
@@ -261,9 +267,14 @@ export function PostEditor({
       {tab === 'body' && (
         <Section
           title="The body"
-          description="Blocks rather than one box of rich text, because the design draws each kind its own way — and because a facts table is something a search engine and an assistant can read, where a paragraph of the same numbers is not."
+          description="The entry, written as one piece. Headings, lists, quotations, photographs, films and tables of any size — the same editor as everywhere else on the site. Every photograph and film carries its own description and caption; use the Describe button on it."
         >
-          <BlockEditor blocks={form.body} onChange={(body) => set('body', body)} />
+          <RichTextEditor
+            value={form.body}
+            onChange={(body) => set('body', body)}
+            placeholder="Write the entry…"
+            minHeight="min-h-[60vh]"
+          />
         </Section>
       )}
 

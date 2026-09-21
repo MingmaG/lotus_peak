@@ -148,7 +148,7 @@ function widenPost(post: Post): ApiPost {
     date: `${post.date}T00:00:00.000Z`,
     region: post.region,
     heroImage: image(post.heroImage, post.heroAlt),
-    body: [],
+    body: '',
     author: null,
     tags: [],
     relatedTripSlugs: [],

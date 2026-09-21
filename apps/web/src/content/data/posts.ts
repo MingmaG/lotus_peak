@@ -1,5 +1,5 @@
 import { IMG } from '@/lib/assets'
-import type { Post } from '../types'
+import type { SeedPost } from './post-body'
 
 /**
  * The journal.
@@ -16,7 +16,14 @@ import type { Post } from '../types'
  * Fees and opening hours change. They are dated in the copy so a reader can see
  * how old they are, and they need a check each season.
  */
-export const POSTS: Post[] = [
+/**
+ * Written as blocks, handed out as one rich-text body.
+ *
+ * `SeedPost` is a `Post` with the body still in its source form; the file
+ * provider runs `blocksToHtml` over it. See `./post-body.ts` for why the two
+ * shapes exist.
+ */
+export const POSTS: SeedPost[] = [
   {
     slug: 'taktsang',
     title: 'Taktsang',

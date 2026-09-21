@@ -4,6 +4,7 @@ import { diff } from '@/server/services/activity';
 import { changeSlug, problemsPublishingPost, resolvePublishing } from '@/server/services/publish';
 import { seoColumns } from '@/server/services/catalogue';
 import { revalidateFor } from '@/server/services/revalidate';
+import { stripRichTextMedia } from '@/server/schema/rich-text';
 import { postPatchSchema, readingMinutes, type PostPatch } from '@/server/validators/post';
 
 export const GET = route<undefined, { id: string }>({
@@ -74,9 +75,12 @@ export const PATCH = route<PostPatch, { id: string }>({
         title: body.title,
         standfirst: body.standfirst,
         region: body.region,
-        ...(body.body
+        /* `!== undefined`, not truthiness: an entry whose body has been
+           emptied on purpose sends `''`, and a falsy check would quietly
+           decline to save the deletion. */
+        ...(body.body !== undefined
           ? {
-              body: body.body as never,
+              body: stripRichTextMedia(body.body),
               readingMinutes: readingMinutes(body.body, body.standfirst ?? before.standfirst),
             }
           : {}),

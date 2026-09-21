@@ -101,7 +101,7 @@ export default async function JournalEntryPage({ params }: { params: Promise<{ s
 
       <article style={{ padding: 'var(--space-9) var(--gutter) var(--space-10)' }}>
         <div style={{ maxWidth: 'var(--container-text)', margin: '0 auto' }}>
-          <PostBody blocks={post.body} />
+          <PostBody html={post.body} />
         </div>
       </article>
 

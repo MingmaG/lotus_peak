@@ -129,14 +129,6 @@ export type Activity = {
  * components as the rest of the site, and map cleanly onto a CMS rich-text
  * field when one arrives (docs/specs/04-content-model.md).
  */
-export type PostBlock =
-  | { kind: 'text'; body: string }
-  | { kind: 'heading'; text: string }
-  | { kind: 'list'; items: string[] }
-  | { kind: 'quote'; text: string }
-  | { kind: 'image'; src: string; ratio?: string; alt?: string }
-  | { kind: 'facts'; title: string; rows: [label: string, value: string][] }
-
 export type Post = {
   slug: string
   title: string
@@ -148,7 +140,16 @@ export type Post = {
   region: string
   heroImage: string
   heroAlt?: ImageAlt
-  body: PostBlock[]
+  /**
+   * The entry, as sanitised HTML.
+   *
+   * Was an array of typed blocks the page drew as React. It is one rich-text
+   * document now — the same shape as every other long-form field on this site
+   * — and it arrives here already through `renderStoredRichText`, which is
+   * what makes it safe for `Prose` to set as inner HTML. See
+   * `src/lib/rich-text.ts`.
+   */
+  body: string
   order: number
 }
 

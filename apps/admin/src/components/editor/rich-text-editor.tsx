@@ -1,6 +1,5 @@
 'use client';
 
-import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Table from '@tiptap/extension-table';
@@ -9,7 +8,6 @@ import TableHeader from '@tiptap/extension-table-header';
 import TableRow from '@tiptap/extension-table-row';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
-import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
@@ -42,8 +40,6 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { parseVideoSource, providerLabel, thumbnailUrl, watchUrl } from '@lotuspeak/video';
-
 import { MediaMultiPicker, type PickedMedia } from '@/components/media/media-picker';
 import {
   AlertDialog,
@@ -75,7 +71,10 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
+import { Figure } from './figure';
 import { cleanPastedHtml, looksLikeMarkdown, markdownToHtml } from './paste';
+import { TrailingNode } from './trailing-node';
+import { VideoDialog, VideoFigure } from './video';
 
 /**
  * The editor the office writes in.
@@ -89,20 +88,38 @@ import { cleanPastedHtml, looksLikeMarkdown, markdownToHtml } from './paste';
  * What it produces is HTML, stored in a `String` column and rendered by
  * `Prose` on the website. Not a block array — blocks are right for a *page*,
  * whose sections are furniture that moves around, and wrong for a paragraph,
- * whose shape is the writing itself.
+ * whose shape is the writing itself. The journal was the last field being
+ * edited as blocks and is now edited here too, which is why there is one
+ * editor on this site and not two.
  *
  * ## What it allows, and why that list is short
  *
  * Headings from H2 down (H1 is the record's title, rendered by the template),
  * bold, italic, underline, strike, inline code, code blocks, both list kinds,
- * quotes, links, images from the media library, YouTube and Vimeo, tables of
- * any size, rules and alignment.
+ * quotes, links, photographs from the media library, films from YouTube and
+ * Vimeo, tables of any size, rules and alignment.
+ *
+ * ## Photographs and films are nodes of our own
+ *
+ * `./figure.tsx` and `./video.tsx`, rather than `@tiptap/extension-image` and
+ * `@tiptap/extension-youtube`. Each of those stores a single tag with nowhere
+ * to put a caption, a credit or a title, and neither draws anything that says
+ * "this is selected" — which is why deleting a photograph appeared not to
+ * work. Both files say more about it.
+ *
+ * Between them, `TrailingNode` and the gap-cursor styling in `globals.css`
+ * cover the other half of that complaint: there is always somewhere to put the
+ * caret after a photograph, a table or a rule.
  *
  * It does not allow colour, font size or font family. Those are the design
  * system's decisions — see `apps/web/CLAUDE.md` — and a pasted
  * `<span style="color:#f00">` is a design breach nobody sees until it is live.
  * Pasting is where that arrives, so pasting is where it is stripped.
  */
+
+/** The attributes an *unfilled* film dialog opens with. Stable, so the
+    dialog's reset effect does not fire on every render of the toolbar. */
+const EMPTY_VIDEO = { src: null, title: '', caption: '' } as const;
 
 export interface RichTextEditorProps {
   value: string;
@@ -213,89 +230,6 @@ function LinkDialog({
   );
 }
 
-function VideoDialog({
-  editor,
-  open,
-  onOpenChange,
-}: {
-  editor: Editor;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const [url, setUrl] = React.useState('');
-  const source = React.useMemo(() => parseVideoSource(url), [url]);
-  const still = thumbnailUrl(source);
-  const canonical = watchUrl(source);
-
-  React.useEffect(() => {
-    if (!open) setUrl('');
-  }, [open]);
-
-  function insert() {
-    if (!canonical) return;
-    /* Stored as a YouTube node so the document says "a film goes here" rather
-       than carrying an iframe. The website turns it into a façade — a cover
-       image and a play button — and only loads the player when somebody asks
-       for it. Half a megabyte per film, on an itinerary with eleven days. */
-    editor.commands.setYoutubeVideo({ src: canonical, width: 640, height: 360 });
-    onOpenChange(false);
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Embed a film</DialogTitle>
-          <DialogDescription>
-            Paste the address from YouTube or Vimeo. The page shows a still and only loads
-            the player when somebody presses play.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-2">
-          <Label htmlFor="rte-video">Address</Label>
-          <Input
-            id="rte-video"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            placeholder="https://www.youtube.com/watch?v=…"
-            autoFocus
-          />
-          {url.trim() !== '' && (
-            <p
-              className={cn(
-                'text-xs',
-                source ? 'text-muted-foreground' : 'text-destructive',
-              )}
-            >
-              {source
-                ? `Recognised: ${providerLabel(source)}`
-                : 'That does not name a film. A channel page or a playlist has no video in it.'}
-            </p>
-          )}
-        </div>
-
-        {still && (
-          <img
-            src={still}
-            alt=""
-            className="aspect-video w-full rounded-lg border object-cover"
-          />
-        )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={insert} disabled={!canonical}>
-            Insert
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 /** The table controls, which only appear when the caret is inside one. */
 function TableControls({ editor }: { editor: Editor }) {
   if (!editor.isActive('table')) return null;
@@ -366,14 +300,25 @@ export function RichTextEditor({
         autolink: true,
         HTMLAttributes: { rel: 'noopener noreferrer' },
       }),
-      Image.configure({ HTMLAttributes: { class: 'rounded-lg' } }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Youtube.configure({ controls: true, nocookie: true, modestBranding: true }),
       Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
       TableCell,
       Placeholder.configure({ placeholder }),
+      /**
+       * Photographs and films, even in a compact field.
+       *
+       * The *toolbar* hides the buttons when `compact` is set, because a
+       * one-paragraph field has no business offering a table. The **nodes**
+       * stay registered either way: a body that already contains a photograph
+       * has to round-trip through this editor unharmed, and an extension that
+       * is not registered does not politely ignore its node — it drops it, and
+       * the first save writes the loss back to the column.
+       */
+      Figure,
+      VideoFigure,
+      TrailingNode,
     ],
     content: value,
     editorProps: {
@@ -582,7 +527,20 @@ export function RichTextEditor({
               onPick={(picked: PickedMedia[]) => {
                 const chain = editor.chain().focus();
                 for (const media of picked) {
-                  chain.setImage({ src: media.url, alt: media.isDecorative ? '' : media.alt });
+                  /* The library's description and caption are the *starting*
+                     point — the figure carries its own from here on, because
+                     what a photograph means depends on the paragraph it is
+                     next to. `mediaId` is the part that is not a copy: it is
+                     what the column stores, and what the URL is derived from
+                     again on every read. */
+                  chain.setFigure({
+                    mediaId: media.id,
+                    src: media.url,
+                    alt: media.isDecorative ? '' : media.alt,
+                    caption: media.caption ?? '',
+                    credit: media.credit ?? '',
+                    title: '',
+                  });
                 }
                 chain.run();
               }}
@@ -677,7 +635,12 @@ export function RichTextEditor({
       <EditorContent editor={editor} />
 
       <LinkDialog editor={editor} open={linkOpen} onOpenChange={setLinkOpen} />
-      <VideoDialog editor={editor} open={videoOpen} onOpenChange={setVideoOpen} />
+      <VideoDialog
+        open={videoOpen}
+        onOpenChange={setVideoOpen}
+        attrs={EMPTY_VIDEO}
+        onSave={(attrs) => editor.chain().focus().setVideoFigure(attrs).run()}
+      />
 
       <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
         <AlertDialogContent>

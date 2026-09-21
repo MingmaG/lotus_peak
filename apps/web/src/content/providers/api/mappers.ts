@@ -28,7 +28,6 @@ import type {
   PageBand,
   Person,
   Post,
-  PostBlock,
   SitePage,
   Reflection,
   Season,
@@ -222,7 +221,8 @@ export function toPostSummary(row: ApiPostSummary, index: number): Post {
     region: row.region,
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    body: [],
+    /* A summary carries no body; the index page prints the standfirst. */
+    body: '',
     order: index,
   }
 }
@@ -237,33 +237,8 @@ export function toPost(row: ApiPost): Post {
     region: row.region,
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    body: row.body.map(toBlock),
+    body: renderStoredRichText(row.body),
     order: 0,
-  }
-}
-
-function toBlock(block: ApiPost['body'][number]): PostBlock {
-  switch (block.kind) {
-    case 'text':
-      return { kind: 'text', body: renderStoredRichText(block.body) }
-    case 'heading':
-      return { kind: 'heading', text: block.text }
-    case 'list':
-      /* The domain's list block has no `ordered`. The design renders a `<ul>`
-         and nothing else, and adding the flag to the domain type would be a
-         field the renderer ignores. */
-      return { kind: 'list', items: block.items }
-    case 'quote':
-      return { kind: 'quote', text: block.text }
-    case 'image':
-      return {
-        kind: 'image',
-        src: imagePath(block.image),
-        alt: block.image.alt,
-        ...(block.ratio ? { ratio: block.ratio } : {}),
-      }
-    case 'facts':
-      return { kind: 'facts', title: block.title, rows: block.rows }
   }
 }
 

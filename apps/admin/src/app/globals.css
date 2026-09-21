@@ -399,4 +399,51 @@
     content: attr(data-placeholder);
     @apply pointer-events-none float-left h-0 text-muted-foreground;
   }
+
+  /* ---------------------------------------------------------------------
+     Selection, and the caret in places there is no text.
+
+     These three rules are the difference between a photograph you can
+     delete and one that appears welded into the page. ProseMirror already
+     supported both — a photograph *was* selectable, and the caret *could*
+     go after it — but neither drew anything, so the only evidence was that
+     the next keystroke did something unexpected. The report that started
+     this work was "I cannot delete an image with backspace, and there is
+     no cursor after it", and it was a stylesheet away from being true.
+     --------------------------------------------------------------------- */
+
+  /* A selected photograph, film, table or rule. Our node views draw their
+     own ring; this covers the nodes that do not, and is what makes a plain
+     Backspace legible. */
+  .tiptap .ProseMirror-selectednode {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  /**
+   * The gap cursor: the caret in a place where no text can go.
+   *
+   * Between two photographs, after a table at the end of a document, before
+   * the first block when that block is an image. ProseMirror's gap-cursor
+   * plugin ships behaviour and no styling, so without this the caret is
+   * genuinely invisible and typing appears to do nothing until the letter
+   * arrives somewhere unexpected.
+   */
+  .tiptap .ProseMirror-gapcursor {
+    @apply pointer-events-none relative hidden;
+  }
+
+  .tiptap .ProseMirror-gapcursor:after {
+    content: '';
+    @apply absolute top-[-2px] block w-16 animate-pulse border-t border-foreground;
+  }
+
+  .tiptap .ProseMirror-focused .ProseMirror-gapcursor,
+  .ProseMirror-focused .ProseMirror-gapcursor {
+    @apply block;
+  }
+
+  /* A photograph or a film mid-drag. */
+  .tiptap .ProseMirror-hideselection *::selection {
+    background: transparent;
+  }
 }

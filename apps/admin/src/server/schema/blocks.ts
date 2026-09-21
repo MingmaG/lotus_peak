@@ -1,75 +1,36 @@
 import { z } from 'zod';
 
+import { richTextSchema } from './rich-text';
+
 /**
  * What a `Json` column actually holds.
  *
- * Two shapes live in Json columns — a journal body and a page's sections — and
- * both are **stored** shapes, not the wire shapes in
- * `@lotuspeak/api-contracts`. The difference is one field and it is the whole
- * point:
+ * One shape lives in a Json column — a page's sections — and it is a **stored**
+ * shape, not the wire shape in `@lotuspeak/api-contracts`. The difference is
+ * one field and it is the whole point:
  *
  * ```
- *   stored    { kind: 'image', mediaId: 'abc', ratio: '3/4' }
- *   on the    { kind: 'image', image: { id, url, alt, width, height, … } }
+ *   stored    { kind: 'figure', mediaId: 'abc', caption: '…' }
+ *   on the    { kind: 'figure', image: { id, url, alt, width, height, … } }
  *   wire
  * ```
  *
- * A stored block references a photograph; a sent block carries it. If the
+ * A stored section references a photograph; a sent one carries it. If the
  * column held the serialised image, correcting one piece of alt text would
- * mean finding and rewriting every journal body and every page that used the
- * photograph — and missing one would leave two descriptions of the same
- * picture on the same site. `public-site.ts` resolves the id on the way out.
+ * mean finding and rewriting every page that used the photograph — and missing
+ * one would leave two descriptions of the same picture on the same site.
+ * `public-site.ts` resolves the id on the way out.
  *
  * Everything here is parsed on write **and** on read. A Json column has no
  * shape as far as Postgres is concerned, so the only thing standing between a
  * bad migration and a page rendering `undefined` is this file.
- */
-
-/* -------------------------------------------------------------------------- */
-/*  Journal                                                                    */
-/* -------------------------------------------------------------------------- */
-
-/**
- * Inline HTML inside a `text` block.
  *
- * Deliberately narrow. The editor's toolbar offers bold, italic, a link and
- * the two list types, and nothing else — no colour, no font size, no
- * alignment, because those are the design system's job and a pasted
- * `<h1 style="color:red">` is a design breach nobody sees until it is live.
- * This is not a sanitiser; it is the schema saying what the editor may
- * produce, and the sanitiser runs beside it.
+ * The journal body used to be here too, as a second union. It is one rich-text
+ * `String` now, guarded by `./rich-text.ts` on this side and by the website's
+ * allowlist on the other — a page's sections are furniture that moves around,
+ * and a journal entry is prose, which is not the same thing and was never well
+ * served by being modelled as a list of boxes.
  */
-const richText = z.string().max(20_000);
-
-export const storedPostBlockSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('text'), body: richText }),
-  z.object({ kind: z.literal('heading'), text: z.string().min(1).max(200) }),
-  z.object({
-    kind: z.literal('list'),
-    items: z.array(z.string().max(2_000)).min(1),
-    ordered: z.boolean().default(false),
-  }),
-  z.object({
-    kind: z.literal('quote'),
-    text: z.string().min(1).max(2_000),
-    attribution: z.string().max(200).nullable().default(null),
-  }),
-  z.object({
-    kind: z.literal('image'),
-    mediaId: z.string().min(1),
-    ratio: z.string().max(12).nullable().default(null),
-  }),
-  z.object({
-    kind: z.literal('facts'),
-    title: z.string().max(200),
-    /* A tuple, so a row cannot arrive with one cell or three. */
-    rows: z.array(z.tuple([z.string().max(120), z.string().max(400)])).min(1),
-  }),
-]);
-
-export type StoredPostBlock = z.infer<typeof storedPostBlockSchema>;
-
-export const storedPostBodySchema = z.array(storedPostBlockSchema);
 
 /* -------------------------------------------------------------------------- */
 /*  Pages                                                                      */
@@ -85,7 +46,7 @@ export const storedPageSectionSchema = z.discriminatedUnion('kind', [
     kind: z.literal('prose'),
     eyebrow: z.string().max(80).nullable().default(null),
     title: z.string().max(200).nullable().default(null),
-    body: richText,
+    body: richTextSchema,
     /**
      * The fragment this band answers to: `#money`.
      *
@@ -187,18 +148,11 @@ export const storedPageSectionsSchema = z.array(storedPageSectionSchema);
 /**
  * Reads a Json column, tolerating a row that predates a schema change.
  *
- * A body that does not parse renders as *nothing* rather than throwing. The
- * alternative is one malformed block taking down a published page, which is a
- * far worse failure than one absent paragraph — and the log line names the row
- * so somebody can go and look.
+ * A section list that does not parse renders as *nothing* rather than
+ * throwing. The alternative is one malformed section taking down a published
+ * page, which is a far worse failure than one absent band — and the log line
+ * names the row so somebody can go and look.
  */
-export function parsePostBody(value: unknown, label: string): StoredPostBlock[] {
-  const result = storedPostBodySchema.safeParse(value);
-  if (result.success) return result.data;
-  console.error(`[content] ${label}: the body did not parse`, result.error.issues);
-  return [];
-}
-
 export function parsePageSections(value: unknown, label: string): StoredPageSection[] {
   const result = storedPageSectionsSchema.safeParse(value);
   if (result.success) return result.data;
@@ -206,14 +160,12 @@ export function parsePageSections(value: unknown, label: string): StoredPageSect
   return [];
 }
 
-/** Every media id a body or a section list refers to, for one batched fetch. */
-export function mediaIdsIn(
-  blocks: (StoredPostBlock | StoredPageSection)[],
-): string[] {
+/** Every media id a section list refers to, for one batched fetch. */
+export function mediaIdsIn(sections: StoredPageSection[]): string[] {
   const ids = new Set<string>();
-  for (const block of blocks) {
-    if (block.kind === 'image' || block.kind === 'figure') ids.add(block.mediaId);
-    if (block.kind === 'gallery') for (const item of block.items) ids.add(item.mediaId);
+  for (const section of sections) {
+    if (section.kind === 'figure') ids.add(section.mediaId);
+    if (section.kind === 'gallery') for (const item of section.items) ids.add(item.mediaId);
   }
   return [...ids];
 }

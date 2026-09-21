@@ -557,26 +557,33 @@ export interface ApiReflection {
 /* -------------------------------------------------------------------------- */
 
 /**
- * A journal body, as ordered typed blocks.
+ * A journal body: one rich-text document, as HTML.
  *
- * Deliberately not one string of rich-text HTML. The design renders a `facts`
- * block as a bordered definition list in the site's own type scale and a
- * `quote` as a `Reflection`; HTML from a WYSIWYG toolbar renders as whatever
- * the toolbar emitted, and the first `<h1 style="color:red">` an editor pastes
- * in is a design-system breach nobody can see until it is live.
+ * It was a union of typed blocks — a paragraph, a heading, a list, a quote, a
+ * photograph, a facts table — each edited in its own little form. That shape
+ * was chosen so the design could draw each kind its own way and nothing could
+ * express markup the design had no styles for.
  *
- * Inline formatting *inside* a `text` block is allowed and is a restricted
- * subset — bold, italic, link, and nothing else — so a sentence can carry a
- * link without a block type for it.
+ * It cost more than it bought. Writing an entry meant deciding which box each
+ * sentence went in before writing the sentence; a photograph could not sit in
+ * the middle of a paragraph; a table had two columns or it did not exist; and
+ * every *other* long-form field on this site — a journey's overview, an
+ * itinerary day, a page band, a teacher's biography — had already moved to the
+ * rich-text editor and was one HTML string. The journal was the last field
+ * being edited a different way from all the others.
+ *
+ * What replaces the closed union is not "anything goes". The editor emits a
+ * fixed vocabulary, and `apps/web/src/lib/rich-text.ts` rebuilds the body from
+ * an allowlist of the elements it may contain, dropping everything else — so a
+ * `<h1 style="color:red">` pasted from a Word document still cannot reach a
+ * page. The guarantee moved from the type to the renderer, where it also
+ * covers the eleven other fields that were already HTML.
+ *
+ * A photograph inside a body is a `<figure data-media-id="…">`. The id is what
+ * is stored; `src` and the fallback `alt` are filled in from the media row on
+ * the way out, so replacing or re-describing a photograph in the library still
+ * reaches every entry that used it.
  */
-export type ApiPostBlock =
-  | { kind: 'text'; body: string }
-  | { kind: 'heading'; text: string }
-  | { kind: 'list'; items: string[]; ordered: boolean }
-  | { kind: 'quote'; text: string; attribution: string | null }
-  | { kind: 'image'; image: ApiImage; ratio: string | null }
-  | { kind: 'facts'; title: string; rows: [label: string, value: string][] };
-
 export interface ApiPost {
   slug: string;
   title: string;
@@ -585,7 +592,8 @@ export interface ApiPost {
   date: string;
   region: string;
   heroImage: ApiImage | null;
-  body: ApiPostBlock[];
+  /** Rich text. Sanitised by the website before it is rendered. */
+  body: string;
   author: { name: string; role: string | null; avatar: ApiImage | null } | null;
   tags: string[];
   relatedTripSlugs: string[];

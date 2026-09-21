@@ -117,7 +117,20 @@ const ALLOWED: Record<string, readonly string[]> = {
   tr: [],
   th: ["colspan", "rowspan"],
   td: ["colspan", "rowspan"],
-  figure: [],
+  /**
+   * A figure is rebuilt from its own attributes, not from its children.
+   *
+   * The editor writes what the office typed onto the `<figure>` as `data-`
+   * attributes — the description, the caption, the credit, the title, and for
+   * a film the address — and writes an `<img>` and a `<figcaption>` inside it
+   * as a *legible copy* of the same thing. This module reads the attributes,
+   * discards the children, and writes the finished figure out itself (see
+   * `figureTag` and `videoFigure`). Two consequences worth naming: the caption
+   * cannot carry markup, which is correct for a caption; and a figure pasted
+   * in from somewhere else arrives with no data attributes and falls back to
+   * its `<img>`, which is what a body written before today holds.
+   */
+  figure: ["data-media-id", "data-alt", "data-caption", "data-credit", "data-title", "data-ratio", "data-video"],
   figcaption: [],
   div: [],
   iframe: ["src", "width", "height", "allowfullscreen", "title"],
@@ -242,14 +255,105 @@ function imageTag(attrs: Map<string, string>): string | null {
   }
 
   const alt = attrs.get("alt") ?? "";
+  const title = attrs.get("title")?.trim();
   const srcset = IMAGE_WIDTHS.map((w) => `${optimizedUrl(src, w)} ${w}w`).join(", ");
 
   return (
     `<img src="${escapeAttr(optimizedUrl(src, IMAGE_FALLBACK_WIDTH))}"` +
     ` srcset="${escapeAttr(srcset)}"` +
     ` sizes="${IMAGE_SIZES}"` +
-    ` alt="${escapeAttr(alt)}" loading="lazy" decoding="async">`
+    ` alt="${escapeAttr(alt)}"` +
+    (title ? ` title="${escapeAttr(title)}"` : "") +
+    ` loading="lazy" decoding="async">`
   );
+}
+
+/* ------------------------------------------------------------------ figures */
+
+/**
+ * The caption printed under a photograph or a film.
+ *
+ * The caption and the credit are two fields in the editor and one line on the
+ * page, joined by an em dash — which is a typographic decision and therefore
+ * belongs here rather than in the column. Either may be absent; both absent
+ * means no `<figcaption>` at all, not an empty one.
+ */
+function figcaption(attrs: Map<string, string>): string {
+  const line = [attrs.get("data-caption"), attrs.get("data-credit")]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(" — ");
+
+  return line ? `<figcaption>${escapeText(line)}</figcaption>` : "";
+}
+
+/**
+ * A photograph inside a body, rebuilt from the figure's own attributes.
+ *
+ * The **URL** comes from the `<img>` inside, because that is the one part of a
+ * figure the admin panel derives rather than stores: the column holds a media
+ * id, and the panel writes the current URL into the `<img>` on the way out. A
+ * figure whose photograph has been deleted arrives with no `<img>` and is
+ * dropped here, which is the right end for it — everything else about the
+ * figure describes a picture that is not there.
+ *
+ * The **description** comes from the figure's own `data-alt` when it has one,
+ * because that is what the office typed for this photograph in this entry, and
+ * falls back to the `alt` the panel filled in from the library. An empty
+ * `data-alt` is a decision — it means decorative — so `??` and not `||`.
+ */
+function figureTag(attrs: Map<string, string>, inner: string): string | null {
+  const img = parseAttributes(/<img\b([^>]*)>/i.exec(inner)?.[1] ?? "");
+
+  const src = (img.get("src") ?? "").trim();
+  if (!src) return null;
+
+  const alt = attrs.get("data-alt") ?? img.get("alt") ?? "";
+  const title = attrs.get("data-title") ?? img.get("title") ?? "";
+
+  const rendered = imageTag(
+    new Map([
+      ["src", src],
+      ["alt", alt],
+      ...(title ? ([["title", title]] as [string, string][]) : []),
+    ]),
+  );
+  if (!rendered) return null;
+
+  /* The ratio is the shape the office chose for the crop. It is written as an
+     inline `aspect-ratio` rather than a class because it is a value, not a
+     variant, and the set of values is whatever somebody typed. */
+  const ratio = attrs.get("data-ratio")?.trim();
+  const style = ratio && /^\d{1,2}\s*\/\s*\d{1,2}$/.test(ratio)
+    ? ` style="aspect-ratio:${escapeAttr(ratio.replace(/\s+/g, ""))}"`
+    : "";
+
+  return `<figure class="lp-figure"${style}>${rendered}${figcaption(attrs)}</figure>`;
+}
+
+/**
+ * A film inside a body, as a façade with its caption.
+ *
+ * The same façade `videoFacade` builds for a bare `<iframe>` — see the note
+ * there for why an embed never reaches the page — wrapped in the `<figure>`
+ * the editor stored it as, so it can carry a caption and a real title. The
+ * title is the accessible name of the link: "Walking in to Jomolhari base
+ * camp" rather than "Watch the film", which is what somebody using a screen
+ * reader hears in a list of the page's links.
+ */
+function videoFigure(attrs: Map<string, string>): string | null {
+  const src = attrs.get("data-video")?.trim();
+  if (!src) return null;
+
+  const facade = videoFacade(
+    new Map([
+      ["src", src],
+      ["title", attrs.get("data-title") ?? attrs.get("data-caption") ?? ""],
+    ]),
+  );
+  if (!facade) return null;
+
+  return `<figure class="lp-figure lp-figure-film">${facade}${figcaption(attrs)}</figure>`;
 }
 
 /** `text-align`, and nothing else, from a `style` the editor wrote. */
@@ -333,6 +437,24 @@ function parseAttributes(raw: string): Map<string, string> {
 }
 
 /**
+ * The raw markup between here and the next `</tag>`.
+ *
+ * Only used for a `<figure>`, and only to find the `<img>` the admin panel put
+ * inside it. Nothing from this string is written out — it is read for two
+ * attributes and then discarded, and the caller skips the same span in the
+ * token stream — so it never becomes a hole in the rebuilding this module does
+ * everywhere else.
+ *
+ * An unclosed figure returns the rest of the document, which the caller reads
+ * the first `<img>` out of and then drops. That is the same outcome as a
+ * truncated body anywhere else here: render what there is.
+ */
+function innerOf(html: string, from: number, tag: string): string {
+  const end = html.toLowerCase().indexOf(`</${tag}`, from);
+  return end === -1 ? html.slice(from) : html.slice(from, end);
+}
+
+/**
  * Text between tags, re-escaped.
  *
  * The input is already HTML, so `&amp;` is decoded and re-encoded rather than
@@ -405,6 +527,25 @@ export function sanitizeRichText(html: string | null | undefined): string {
     if (tag === "img") {
       const img = imageTag(attrs);
       if (img) out += img;
+      continue;
+    }
+
+    /**
+     * A figure is written out whole, here, from its opening tag.
+     *
+     * `dropping` then skips everything up to the `</figure>`, which is the
+     * editor's own copy of the image and the caption — already rebuilt from
+     * the attributes above. Doing it in one place is what keeps this module a
+     * *rebuilder* rather than a filter: nothing inside a figure is passed
+     * through, so nothing inside one has to be checked.
+     */
+    if (tag === "figure") {
+      const inner = innerOf(html, TOKEN.lastIndex, "figure");
+      const rendered = attrs.has("data-video")
+        ? videoFigure(attrs)
+        : figureTag(attrs, inner);
+      if (rendered) out += rendered;
+      dropping = "figure";
       continue;
     }
 
@@ -521,6 +662,10 @@ export function toPlainText(html: string | null | undefined): string {
     // navigation, not prose, and a meta description that opens "Watch the
     // film" is describing the page's furniture.
     .replace(/<div class="video-facade"[\s\S]*?<\/div>/gi, " ")
+    // Likewise a photograph's caption and credit: they describe the picture,
+    // not the page, and a meta description that opens "Photograph: Karma
+    // Wangchuk" is describing the furniture.
+    .replace(/<figure[\s\S]*?<\/figure>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")

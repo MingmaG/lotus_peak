@@ -18,9 +18,12 @@
 //     Rows with a `sortOrder` reorder one integer at a time.
 //
 //   * **Json is for shapes the site renders as a unit and never queries into.**
-//     The journal body and a page's sections are the two: closed discriminated
-//     unions, validated by Zod at both ends of the wire, rendered by a switch.
-//     Normalising them would be six tables to reproduce one array.
+//     A page's sections are the case: a closed discriminated union, validated
+//     by Zod at both ends of the wire, rendered by a switch. Normalising it
+//     would be six tables to reproduce one array. Long-form *prose* is not
+//     this — it is a `String` of rich-text HTML, guarded by the sanitiser in
+//     `apps/web/src/lib/rich-text.ts`. The journal body was Json and is now a
+//     String; see `Post`.
 
 generator client {
   provider = "prisma-client-js"
@@ -1146,16 +1149,25 @@ model Person {
 
 /// A journal entry.
 ///
-/// `body` is an ordered array of typed blocks — text, heading, list, quote,
-/// image, facts — and not a column of rich-text HTML. The design renders a
-/// `facts` block as a bordered definition list in the site's own type scale
-/// and a `quote` as a Reflection; HTML from a toolbar renders as whatever the
-/// toolbar emitted, and the first pasted `<h1 style="color:red">` is a
-/// design-system breach nobody sees until it is live.
+/// `body` is one rich-text document, as HTML — the same column type and the
+/// same editor as a journey's overview, an itinerary day, a page band and a
+/// teacher's biography. It was an array of typed blocks until the office
+/// pointed out that the journal was the only thing on the site written a
+/// different way from everything else on it: a photograph could not sit in the
+/// middle of a paragraph, a table had two columns or it did not exist, and
+/// every sentence needed a box chosen for it before it could be typed.
 ///
-/// The same Zod schema validates it on write here and on read in the website,
-/// so a block shape that changes is a failure at the boundary rather than an
-/// `undefined` in a component.
+/// What stops a pasted `<h1 style="color:red">` reaching a page is no longer
+/// the shape of this column. It is `apps/web/src/lib/rich-text.ts`, which
+/// rebuilds a body from an allowlist of the elements it may contain — and
+/// which was already the only thing guarding the eleven other HTML columns on
+/// this schema.
+///
+/// A photograph in a body is `<figure data-media-id="…">`. The id is what is
+/// stored; the URL and the fallback description are filled in from the `Media`
+/// row on the way out, so re-cropping or re-describing a photograph still
+/// reaches every entry that used it — the rule at the top of this file about
+/// never storing a serialised image, kept.
 model Post {
   id         String @id @default(cuid())
   slug       String @unique
@@ -1165,7 +1177,7 @@ model Post {
   standfirst String
   /// Where it is about. "Bumthang", "Paro".
   region     String
-  body       Json   @default("[]")
+  body       String @default("")
   /// Computed on save so both apps print the same number.
   readingMinutes Int @default(1)
 

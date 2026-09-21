@@ -6,6 +6,7 @@ import { listQuery, paginated, route } from '@/lib/api/handler';
 import { publishing, seoColumns } from '@/server/services/catalogue';
 import { freeSlug } from '@/server/services/resource';
 import { revalidateFor } from '@/server/services/revalidate';
+import { stripRichTextMedia } from '@/server/schema/rich-text';
 import { postSchema, readingMinutes } from '@/server/validators/post';
 
 export const GET = route({
@@ -64,7 +65,10 @@ export const POST = route<z.infer<typeof postSchema>>({
         title: body.title,
         standfirst: body.standfirst,
         region: body.region,
-        body: body.body as never,
+        /* The URL inside each figure is derived from its media id and is put
+           back on the way out, so it is taken out on the way in — a URL in the
+           column is the thing that goes stale when the store moves. */
+        body: stripRichTextMedia(body.body),
         readingMinutes: readingMinutes(body.body, body.standfirst),
         heroId: body.heroId ?? null,
         /* Whoever wrote it, unless somebody else is named. */

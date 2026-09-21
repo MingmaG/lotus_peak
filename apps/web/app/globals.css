@@ -232,6 +232,48 @@
   border-radius: var(--radius-sm);
 }
 
+/* --- a photograph, with what the office wrote about it --------------------- */
+
+/* `renderRichText` rebuilds every in-body photograph as one of these, so the
+   caption below it is the office's own sentence rather than the alt text
+   doubling as one. The figure breaks out of the measure a little: a photograph
+   set to the width of a column of text reads as an afterthought, and the text
+   measure is narrower than the column it sits in. */
+.lp-prose figure.lp-figure {
+  margin: var(--space-7) 0;
+  max-width: var(--container-text);
+}
+
+.lp-prose figure.lp-figure > img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+/* Only when the office chose a crop; otherwise the photograph's own shape. */
+.lp-prose figure.lp-figure[style*='aspect-ratio'] > img {
+  height: 100%;
+}
+
+.lp-prose figure figcaption {
+  margin-top: 12px;
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+  color: var(--text-muted);
+  max-width: var(--measure-narrow);
+}
+
+/* A film is the same figure with the façade in place of the photograph. */
+.lp-prose figure.lp-figure-film .video-facade {
+  margin: 0;
+}
+
+/* Two photographs in a row should not be two separate islands. */
+.lp-prose figure.lp-figure + figure.lp-figure {
+  margin-top: var(--space-5);
+}
+
 /* A table wider than the measure has nothing to scroll inside and pushes the
    whole page out sideways on a phone — the one layout fault that makes a page
    unreadable rather than untidy. `renderRichText` wraps every table in this. */
@@ -344,6 +386,7 @@
 }
 
 .lp-prose-compact > * + * { margin-top: 12px }
+.lp-prose-compact figure.lp-figure { margin: 16px 0 }
 .lp-prose-compact blockquote { font-size: inherit; line-height: inherit }
 
 /* The journeys index filters in the browser so the page can stay static.

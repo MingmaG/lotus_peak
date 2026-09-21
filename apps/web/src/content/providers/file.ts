@@ -14,6 +14,7 @@ import {
   type InfoSection,
 } from '../data/pages'
 import { ACTIVITIES, CULTURE, DESTINATIONS, GALLERY, REFLECTIONS, SEASONS, SETTINGS } from '../data/site'
+import { blocksToHtml, type SeedPost } from '../data/post-body'
 import { POSTS } from '../data/posts'
 import { TRIPS } from '../data/trips'
 import type { ContentRepository, EnquiryInput } from '../repository'
@@ -50,12 +51,13 @@ const withAlt = {
       ([src, ratio, width]) => [src, ratio, width, altFor(src)] as [string, string?, string?, string?],
     ),
   }),
-  post: (post: Post): Post => ({
+  /* The body is converted here rather than in the module that holds it: the
+     descriptions live in `src/lib/assets.ts`, which is a server module, and
+     joining them to the photographs is exactly what this object is for. */
+  post: (post: SeedPost): Post => ({
     ...post,
     heroAlt: altFor(post.heroImage),
-    body: post.body.map((block) =>
-      block.kind === 'image' ? { ...block, alt: altFor(block.src) } : block,
-    ),
+    body: blocksToHtml(post.body, altFor),
   }),
   destination: (row: Destination): Destination => ({ ...row, imageAlt: altFor(row.image) }),
   activity: (row: Activity): Activity => ({ ...row, imageAlt: altFor(row.image) }),
@@ -328,15 +330,7 @@ function fileLlmsFullInput() {
       date: post.date,
       region: post.region,
       heroImage: fileImage(post.heroImage),
-      body: post.body.map((block) =>
-        block.kind === 'image'
-          ? { kind: 'image' as const, image: fileImage(block.src)!, ratio: block.ratio ?? null }
-          : block.kind === 'list'
-            ? { kind: 'list' as const, items: block.items, ordered: false }
-            : block.kind === 'quote'
-              ? { kind: 'quote' as const, text: block.text, attribution: null }
-              : block,
-      ),
+      body: blocksToHtml(post.body, altFor),
       author: null,
       tags: [],
       relatedTripSlugs: [],
@@ -381,7 +375,18 @@ function fromInfoSection(section: InfoSection): PageBand {
         : `<ul>${block.list.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`,
     )
     .join('\n')
-  return { kind: 'prose', eyebrow: null, title: section.title, body, anchor: section.id }
+  /* Through the sanitiser like every other band, although this one is built
+     here out of escaped text and could not contain anything it would remove.
+     What matters is that a band leaving *either* provider has been rebuilt
+     exactly once — the renderers rely on that, and one of them used to run it
+     a second time and quietly destroy the film façades it found. */
+  return {
+    kind: 'prose',
+    eyebrow: null,
+    title: section.title,
+    body: renderStoredRichText(body),
+    anchor: section.id,
+  }
 }
 
 function escapeHtml(text: string): string {

@@ -35,6 +35,11 @@ export interface PickedMedia {
   id: string;
   url: string;
   alt: string;
+  /* The library's own caption and credit. They are what a figure inserted into
+     a body starts with — not what it keeps: see `editor/figure.tsx`. Nullable
+     because most rows have neither. */
+  caption: string | null;
+  credit: string | null;
   width: number | null;
   height: number | null;
   filename: string;

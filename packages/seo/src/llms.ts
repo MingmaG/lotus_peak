@@ -3,11 +3,12 @@ import type {
   ApiDestination,
   ApiPage,
   ApiPost,
-  ApiPostBlock,
   ApiSite,
   ApiTrip,
   ApiTripSummary,
 } from '@lotuspeak/api-contracts';
+
+import { richTextToMarkdown } from './rich-text-markdown';
 
 /**
  * `/llms.txt` and `/llms-full.txt`.
@@ -286,37 +287,13 @@ export function buildLlmsFullTxt(input: LlmsFullInput): string {
     out.push('');
     out.push(plain(post.standfirst));
     out.push('');
-    for (const block of post.body) out.push(blockToMarkdown(block));
+    /* Markdown rather than flattened prose: an entry's headings, lists and
+       tables are the structure a model needs, and this is the one field long
+       enough for losing it to matter. See `./rich-text-markdown.ts`. */
+    out.push(richTextToMarkdown(post.body));
     out.push('');
   }
 
   return out.join('\n');
 }
 
-function blockToMarkdown(block: ApiPostBlock): string {
-  switch (block.kind) {
-    case 'text':
-      return `${plain(block.body)}\n`;
-    case 'heading':
-      return `### ${block.text}\n`;
-    case 'list':
-      return `${block.items
-        .map((item, i) => (block.ordered ? `${i + 1}. ${plain(item)}` : `- ${plain(item)}`))
-        .join('\n')}\n`;
-    case 'quote':
-      return `> ${plain(block.text)}${block.attribution ? `\n> — ${block.attribution}` : ''}\n`;
-    case 'image':
-      /* The alt text, not the file. A model cannot see the photograph, and a
-         markdown image leaves it with a URL and no information. */
-      return block.image.decorative ? '' : `*Photograph: ${block.image.alt}*\n`;
-    case 'facts':
-      return [
-        `**${block.title}**`,
-        '',
-        '| | |',
-        '|---|---|',
-        ...block.rows.map(([label, value]) => `| ${label} | ${value} |`),
-        '',
-      ].join('\n');
-  }
-}

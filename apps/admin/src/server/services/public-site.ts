@@ -12,7 +12,6 @@ import type {
   ApiPageSection,
   ApiPerson,
   ApiPost,
-  ApiPostBlock,
   ApiPostSummary,
   ApiReflection,
   ApiSeason,
@@ -39,10 +38,13 @@ import { env } from '@/lib/env';
 import {
   mediaIdsIn,
   parsePageSections,
-  parsePostBody,
   type StoredPageSection,
-  type StoredPostBlock,
 } from '@/server/schema/blocks';
+import {
+  resolveRichTextMedia,
+  richTextMediaIds,
+  type FigureMedia,
+} from '@/server/schema/rich-text';
 import { MEDIA_INCLUDE, serialiseMedia, type MediaWithRenditions } from './media';
 
 /**
@@ -613,8 +615,10 @@ export async function getPost(
   });
   if (!post) return null;
 
-  const stored = parsePostBody(post.body, `post:${post.slug}`);
-  const images = await resolveMedia(mediaIdsIn(stored));
+  /* The figures in the body name media ids; the URL and the fallback
+     description are filled in from the rows here, which is what keeps a
+     photograph's one description in one place. */
+  const body = resolveRichTextMedia(post.body, await resolveFigureMedia(post.body));
 
   return {
     slug: post.slug,
@@ -623,7 +627,7 @@ export async function getPost(
     date: (post.publishedAt ?? post.createdAt).toISOString(),
     region: post.region,
     heroImage: img(post.hero),
-    body: serialiseBody(stored, images),
+    body,
     author: post.author
       ? {
           name: post.author.name,
@@ -648,27 +652,36 @@ export async function postSlugs(): Promise<string[]> {
 }
 
 /**
- * Stored blocks → sent blocks.
+ * The photographs a rich-text body's figures name, in one query.
  *
- * An image block whose photograph has since been deleted is **dropped**, not
- * sent with a null image. The alternative is every renderer downstream having
- * to handle an image block with no image — a nullable field introduced by a
- * deletion that happened once.
+ * Deliberately not `resolveMedia`, which builds the whole `ApiImage`: a figure
+ * inside prose needs a URL, a description and the two dimensions that stop the
+ * page reflowing as it loads, and nothing else. A body with no figures in it
+ * makes no query at all, which is most of them.
  */
-function serialiseBody(
-  blocks: StoredPostBlock[],
-  images: Map<string, ApiImage>,
-): ApiPostBlock[] {
-  const out: ApiPostBlock[] = [];
-  for (const block of blocks) {
-    if (block.kind === 'image') {
-      const image = images.get(block.mediaId);
-      if (image) out.push({ kind: 'image', image, ratio: block.ratio });
-      continue;
-    }
-    out.push(block);
+async function resolveFigureMedia(html: string): Promise<Map<string, FigureMedia>> {
+  const ids = richTextMediaIds(html);
+  if (ids.length === 0) return new Map();
+
+  const rows = await db.media.findMany({
+    where: { id: { in: ids }, deletedAt: null },
+    include: MEDIA_INCLUDE,
+  });
+
+  const map = new Map<string, FigureMedia>();
+  for (const row of rows) {
+    const image = img(row);
+    if (!image) continue;
+    map.set(row.id, {
+      url: image.url,
+      /* A decorative photograph carries `alt: ''` deliberately, and that is
+         what should reach the page — not the filename, and not nothing. */
+      alt: image.decorative ? '' : image.alt,
+      width: image.width,
+      height: image.height,
+    });
   }
-  return out;
+  return map;
 }
 
 /** One query for every photograph a body or a page refers to. */

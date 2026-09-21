@@ -155,25 +155,53 @@ pages actually render:
 | `Activity` | `/activities` | The three WordPress groupings, with `examples[]` |
 | `Season` | the home page's four-panel season band | spring/summer/autumn/winter, with months label, headline, summary, detail |
 | `CultureArticle` | `/culture` | Icon + image + body |
-| `Post` | `/journal`, `/journal/[slug]` | Body is **typed blocks** (`text` · `heading` · `list` · `quote` · `image` · `facts`), not an HTML blob — see below |
+| `Post` | `/journal`, `/journal/[slug]` | Body is **one rich-text document**, written in the same editor as every other long-form field — see below |
 | `GalleryImage` | `/gallery` | Caption and masonry aspect ratio |
 | `Reflection` | testimonials, everywhere | A quote and a quiet attribution. **No star rating, ever** — the design forbids it |
 | `Page` | About · Contact · Terms · Travellers' information · home sections | Typed sections, not a free block builder |
 | `Enquiry` | the only conversion path | From the contact page, a trip page, or the drawer |
 | `Media` | everything above | Alt text required at the database, not just the form |
 
-### The journal body stays typed
+### The journal body: typed blocks, and why they were given up
 
-`apps/web/src/content/types.ts` defines `PostBlock` as a discriminated union and the
-renderer switches on it. The temptation on moving to a database is to make it one
-`content String` of rich-text HTML, because that is what a WYSIWYG produces.
+This plan called for a **block editor** — add block, choose kind, reorder, delete — with
+the column as `Json` validated by the same Zod union on both sides of the wire. The
+argument was a real one: the design renders a `facts` block as a bordered table in the
+site's own type scale, and HTML from a toolbar renders as whatever the toolbar emitted.
+It was built that way and shipped that way.
 
-That would be a regression. The design renders a `facts` block as a bordered table with
-the site's own type scale and a `quote` block as a `Reflection`; HTML from a toolbar
-renders as whatever the toolbar emitted. So the journal editor is a **block editor** —
-add block, choose kind, reorder, delete — and the column is `Json` validated by the same
-Zod schema on both sides of the wire. Editors get formatting inside a `text` block
-(bold, italic, link, lists) and nothing that can break the design out of it.
+It was replaced, and this is the record of why.
+
+**The vocabulary was not the cost; the boxes were.** Writing an entry meant choosing
+which box a sentence went in before writing the sentence. A photograph could not sit
+inside a paragraph. A table had two columns — label and value — or it did not exist. A
+list could not contain a link. And the effort of maintaining a second editor bought
+nothing the first one could not do, because by then *every other* long-form field on the
+site — a journey's overview, an itinerary day, a page band, a teacher's biography — was
+one HTML string in the full editor. The journal was the only thing on the site written a
+different way from everything else on it.
+
+**The guarantee moved rather than disappeared.** What actually stopped a pasted
+`<h1 style="color:red">` reaching a page was never the shape of the column: it was
+`apps/web/src/lib/rich-text.ts`, which rebuilds a body from an allowlist of the elements
+an article may contain and drops the rest. That already guarded the eleven other HTML
+columns. Pointing it at a twelfth is one implementation checked on the way *out*, rather
+than a union that only ever described what one editor happened to emit.
+
+**What the old blocks became**, in the migration and in both seeds:
+
+| was | is |
+| --- | --- |
+| `text` | its own HTML, or `<p>` where it held plain prose |
+| `heading` | `<h2>` — a body's headings start there; H1 is the title |
+| `list` | `<ul>` / `<ol>` |
+| `quote` | `<blockquote>`, attribution as a trailing em-dashed line |
+| `facts` | an `<h4>` label and a two-column `<table>` — still a table a crawler and an assistant can lift a value out of, which was the strongest argument for the block |
+| `image` | `<figure data-media-id>`, which now also carries a description, a caption, a credit and a title |
+
+A photograph is still **referenced, never serialised**: the column holds the media id and
+the URL is filled in from the `Media` row on every read, so re-cropping or re-describing a
+photograph reaches every entry that used it.
 
 ### One source of truth for the company
 

@@ -1,11 +1,10 @@
 import 'server-only';
 
 import { db } from '@/lib/db';
-import { parsePostBody } from '@/server/schema/blocks';
+import { storage } from '@/lib/storage';
+import { resolveRichTextMedia, richTextMediaIds, type FigureMedia } from '@/server/schema/rich-text';
 import { emptySeo, toPicked } from './trip-form';
 import type { PostFormData } from '@/components/content/post-editor';
-import type { EditorBlock } from '@/components/editor/block-editor';
-import type { PickedMedia } from '@/components/media/media-picker';
 
 const MEDIA = { include: { renditions: { where: { format: 'webp' as const } } } };
 
@@ -20,43 +19,16 @@ export async function postFormData(id: string): Promise<PostFormData | null> {
   });
   if (!post) return null;
 
-  const stored = parsePostBody(post.body, `post:${post.slug}`);
-
-  /**
-   * The photographs a body refers to, fetched in one query.
-   *
-   * The column holds ids; the editor needs the whole media row to draw a
-   * thumbnail. One `findMany` for the lot, rather than the picker fetching
-   * each one as it renders.
-   */
-  const mediaIds = stored
-    .filter((block) => block.kind === 'image')
-    .map((block) => (block as { mediaId: string }).mediaId);
-
-  const media = mediaIds.length
-    ? await db.media.findMany({ where: { id: { in: mediaIds } }, include: MEDIA.include })
-    : [];
-  const byId = new Map<string, PickedMedia>();
-  for (const row of media) {
-    const picked = toPicked(row);
-    if (picked) byId.set(row.id, picked);
-  }
-
-  const body: EditorBlock[] = stored.map((block) => {
-    const key = crypto.randomUUID();
-    if (block.kind === 'image') {
-      return { key, kind: 'image', media: byId.get(block.mediaId) ?? null, ratio: block.ratio };
-    }
-    return { key, ...block } as EditorBlock;
-  });
-
   return {
     id: post.id,
     slug: post.slug,
     title: post.title,
     standfirst: post.standfirst,
     region: post.region,
-    body,
+    /* The same resolution the public API does, for the same reason: the column
+       holds media ids, and the editor needs a URL to draw the photograph. A
+       body loaded with a stale URL in it would be saved back with that URL. */
+    body: resolveRichTextMedia(post.body, await editorFigureMedia(post.body)),
     hero: toPicked(post.hero),
     ogImage: toPicked(post.ogImage),
     authorId: post.authorId,
@@ -84,6 +56,37 @@ export async function postFormData(id: string): Promise<PostFormData | null> {
   };
 }
 
+/**
+ * The photographs a body's figures name, as the *editor* needs them.
+ *
+ * Not the public API's version: that one points at the largest WebP rendition,
+ * which is right for a published page and is a 1600 px file to draw inside a
+ * text box. This takes the smallest, the way the media picker does, and it
+ * accepts a row with no dimensions — the library has to show the photograph
+ * nobody has measured, because that is the one somebody needs to fix.
+ */
+async function editorFigureMedia(html: string): Promise<Map<string, FigureMedia>> {
+  const ids = richTextMediaIds(html);
+  if (ids.length === 0) return new Map();
+
+  const rows = await db.media.findMany({
+    where: { id: { in: ids }, deletedAt: null },
+    include: MEDIA.include,
+  });
+
+  const map = new Map<string, FigureMedia>();
+  for (const row of rows) {
+    const smallest = [...row.renditions].sort((a, b) => a.width - b.width)[0];
+    map.set(row.id, {
+      url: storage.publicUrl(smallest?.storageKey ?? row.storageKey),
+      alt: row.isDecorative ? '' : row.alt,
+      width: row.width,
+      height: row.height,
+    });
+  }
+  return map;
+}
+
 export function emptyPostForm(): PostFormData {
   return {
     id: null,
@@ -91,7 +94,7 @@ export function emptyPostForm(): PostFormData {
     title: '',
     standfirst: '',
     region: '',
-    body: [],
+    body: '',
     hero: null,
     ogImage: null,
     authorId: null,

@@ -4,6 +4,7 @@ import type { ContentStatus } from '@prisma/client';
 
 import { db } from '@/lib/db';
 import { toSlug } from '@/lib/slug';
+import { hasRichText } from '@/server/schema/rich-text';
 
 /**
  * The rules that apply to publishing anything.
@@ -260,7 +261,7 @@ export async function problemsPublishingPost(postId: string): Promise<PublishPro
     });
   }
 
-  if (!Array.isArray(post.body) || post.body.length === 0) {
+  if (!hasRichText(post.body)) {
     problems.push({ field: 'body', message: 'The entry has no body.' });
   }
 
