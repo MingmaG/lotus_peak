@@ -67,11 +67,15 @@ const STATUSES = ['NEW', 'READ', 'REPLIED', 'QUOTED', 'CONVERTED', 'CLOSED', 'SP
  * numbers, so an enquiry has one or the other and almost never both. The free
  * text wins when it is there — it is what they actually said.
  */
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
 function travellers(enquiry: EnquiryDetailData): string {
   if (enquiry.travellers?.trim()) return enquiry.travellers;
   const parts = [
-    enquiry.adults ? `${enquiry.adults} adults` : null,
-    enquiry.children ? `${enquiry.children} children` : null,
+    enquiry.adults ? plural(enquiry.adults, 'adult', 'adults') : null,
+    enquiry.children ? plural(enquiry.children, 'child', 'children') : null,
   ].filter(Boolean);
   return parts.length > 0 ? parts.join(', ') : '—';
 }

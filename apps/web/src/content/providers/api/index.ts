@@ -18,6 +18,7 @@ import type {
 } from '@lotuspeak/api-contracts'
 
 import { REVALIDATE_TAGS, fetchContent, fetchContentOrNull } from '../../api/client'
+import { EnquiryRefused } from '../../repository'
 import type {
   ContentRepository,
   EnquiryInput,
@@ -295,7 +296,8 @@ export function createApiProvider(): ContentRepository {
           const body = (await response.json().catch(() => null)) as
             | { error?: { message?: string } }
             | null
-          throw new Error(
+          throw new EnquiryRefused(
+            response.status,
             body?.error?.message ?? `The enquiry could not be recorded (${response.status}).`,
           )
         }

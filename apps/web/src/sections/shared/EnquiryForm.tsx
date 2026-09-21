@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 import { Button, Checkbox, Input, Select } from '@/design-system'
+import { sendEnquiry } from '@/lib/send-enquiry'
 import { useInquiry } from './SiteChrome'
 
 export type EnquiryFormProps = {
@@ -33,12 +34,20 @@ export function EnquiryForm({ source, fixedTrip, tripOptions, variant = 'compact
     }
 
     setPending(true)
-    await fetch('/api/enquiries', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...data, source, tripSlug: fixedTrip?.slug ?? data.tripSlug }),
-    }).catch(() => {})
+    const outcome = await sendEnquiry({
+      ...data,
+      source,
+      tripSlug: fixedTrip?.slug ?? data.tripSlug,
+    })
     setPending(false)
+
+    /* The form is reset only once the server says it holds the enquiry —
+       otherwise what the traveller wrote is cleared along with it. */
+    if (!outcome.sent) {
+      notify(outcome.message)
+      return
+    }
+
     form.reset()
     notify('Sent. We will write back within two days.')
   }

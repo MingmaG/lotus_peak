@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { LoginForm } from '@/components/layout/login-form';
-import { currentUser, refresh } from '@/lib/auth/session';
+import { currentUser, hasRefreshCookie } from '@/lib/auth/session';
 
 export const metadata = { title: 'Sign in' };
 export const dynamic = 'force-dynamic';
@@ -11,8 +11,13 @@ export const dynamic = 'force-dynamic';
  *
  * A person whose access token expired overnight still holds a valid refresh
  * cookie. Showing them a password form would be asking them to prove something
- * they have already proved, so the refresh is attempted here and a success
- * puts them back where they were going.
+ * they have already proved.
+ *
+ * The exchange itself cannot happen here — a Server Component may not write a
+ * cookie — so this page only reports whether there is a refresh cookie worth
+ * trying, and `LoginForm` makes the request to `/api/auth/refresh`, which is a
+ * route handler and may set one. What the person sees is the same: a moment of
+ * "Signing you in", then the page they asked for.
  */
 export default async function LoginPage({
   searchParams,
@@ -23,9 +28,8 @@ export default async function LoginPage({
   const destination = safeNext(next);
 
   if (await currentUser()) redirect(destination);
-  if (await refresh()) redirect(destination);
 
-  return <LoginForm next={destination} />;
+  return <LoginForm next={destination} mayResume={await hasRefreshCookie()} />;
 }
 
 /**

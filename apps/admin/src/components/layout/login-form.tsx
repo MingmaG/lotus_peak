@@ -9,10 +9,51 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ApiClientError, apiPost } from '@/lib/api-client';
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({
+  next,
+  /** A refresh cookie was present, so this may not need to be a form at all. */
+  mayResume = false,
+}: {
+  next: string;
+  mayResume?: boolean;
+}) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [resuming, setResuming] = React.useState(mayResume);
+
+  /**
+   * Try the refresh cookie before asking for a password.
+   *
+   * This runs here rather than on the server because it *writes* a cookie, and
+   * only a route handler may. Until it answers the form is not rendered, so a
+   * person coming back to a tab that sat open overnight sees one quiet line
+   * and then the page they wanted — not a sign-in form that vanishes as they
+   * reach for it.
+   */
+  React.useEffect(() => {
+    if (!mayResume) return;
+    let cancelled = false;
+
+    void fetch('/api/auth/refresh', { method: 'POST' })
+      .then((response) => {
+        if (cancelled) return;
+        if (!response.ok) {
+          /* The cookie was stale or revoked. The form is the right answer. */
+          setResuming(false);
+          return;
+        }
+        router.replace(next);
+        router.refresh();
+      })
+      .catch(() => {
+        if (!cancelled) setResuming(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mayResume, next, router]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,6 +78,20 @@ export function LoginForm({ next }: { next: string }) {
       );
       setPending(false);
     }
+  }
+
+  if (resuming) {
+    return (
+      <div className="w-full max-w-sm text-center">
+        <p className="text-[13px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          Lotus Peak
+        </p>
+        <p className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" />
+          Signing you in
+        </p>
+      </div>
+    );
   }
 
   return (

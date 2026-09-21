@@ -74,7 +74,17 @@ export function InquiryDrawer({
   return (
     <div
       aria-hidden={!open}
-      {...(!open ? { inert: '' as unknown as boolean } : null)}
+      /**
+       * `inert`, as a boolean, because React 19 renders it as one.
+       *
+       * This was `{...(!open ? { inert: '' as unknown as boolean } : null)}` —
+       * the React 18 workaround from before the prop was typed. React 19 reads
+       * an empty string as *false* and drops the attribute, so the closed
+       * drawer was not inert at all: seven fields sat in the tab order behind
+       * every page, inside a container marked `aria-hidden`. Tabbing past the
+       * footer landed in an invisible enquiry form.
+       */
+      inert={!open}
       style={{
         position: 'fixed',
         inset: 0,

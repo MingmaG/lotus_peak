@@ -1,3 +1,5 @@
+import type { ApiEnquiryInput } from '@lotuspeak/api-contracts'
+
 import type {
   Activity,
   CultureArticle,
@@ -26,18 +28,42 @@ export interface Redirect {
   permanent: boolean
 }
 
-export type EnquiryInput = {
-  name: string
-  email: string
-  country?: string
-  phone?: string
-  tripSlug?: string
-  travellers?: string
-  adults?: string
-  children?: string
-  preferredDates?: string
-  message?: string
-  restDays?: boolean
+/**
+ * What the website sends when somebody writes to the office.
+ *
+ * Derived from the wire type rather than written out again. It was written out
+ * again once, and `adults` drifted to `string` on this side while the admin
+ * panel went on expecting a number — so every enquiry carrying a party size was
+ * refused with a validation error the form never showed. Deriving it makes that
+ * particular mistake a compile error.
+ *
+ * `source` is narrowed because the website has three forms and none of them is
+ * the newsletter, and the three fields the provider fills in itself are not the
+ * caller's to pass.
+ */
+/**
+ * An enquiry the other end declined to take.
+ *
+ * Carries the status because the two cases read very differently to the person
+ * who wrote it: a 4xx is something they can act on — several enquiries in a few
+ * minutes, an address with a typo in it — and the endpoint's own words are the
+ * right ones to show, since it is a public endpoint and writes for the public.
+ * Anything else is ours, and they get a way to reach the office instead.
+ */
+export class EnquiryRefused extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'EnquiryRefused'
+  }
+}
+
+export type EnquiryInput = Omit<
+  ApiEnquiryInput,
+  'source' | 'honeypot' | 'pagePath' | 'utm'
+> & {
   source: 'contact' | 'trip-detail' | 'drawer'
 }
 

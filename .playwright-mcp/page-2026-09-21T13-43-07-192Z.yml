@@ -1,0 +1,184 @@
+- generic [active] [ref=f303e1]:
+  - link "Skip to content" [ref=f303e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [aria-hidden]:
+    - generic:
+      - generic: Awareness
+      - generic: དྲན་པ་དང་ཤེས་བཞིན།
+  - navigation [ref=f303e3]:
+    - generic [ref=f303e4]:
+      - link "Lotus Peak" [ref=f303e5] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f303e7]:
+        - textbox "Search" [ref=f303e9]
+        - button "Menu" [ref=f303e13] [cursor=pointer]
+  - main [ref=f303e19]:
+    - generic [ref=f303e20]:
+      - generic [ref=f303e21]:
+        - generic [ref=f303e22]: Contact
+        - generic [ref=f303e24]: Enquiry
+      - heading "Begin a conversation" [level=1] [ref=f303e25]
+    - generic [ref=f303e26]:
+      - generic [ref=f303e28]:
+        - generic [aria-hidden] [ref=f303e29]:
+          - text: Company
+          - textbox [ref=f303e30]
+        - generic [ref=f303e31]:
+          - generic [ref=f303e32]:
+            - generic [ref=f303e33]: Your name
+            - textbox "Your name" [ref=f303e34]:
+              - /placeholder: As it appears in your passport
+          - generic [ref=f303e35]:
+            - generic [ref=f303e36]: Email
+            - textbox "Email" [ref=f303e37]:
+              - /placeholder: you@example.com
+        - generic [ref=f303e38]:
+          - generic [ref=f303e39]:
+            - generic [ref=f303e40]: Country
+            - textbox "Country" [ref=f303e41]:
+              - /placeholder: Where you live
+          - generic [ref=f303e42]:
+            - generic [ref=f303e43]: Contact number
+            - textbox "Contact number" [ref=f303e44]:
+              - /placeholder: +
+        - generic [ref=f303e45]:
+          - generic [ref=f303e46]: Trip
+          - combobox "Trip" [ref=f303e48] [cursor=pointer]:
+            - option "A mindfulness journey through Bhutan’s sacred valleys" [selected]
+            - option "Mindful journeys with meditation and Buddhist practice"
+            - 'option "Sacred rhythms of Bhutan: a festival and meditation journey"'
+            - 'option "Jomolhari trek: a journey into joyful heights"'
+            - 'option "Paro Tshechu: a cultural and nature journey"'
+            - option "Not sure yet"
+        - generic [ref=f303e49]:
+          - generic [ref=f303e50]:
+            - generic [ref=f303e51]: Adults
+            - textbox "Adults" [ref=f303e52]:
+              - /placeholder: "2"
+          - generic [ref=f303e53]:
+            - generic [ref=f303e54]: Children
+            - textbox "Children" [ref=f303e55]:
+              - /placeholder: "0"
+        - generic [ref=f303e56]:
+          - generic [ref=f303e57]: Your message
+          - textbox "Your message" [ref=f303e58]:
+            - /placeholder: A festival, a long walk, some days of silence…
+        - generic [ref=f303e59] [cursor=pointer]:
+          - checkbox "I would like rest days written in" [checked]
+          - text: I would like rest days written in
+        - button "Send" [ref=f303e64] [cursor=pointer]
+      - complementary [ref=f303e66]:
+        - generic [ref=f303e68]:
+          - generic [ref=f303e69]:
+            - generic [ref=f303e70]: Call
+            - paragraph [ref=f303e72]:
+              - link "+975 17984485" [ref=f303e73] [cursor=pointer]:
+                - /url: tel:+97517984485
+          - generic [ref=f303e74]:
+            - generic [ref=f303e75]: Email
+            - paragraph [ref=f303e77]:
+              - link "info@lotuspeak.org" [ref=f303e78] [cursor=pointer]:
+                - /url: mailto:info@lotuspeak.org
+          - generic [ref=f303e79]:
+            - generic [ref=f303e80]: Facebook
+            - paragraph [ref=f303e82]:
+              - link "Lotus Peak Tours & Travel" [ref=f303e83] [cursor=pointer]:
+                - /url: https://www.facebook.com/profile.php?id=61588546391091
+          - generic [ref=f303e84]:
+            - generic [ref=f303e85]: Where
+            - paragraph [ref=f303e87]: Thimphu, Bhutan
+          - generic [ref=f303e88]:
+            - generic [ref=f303e89]: Reply
+            - paragraph [ref=f303e91]: We write back personally, within two days.
+        - paragraph [ref=f303e93]: No deposit, no obligation. Just a reply.
+  - contentinfo [ref=f303e94]:
+    - generic [ref=f303e101]:
+      - generic [ref=f303e102]:
+        - link "Lotus Peak home" [ref=f303e103] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f303e104]: Lotus Peak
+        - paragraph [ref=f303e105]: Small-group journeys in Bhutan.
+      - generic [ref=f303e106]:
+        - generic [ref=f303e107]: Journeys
+        - list [ref=f303e108]:
+          - listitem [ref=f303e109]:
+            - link "Our trips" [ref=f303e110] [cursor=pointer]:
+              - /url: /trips
+          - listitem [ref=f303e111]:
+            - link "Paro Tshechu" [ref=f303e112] [cursor=pointer]:
+              - /url: /trips/tshechu
+          - listitem [ref=f303e113]:
+            - link "Sacred valleys" [ref=f303e114] [cursor=pointer]:
+              - /url: /trips/valleys
+          - listitem [ref=f303e115]:
+            - link "Jomolhari trek" [ref=f303e116] [cursor=pointer]:
+              - /url: /trips/jomolhari
+          - listitem [ref=f303e117]:
+            - link "What you can do" [ref=f303e118] [cursor=pointer]:
+              - /url: /activities
+      - generic [ref=f303e119]:
+        - generic [ref=f303e120]: Bhutan
+        - list [ref=f303e121]:
+          - listitem [ref=f303e122]:
+            - link "Where we go" [ref=f303e123] [cursor=pointer]:
+              - /url: /destinations
+          - listitem [ref=f303e124]:
+            - link "Culture & traditions" [ref=f303e125] [cursor=pointer]:
+              - /url: /culture
+          - listitem [ref=f303e126]:
+            - link "Journal" [ref=f303e127] [cursor=pointer]:
+              - /url: /journal
+          - listitem [ref=f303e128]:
+            - link "Gallery" [ref=f303e129] [cursor=pointer]:
+              - /url: /gallery
+          - listitem [ref=f303e130]:
+            - link "When to come" [ref=f303e131] [cursor=pointer]:
+              - /url: /#seasons
+      - generic [ref=f303e132]:
+        - generic [ref=f303e133]: Practical
+        - list [ref=f303e134]:
+          - listitem [ref=f303e135]:
+            - link "Enquiry form" [ref=f303e136] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=f303e137]:
+            - link "Travellers’ information" [ref=f303e138] [cursor=pointer]:
+              - /url: /travellers-information
+          - listitem [ref=f303e139]:
+            - link "About Lotus Peak" [ref=f303e140] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=f303e141]:
+            - link "Terms & conditions" [ref=f303e142] [cursor=pointer]:
+              - /url: /terms
+    - generic [ref=f303e143]:
+      - generic [ref=f303e144]: © 2026 Lotus Peak
+      - generic [ref=f303e145]: Lotus Peak Tours & Travel · Thimphu, Bhutan · +975 17984485
+  - generic [aria-hidden]:
+    - dialog:
+      - generic:
+        - button
+        - text: Plan your journey
+        - heading [level=2]: Begin a conversation
+        - paragraph: Tell us a little. A person, not a form, will reply within two days.
+      - generic:
+        - generic:
+          - generic:
+            - generic: Your name
+            - textbox:
+              - /placeholder: As it appears in your passport
+          - generic:
+            - generic: Email
+            - textbox:
+              - /placeholder: you@example.com
+          - generic:
+            - generic: Which journey
+            - generic:
+              - combobox
+          - generic:
+            - generic: What are you hoping for
+            - textbox:
+              - /placeholder: A festival, a long walk, some quiet…
+          - generic: I would like rest days written in
+          - button: Send
+      - generic: No deposit, no obligation. Just a reply.
+  - generic:
+    - status

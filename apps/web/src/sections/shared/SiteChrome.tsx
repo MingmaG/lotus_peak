@@ -15,6 +15,7 @@ import {
   type NavItem,
 } from '@/design-system'
 import { Dignities, Halo } from '@/motion'
+import { sendEnquiry } from '@/lib/send-enquiry'
 import type { SiteSettings, Trip } from '@/content/types'
 
 type DrawerCtx = { open: (tripSlug?: string) => void; notify: (message: string) => void }
@@ -106,6 +107,7 @@ export function SiteChrome({
             setDrawerOpen(false)
             notify('Sent. We will write back within two days.')
           }}
+          onFailed={notify}
         />
       </InquiryDrawer>
 
@@ -120,10 +122,12 @@ function DrawerForm({
   options,
   preselect,
   onSent,
+  onFailed,
 }: {
   options: { label: string; value: string }[]
   preselect?: string
   onSent: () => void
+  onFailed: (message: string) => void
 }) {
   const [pending, setPending] = useState(false)
 
@@ -134,12 +138,14 @@ function DrawerForm({
         e.preventDefault()
         setPending(true)
         const data = Object.fromEntries(new FormData(e.currentTarget))
-        await fetch('/api/enquiries', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ ...data, source: 'drawer' }),
-        }).catch(() => {})
+        const outcome = await sendEnquiry({ ...data, source: 'drawer' })
         setPending(false)
+        /* A refused enquiry leaves the drawer open with the words still in it,
+           so there is something to try again with. */
+        if (!outcome.sent) {
+          onFailed(outcome.message)
+          return
+        }
         onSent()
       }}
     >

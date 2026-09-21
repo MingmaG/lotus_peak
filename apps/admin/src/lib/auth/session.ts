@@ -193,12 +193,26 @@ export async function signIn(email: string, password: string): Promise<LoginResu
   };
 }
 
+/** Whether a refresh cookie is present at all. Reads; never writes. */
+export async function hasRefreshCookie(): Promise<boolean> {
+  const store = await cookies();
+  return Boolean(store.get(COOKIE.refresh)?.value);
+}
+
 /**
  * Exchanges a refresh token for a fresh access token.
  *
  * This is the path that reads the database, and that is deliberate: it is
  * where a deactivated account, a changed role and a revoked session all take
  * effect. Fifteen minutes is the longest any of those can lag.
+ *
+ * **Route handlers and server actions only.** It writes the access cookie, and
+ * a Server Component that writes a cookie does not fail quietly — it throws
+ * "Cookies can only be modified in a Server Action or Route Handler" and takes
+ * the page down with it. The login page used to call this directly, so anybody
+ * whose access token had expired overnight met a 500 instead of a sign-in
+ * form: the one request this function exists to rescue was the one it broke.
+ * `hasRefreshCookie` is the read-only half a component may use.
  */
 export async function refresh(): Promise<CurrentUser | null> {
   const store = await cookies();

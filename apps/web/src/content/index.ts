@@ -39,5 +39,6 @@ export function getContent(): ContentRepository {
   return instance
 }
 
+export { EnquiryRefused } from './repository'
 export type { ContentRepository, EnquiryInput } from './repository'
 export * from './types'

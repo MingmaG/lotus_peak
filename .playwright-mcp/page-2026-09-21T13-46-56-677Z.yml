@@ -1,0 +1,207 @@
+- generic [active] [ref=f310e1]:
+  - generic [ref=f310e2]:
+    - complementary [ref=f310e3]:
+      - navigation "Sections" [ref=f310e5]:
+        - generic [ref=f310e6]: Lotus Peak
+        - generic [ref=f310e11]:
+          - generic [ref=f310e12]:
+            - heading "Overview" [level=2] [ref=f310e13]
+            - list [ref=f310e14]:
+              - listitem [ref=f310e15]:
+                - link "Dashboard" [ref=f310e16] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=f310e23]:
+                - link "Enquiries 1" [ref=f310e304] [cursor=pointer]:
+                  - /url: /enquiries
+                  - generic [ref=f310e28]: Enquiries
+                  - generic [ref=f310e305]: "1"
+          - generic [ref=f310e29]:
+            - heading "Journeys" [level=2] [ref=f310e30]
+            - list [ref=f310e31]:
+              - listitem [ref=f310e32]:
+                - link "Journeys" [ref=f310e33] [cursor=pointer]:
+                  - /url: /trips
+              - listitem [ref=f310e37]:
+                - link "Departures" [ref=f310e38] [cursor=pointer]:
+                  - /url: /departures
+              - listitem [ref=f310e42]:
+                - link "Destinations" [ref=f310e43] [cursor=pointer]:
+                  - /url: /destinations
+              - listitem [ref=f310e48]:
+                - link "What you can do" [ref=f310e49] [cursor=pointer]:
+                  - /url: /activities
+              - listitem [ref=f310e54]:
+                - link "Seasons" [ref=f310e55] [cursor=pointer]:
+                  - /url: /seasons
+          - generic [ref=f310e63]:
+            - heading "Words and pictures" [level=2] [ref=f310e64]
+            - list [ref=f310e65]:
+              - listitem [ref=f310e66]:
+                - link "Journal" [ref=f310e67] [cursor=pointer]:
+                  - /url: /journal
+              - listitem [ref=f310e71]:
+                - link "Pages" [ref=f310e72] [cursor=pointer]:
+                  - /url: /pages
+              - listitem [ref=f310e77]:
+                - link "Culture" [ref=f310e78] [cursor=pointer]:
+                  - /url: /culture
+              - listitem [ref=f310e83]:
+                - link "Gallery" [ref=f310e84] [cursor=pointer]:
+                  - /url: /gallery
+              - listitem [ref=f310e91]:
+                - link "Reflections" [ref=f310e92] [cursor=pointer]:
+                  - /url: /reflections
+              - listitem [ref=f310e98]:
+                - link "People" [ref=f310e99] [cursor=pointer]:
+                  - /url: /people
+              - listitem [ref=f310e105]:
+                - link "Media library" [ref=f310e106] [cursor=pointer]:
+                  - /url: /media
+              - listitem [ref=f310e113]:
+                - link "Navigation" [ref=f310e114] [cursor=pointer]:
+                  - /url: /navigation
+          - generic [ref=f310e117]:
+            - heading "People who write in" [level=2] [ref=f310e118]
+            - list [ref=f310e119]:
+              - listitem [ref=f310e120]:
+                - link "Customers" [ref=f310e121] [cursor=pointer]:
+                  - /url: /customers
+              - listitem [ref=f310e128]:
+                - link "Newsletter" [ref=f310e129] [cursor=pointer]:
+                  - /url: /newsletter
+              - listitem [ref=f310e134]:
+                - link "Email" [ref=f310e135] [cursor=pointer]:
+                  - /url: /emails
+          - generic [ref=f310e140]:
+            - heading "Findability" [level=2] [ref=f310e141]
+            - list [ref=f310e142]:
+              - listitem [ref=f310e143]:
+                - link "SEO" [ref=f310e144] [cursor=pointer]:
+                  - /url: /seo
+              - listitem [ref=f310e149]:
+                - link "Redirects" [ref=f310e150] [cursor=pointer]:
+                  - /url: /seo/redirects
+              - listitem [ref=f310e155]:
+                - link "AI and discovery" [ref=f310e156] [cursor=pointer]:
+                  - /url: /seo/discovery
+          - generic [ref=f310e160]:
+            - heading "The company" [level=2] [ref=f310e161]
+            - list [ref=f310e162]:
+              - listitem [ref=f310e163]:
+                - link "Company" [ref=f310e164] [cursor=pointer]:
+                  - /url: /settings/company
+              - listitem [ref=f310e170]:
+                - link "Settings" [ref=f310e171] [cursor=pointer]:
+                  - /url: /settings
+              - listitem [ref=f310e176]:
+                - link "Users" [ref=f310e177] [cursor=pointer]:
+                  - /url: /users
+              - listitem [ref=f310e184]:
+                - link "Activity" [ref=f310e185] [cursor=pointer]:
+                  - /url: /activity
+    - generic [ref=f310e189]:
+      - banner [ref=f310e190]:
+        - heading "Enquiries" [level=1] [ref=f310e191]
+        - button "Go to… ⌘K" [ref=f310e192]:
+          - generic [ref=f310e193]: Go to…
+          - generic [ref=f310e194]: ⌘K
+        - link "Open the website" [ref=f310e195] [cursor=pointer]:
+          - /url: http://localhost:6010
+        - button "Use the dark theme" [ref=f310e306]
+        - button "Your account" [ref=f310e198]:
+          - generic [ref=f310e199]: LP
+      - main [ref=f310e200]:
+        - generic [ref=f310e331]:
+          - generic [ref=f310e332]:
+            - link "Enquiries" [ref=f310e333] [cursor=pointer]:
+              - /url: /enquiries
+            - generic [ref=f310e334]:
+              - heading "Tashi Verification" [level=1] [ref=f310e335]
+              - paragraph [ref=f310e336]: tashi.verify@example.com
+            - generic [ref=f310e337]:
+              - link "Reply" [ref=f310e338] [cursor=pointer]:
+                - /url: mailto:tashi.verify@example.com?subject=Re%3A%20your%20enquiry%20%E2%80%94%20LP-KSMQ&body=Dear%20Tashi%2C%0A%0A
+              - link "Call" [ref=f310e340] [cursor=pointer]:
+                - /url: tel:+61400111222
+              - button "Hide" [ref=f310e342]
+          - generic [ref=f310e344]:
+            - generic [ref=f310e345]:
+              - generic [ref=f310e346]:
+                - heading "What they wrote" [level=2] [ref=f310e348]
+                - paragraph [ref=f310e350]: End-to-end check of the enquiry path from the browser.
+              - generic [ref=f310e351]:
+                - generic [ref=f310e352]:
+                  - heading "Notes" [level=2] [ref=f310e353]
+                  - paragraph [ref=f310e354]: For the office. Nothing here is ever shown to the person who wrote in.
+                - generic [ref=f310e355]:
+                  - generic [ref=f310e356]:
+                    - textbox "Rang them. Wants the October departure, checking with their sister." [ref=f310e357]
+                    - button "Add a note" [disabled]
+                  - paragraph [ref=f310e358]: Nothing written down yet.
+              - generic [ref=f310e359]:
+                - generic [ref=f310e360]:
+                  - heading "What was sent" [level=2] [ref=f310e361]
+                  - paragraph [ref=f310e362]: Every message this enquiry produced, exactly as it went out. A template edited later does not change this record.
+                - list [ref=f310e364]:
+                  - listitem [ref=f310e365]:
+                    - generic [ref=f310e366]:
+                      - generic [ref=f310e367]: Enquiry LP-KSMQ — Tashi Verification
+                      - generic [ref=f310e368]: to info@lotuspeak.org
+                    - generic [ref=f310e369]: Queued · 1 min ago
+                  - listitem [ref=f310e370]:
+                    - generic [ref=f310e371]:
+                      - generic [ref=f310e372]: Your enquiry — Lotus Peak
+                      - generic [ref=f310e373]: to tashi.verify@example.com
+                    - generic [ref=f310e374]: Queued · 1 min ago
+            - generic [ref=f310e375]:
+              - generic [ref=f310e376]:
+                - heading "Handling" [level=2] [ref=f310e378]
+                - generic [ref=f310e380]:
+                  - generic [ref=f310e381]:
+                    - text: Status
+                    - combobox "Status" [ref=f310e382]:
+                      - generic: Read
+                  - generic [ref=f310e383]:
+                    - text: Priority
+                    - combobox "Priority" [ref=f310e384]:
+                      - generic: Normal
+                  - generic [ref=f310e385]:
+                    - text: With
+                    - combobox "With" [ref=f310e386]:
+                      - generic: Nobody yet
+              - generic [ref=f310e387]:
+                - heading "What they told us" [level=2] [ref=f310e389]
+                - generic [ref=f310e391]:
+                  - generic [ref=f310e392]:
+                    - term [ref=f310e393]: Reference
+                    - definition [ref=f310e394]: LP-KSMQ
+                  - generic [ref=f310e395]:
+                    - term [ref=f310e396]: Arrived
+                    - definition [ref=f310e397]: 21 Sep 2026, 13:45 · 1 min ago
+                  - generic [ref=f310e398]:
+                    - term [ref=f310e399]: Journey
+                    - definition [ref=f310e400]: "Jomolhari trek: a journey into joyful heights"
+                  - generic [ref=f310e401]:
+                    - term [ref=f310e402]: When
+                    - definition [ref=f310e403]: —
+                  - generic [ref=f310e404]:
+                    - term [ref=f310e405]: Travellers
+                    - definition [ref=f310e406]: 3 adults, 1 children
+                  - generic [ref=f310e407]:
+                    - term [ref=f310e408]: Country
+                    - definition [ref=f310e409]: Australia
+                  - generic [ref=f310e410]:
+                    - term [ref=f310e411]: Rest days
+                    - definition [ref=f310e412]: Wanted
+                  - generic [ref=f310e413]:
+                    - term [ref=f310e414]: Came from
+                    - definition [ref=f310e415]: Contact
+                  - generic [ref=f310e416]:
+                    - term [ref=f310e417]: Campaign
+                    - definition [ref=f310e418]: —
+                  - generic [ref=f310e419]:
+                    - term [ref=f310e420]: Answered
+                    - definition [ref=f310e421]: Not yet
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f310e326] [cursor=pointer]
+  - alert [ref=f310e330]: Tashi Verification — enquiry · Lotus Peak
