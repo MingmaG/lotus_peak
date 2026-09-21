@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Eyebrow } from '@/design-system'
@@ -32,6 +34,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function GalleryPage() {
+
+  /* The row behind this page: its SEO overrides and any JSON-LD the
+     office added. Both are also read in `generateMetadata`, which Next
+     runs separately — the provider's fetch is tagged and cached, so this
+     is one request, not two. */
+  const page = await getContent().pages.byPath('/gallery')
+  const settings = await getContent().settings.get()
   const images = await getContent().gallery.list()
 
   return (
@@ -43,6 +52,19 @@ export default async function GalleryPage() {
         margin: '0 auto',
       }}
     >
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/gallery',
+          title: page?.seo.title ?? page?.title ?? 'Gallery',
+          description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
+          crumbs: [{ name: 'Gallery', path: '/gallery' }],
+          extra: page?.seo.schemaJson,
+        })}
+      />
       <Reveal>
         <Eyebrow number="Gallery">Photographs</Eyebrow>
         <h1 style={{ fontSize: 'var(--text-h1)', marginTop: 20, maxWidth: '20ch' }}>

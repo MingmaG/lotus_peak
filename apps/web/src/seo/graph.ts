@@ -231,6 +231,14 @@ export async function graphForPage(args: {
   description: string
   crumbs: Crumb[]
   faqs?: ApiTripFaq[]
+  /**
+   * The `schemaJson` column from this record's SEO tab.
+   *
+   * Every caller passes it, including the ones that have nothing to pass —
+   * `undefined` is the same as an empty field, and a builder that quietly
+   * drops it is how a field the office filled in never appears on the page.
+   */
+  extra?: unknown
 }) {
   const settings = await getContent().settings.get()
   const site = await base(settings)
@@ -243,6 +251,7 @@ export async function graphForPage(args: {
     description: args.description,
     crumbs: args.crumbs,
     faqs: args.faqs,
+    extra: args.extra,
   })
 }
 
@@ -263,6 +272,7 @@ export async function graphForTrip(trip: Trip) {
       { name: trip.title, path: `/trips/${trip.slug}` },
     ],
     entity: tripNode(siteUrl(), widened, site),
+    extra: trip.schemaJson,
     /* Only the questions this page actually renders. Markup describing
        answers a visitor cannot see is the one case the policy calls out, and
        the penalty falls on the whole domain. */
@@ -289,6 +299,7 @@ export async function graphForPost(post: Post) {
     ],
     entity: articleNode(siteUrl(), widened),
     image: widened.heroImage,
+    extra: post.schemaJson,
   })
 }
 

@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Button, Divider, Eyebrow, Reflection, WindowFrame } from '@/design-system'
@@ -55,6 +57,19 @@ export default async function AboutPage() {
 
   return (
     <main>
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/about',
+          title: page?.seo.title ?? page?.title ?? 'About',
+          description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
+          crumbs: [{ name: 'About', path: '/about' }],
+          extra: page?.seo.schemaJson,
+        })}
+      />
       <section style={{ position: 'relative' }}>
         <div
           style={{

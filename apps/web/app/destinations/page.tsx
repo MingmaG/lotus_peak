@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import { Prose } from '@/components/site/Prose'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -36,12 +38,32 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function DestinationsPage() {
+
+  /* The row behind this page: its SEO overrides and any JSON-LD the
+     office added. Both are also read in `generateMetadata`, which Next
+     runs separately — the provider's fetch is tagged and cached, so this
+     is one request, not two. */
+  const page = await getContent().pages.byPath('/destinations')
+  const settings = await getContent().settings.get()
   const content = getContent()
   const [destinations, trips] = await Promise.all([content.destinations.list(), content.trips.list()])
   const bySlug = new Map(trips.map((t) => [t.slug, t]))
 
   return (
     <main>
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/destinations',
+          title: page?.seo.title ?? page?.title ?? 'Where we go',
+          description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
+          crumbs: [{ name: 'Where we go', path: '/destinations' }],
+          extra: page?.seo.schemaJson,
+        })}
+      />
       <Parallax
         src={IMG.paroDzong}
         alt={altFor(IMG.paroDzong)}

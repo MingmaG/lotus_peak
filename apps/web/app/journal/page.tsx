@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -35,6 +37,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function JournalPage() {
+
+  /* The row behind this page: its SEO overrides and any JSON-LD the
+     office added. Both are also read in `generateMetadata`, which Next
+     runs separately — the provider's fetch is tagged and cached, so this
+     is one request, not two. */
+  const page = await getContent().pages.byPath('/journal')
+  const settings = await getContent().settings.get()
   const posts = await getContent().posts.list()
   const [lead, ...rest] = posts
 
@@ -47,6 +56,19 @@ export default async function JournalPage() {
         margin: '0 auto',
       }}
     >
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/journal',
+          title: page?.seo.title ?? page?.title ?? 'Journal',
+          description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
+          crumbs: [{ name: 'Journal', path: '/journal' }],
+          extra: page?.seo.schemaJson,
+        })}
+      />
       <Reveal>
         <Eyebrow number="Journal">Notes from Bhutan</Eyebrow>
         <h1 style={{ fontSize: 'var(--text-h1)', marginTop: 20, maxWidth: '20ch' }}>

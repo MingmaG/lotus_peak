@@ -229,6 +229,7 @@ export function PageEditor({
 
       {tab === 'seo' && (
         <SeoPanel
+            kind="page"
           value={form.seo}
           onChange={(patch) => set('seo', { ...form.seo, ...patch })}
           inherited={{ title: form.title, description: form.lead }}

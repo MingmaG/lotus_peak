@@ -519,7 +519,15 @@ export interface PageGraphInput {
   /** Only the FAQs this page actually renders. */
   faqs?: ApiTripFaq[];
   image?: ApiImage | null;
-  /** Hand-written JSON-LD from the SEO tab, merged last. */
+  /**
+   * Hand-written JSON-LD from the SEO tab, merged last.
+   *
+   * One node or an array of them. An array because a page sometimes needs two
+   * things the builders here do not know about — an `Event` for a festival
+   * departure and a `VideoObject` for the film on it — and asking the office
+   * to nest them inside one object would be asking them to know that
+   * `@graph` is a list.
+   */
   extra?: unknown;
 }
 
@@ -559,8 +567,20 @@ export function pageGraph(input: PageGraphInput): Json {
   const faq = faqNode(input.faqs ?? []);
   if (faq) graph.push(faq);
 
-  if (input.extra && typeof input.extra === 'object') {
-    graph.push(input.extra as Json);
+  /**
+   * The office's own nodes, last, and never replacing what was built.
+   *
+   * Appended rather than merged: a hand-written `TouristTrip` sitting beside
+   * the generated one would be two descriptions of the same journey, so the
+   * SEO tab says so and the field is for things the builders here do not
+   * cover. What is refused is anything that is not an object — a string or a
+   * number in an `@graph` is invalid JSON-LD and a crawler drops the whole
+   * script rather than the bad entry.
+   */
+  for (const node of Array.isArray(input.extra) ? input.extra : [input.extra]) {
+    if (node && typeof node === 'object' && !Array.isArray(node)) {
+      graph.push(node as Json);
+    }
   }
 
   return { '@context': 'https://schema.org', '@graph': graph };

@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import { Prose } from '@/components/site/Prose'
 import type { Metadata } from 'next'
 import { Eyebrow, SiteIcon } from '@/design-system'
@@ -34,10 +36,30 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CulturePage() {
+
+  /* The row behind this page: its SEO overrides and any JSON-LD the
+     office added. Both are also read in `generateMetadata`, which Next
+     runs separately — the provider's fetch is tagged and cached, so this
+     is one request, not two. */
+  const page = await getContent().pages.byPath('/culture')
+  const settings = await getContent().settings.get()
   const articles = await getContent().culture.list()
 
   return (
     <main>
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/culture',
+          title: page?.seo.title ?? page?.title ?? 'Culture',
+          description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
+          crumbs: [{ name: 'Culture', path: '/culture' }],
+          extra: page?.seo.schemaJson,
+        })}
+      />
       <Parallax
         src={IMG.tashichho}
         alt={altFor(IMG.tashichho)}

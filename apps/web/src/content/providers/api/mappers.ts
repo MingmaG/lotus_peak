@@ -140,6 +140,7 @@ export function toTripSummary(row: ApiTripSummary, index: number): Trip {
 
 export function toTrip(row: ApiTrip): Trip {
   return {
+    schemaJson: row.seo?.schemaJson ?? undefined,
     slug: row.slug,
     title: row.title,
     excerpt: row.excerpt,
@@ -204,6 +205,7 @@ export function toPostSummary(row: ApiPostSummary, index: number): Post {
 
 export function toPost(row: ApiPost): Post {
   return {
+    schemaJson: row.seo?.schemaJson ?? undefined,
     slug: row.slug,
     title: row.title,
     standfirst: row.standfirst,
@@ -405,6 +407,7 @@ export function toPage(row: ApiPage): SitePage {
       title: row.seo.metaTitle,
       description: row.seo.metaDescription,
       noIndex: row.seo.noIndex,
+      schemaJson: row.seo.schemaJson ?? undefined,
     },
   }
 }

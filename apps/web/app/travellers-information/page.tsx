@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getContent } from '@/content'
@@ -22,12 +24,27 @@ export default async function TravellersInformationPage() {
   if (!page) notFound()
 
   return (
-    <InfoPage
-      eyebrow={page.eyebrow ?? 'Travellers'}
-      title={page.title}
-      lead={page.lead ?? ''}
-      bands={page.bands}
-      note="Last reviewed for the 2026 season. Ask us if you are reading this later than that."
-    />
+    <>
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/travellers-information',
+          title: page.seo.title ?? page.title,
+          description: page.seo.description ?? page.lead ?? '',
+          crumbs: [{ name: "Travellers’ information", path: '/travellers-information' }],
+          extra: page.seo.schemaJson,
+        })}
+      />
+      <InfoPage
+        eyebrow={page.eyebrow ?? 'Travellers'}
+        title={page.title}
+        lead={page.lead ?? ''}
+        bands={page.bands}
+        note="Last reviewed for the 2026 season. Ask us if you are reading this later than that."
+      />
+    </>
   )
 }

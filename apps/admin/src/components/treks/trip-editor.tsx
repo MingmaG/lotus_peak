@@ -786,6 +786,7 @@ export function TripEditor({
 
       {tab === 'seo' && (
         <SeoPanel
+            kind="trip"
           value={form.seo}
           onChange={(patch) => set('seo', { ...form.seo, ...patch })}
           inherited={{ title: form.title, description: form.excerpt }}

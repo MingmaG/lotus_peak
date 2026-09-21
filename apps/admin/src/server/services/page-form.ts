@@ -76,6 +76,7 @@ export async function pageFormData(id: string): Promise<PageFormData | null> {
     status: page.status,
     seo: {
       metaTitle: page.metaTitle,
+      schemaJson: page.schemaJson ?? null,
       metaDescription: page.metaDescription,
       canonicalUrl: page.canonicalUrl,
       noIndex: page.noIndex,

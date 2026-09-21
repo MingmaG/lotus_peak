@@ -1,5 +1,6 @@
 'use client';
 
+import { StructuredData, type StructuredDataKind } from './structured-data';
 import * as React from 'react';
 
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
@@ -50,6 +51,8 @@ export interface SeoValue {
   keywords: string[];
   focusKeyword: string | null;
   sitemapPriority: number;
+  /** Hand-written JSON-LD, appended to the page's graph. */
+  schemaJson: unknown;
   sitemapChangeFreq:
     | 'always'
     | 'hourly'
@@ -62,6 +65,12 @@ export interface SeoValue {
 
 export interface SeoPanelProps {
   value: SeoValue;
+  /**
+   * Which entity this record becomes in the graph, so the structured-data
+   * section can say what is already described without guessing from the shape
+   * of `value`.
+   */
+  kind: StructuredDataKind;
   onChange: (patch: Partial<SeoValue>) => void;
   /** What the fields fall back to, so the placeholders can show it. */
   inherited: { title: string; description: string };
@@ -81,6 +90,7 @@ const DESCRIPTION_LIMIT = 155;
 
 export function SeoPanel({
   value,
+  kind,
   onChange,
   inherited,
   ogImage,
@@ -315,6 +325,17 @@ export function SeoPanel({
             }
           />
         </Field>
+      </Section>
+
+      <Section
+        title="Structured data"
+        description="What a search engine and an AI assistant are told this page is. Built from the fields above and the record itself — the last box is for anything they do not cover."
+      >
+        <StructuredData
+          kind={kind}
+          value={value.schemaJson}
+          onChange={(schemaJson) => onChange({ schemaJson })}
+        />
       </Section>
     </div>
   );

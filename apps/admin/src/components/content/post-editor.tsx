@@ -301,6 +301,7 @@ export function PostEditor({
 
       {tab === 'seo' && (
         <SeoPanel
+            kind="post"
           value={form.seo}
           onChange={(patch) => set('seo', { ...form.seo, ...patch })}
           inherited={{ title: form.title, description: form.standfirst }}

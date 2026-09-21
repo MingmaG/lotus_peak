@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getContent } from '@/content'
@@ -35,12 +37,27 @@ export default async function TermsPage() {
   if (!page) notFound()
 
   return (
-    <InfoPage
-      eyebrow={page.eyebrow ?? 'Terms'}
-      title={page.title}
-      lead={page.lead ?? ''}
-      bands={page.bands}
-      note="Lotus Peak Tours & Travel · Thimphu, Bhutan · Last revised for the 2026 season."
-    />
+    <>
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/terms',
+          title: page.seo.title ?? page.title,
+          description: page.seo.description ?? page.lead ?? '',
+          crumbs: [{ name: 'Terms', path: '/terms' }],
+          extra: page.seo.schemaJson,
+        })}
+      />
+      <InfoPage
+        eyebrow={page.eyebrow ?? 'Terms'}
+        title={page.title}
+        lead={page.lead ?? ''}
+        bands={page.bands}
+        note="Lotus Peak Tours & Travel · Thimphu, Bhutan · Last revised for the 2026 season."
+      />
+    </>
   )
 }

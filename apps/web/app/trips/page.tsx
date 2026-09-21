@@ -58,6 +58,15 @@ export default async function TripsPage() {
         margin: '0 auto',
       }}
     >
+      {/**
+       * The catalogue, as an `ItemList` of `TouristTrip`.
+       *
+       * The builder and its import were here and nothing rendered them, so the
+       * one page whose job is to list what this company sells described itself
+       * to a crawler as nothing at all.
+       */}
+      <JsonLd graph={await graphForTripIndex(trips)} />
+
       {/* The design project's trips index is the one screen with no entrance
           animation at all (docs/audit/effects-integration.md B2). It is staged
           here on the same cadence as every other screen. */}

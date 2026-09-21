@@ -32,6 +32,8 @@ export type Trip = {
   slug: string
   title: string
   excerpt: string
+  /** See the note on `schemaJson` below. */
+  schemaJson?: unknown
   type: TripType
   order: number
   /** Ordered destination names: "Paro · Bumthang · Trongsa". */
@@ -104,6 +106,8 @@ export type Post = {
   slug: string
   title: string
   standfirst: string
+  /** See the note on `schemaJson` below. */
+  schemaJson?: unknown
   /** ISO date, for `dateTime` and for sorting. `order` is the editorial order. */
   date: string
   region: string
@@ -273,7 +277,19 @@ export type SitePage = {
   heroImage: string | null
   heroAlt: ImageAlt
   bands: PageBand[]
-  seo: { title: string | null; description: string | null; noIndex: boolean }
+/**
+ * Hand-written JSON-LD from the record's SEO tab, if there is any.
+ *
+ * `unknown` rather than a shape: it is whatever the office pasted, and the
+ * only thing this side asserts about it is that `pageGraph` will refuse
+ * anything that is not an object before it reaches a `<script>`.
+ */
+  seo: {
+    title: string | null
+    description: string | null
+    noIndex: boolean
+    schemaJson?: unknown
+  }
 }
 
 export type Person = {

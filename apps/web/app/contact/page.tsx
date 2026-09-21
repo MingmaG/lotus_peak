@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import type { Metadata } from 'next'
 import type { CSSProperties, ReactNode } from 'react'
 import { Divider, Eyebrow } from '@/design-system'
@@ -29,6 +31,12 @@ export async function generateMetadata(): Promise<Metadata> {
 const LINK: CSSProperties = { color: 'inherit', textDecorationColor: 'var(--gold)', textUnderlineOffset: 4 }
 
 export default async function ContactPage() {
+
+  /* The row behind this page: its SEO overrides and any JSON-LD the
+     office added. Both are also read in `generateMetadata`, which Next
+     runs separately — the provider's fetch is tagged and cached, so this
+     is one request, not two. */
+  const page = await getContent().pages.byPath('/contact')
   const content = getContent()
   const [settings, trips] = await Promise.all([content.settings.get(), content.trips.list()])
 
@@ -77,6 +85,19 @@ export default async function ContactPage() {
         margin: '0 auto',
       }}
     >
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/contact',
+          title: page?.seo.title ?? page?.title ?? 'Contact',
+          description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
+          crumbs: [{ name: 'Contact', path: '/contact' }],
+          extra: page?.seo.schemaJson,
+        })}
+      />
       {/* The design project leaves this page entirely unanimated (audit B3). */}
       <Reveal>
         <Eyebrow number="Contact">Enquiry</Eyebrow>

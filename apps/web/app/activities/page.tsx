@@ -1,3 +1,5 @@
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Eyebrow, SiteIcon } from '@/design-system'
@@ -34,12 +36,32 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ActivitiesPage() {
+
+  /* The row behind this page: its SEO overrides and any JSON-LD the
+     office added. Both are also read in `generateMetadata`, which Next
+     runs separately — the provider's fetch is tagged and cached, so this
+     is one request, not two. */
+  const page = await getContent().pages.byPath('/activities')
+  const settings = await getContent().settings.get()
   const content = getContent()
   const [activities, trips] = await Promise.all([content.activities.list(), content.trips.list()])
   const bySlug = new Map(trips.map((t) => [t.slug, t]))
 
   return (
     <main>
+      {/* Structured data. Every page emits one `@graph`; this is where a
+          page with no entity of its own still says what it is, where it
+          sits in the trail, and who publishes it. `extra` is whatever the
+          office added on the SEO tab. */}
+      <JsonLd
+        graph={await graphForPage({
+          path: '/activities',
+          title: page?.seo.title ?? page?.title ?? 'What you can do',
+          description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
+          crumbs: [{ name: 'What you can do', path: '/activities' }],
+          extra: page?.seo.schemaJson,
+        })}
+      />
       {/* The band at the foot of the page is full-bleed, so the container sits
           on this wrapper rather than on <main>. */}
       <div

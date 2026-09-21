@@ -60,6 +60,7 @@ export function emptyTripForm(): TripFormData {
 export function emptySeo() {
   return {
     metaTitle: null,
+    schemaJson: null,
     metaDescription: null,
     canonicalUrl: null,
     noIndex: false,
@@ -128,6 +129,7 @@ function toForm(trip: TripDetail): TripFormData {
     status: trip.status,
     seo: {
       metaTitle: trip.metaTitle,
+      schemaJson: trip.schemaJson ?? null,
       metaDescription: trip.metaDescription,
       canonicalUrl: trip.canonicalUrl,
       noIndex: trip.noIndex,

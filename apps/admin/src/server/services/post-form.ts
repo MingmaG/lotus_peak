@@ -67,6 +67,7 @@ export async function postFormData(id: string): Promise<PostFormData | null> {
     publishedAt: post.publishedAt?.toISOString() ?? null,
     seo: {
       metaTitle: post.metaTitle,
+      schemaJson: post.schemaJson ?? null,
       metaDescription: post.metaDescription,
       canonicalUrl: post.canonicalUrl,
       noIndex: post.noIndex,
