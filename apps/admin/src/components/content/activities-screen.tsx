@@ -9,12 +9,24 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { toSlug } from '@/lib/slug';
 
+/** The enum, in the order the office would think of them. */
+const ACTIVITY_KINDS: [string, string][] = [
+  ['EXPERIENCE', 'Experience'],
+  ['DAY_TOUR', 'Day tour'],
+  ['RETREAT', 'Retreat'],
+  ['COURSE', 'Course'],
+  ['TREK', 'Trek'],
+  ['FESTIVAL', 'Festival'],
+  ['OTHER', 'Something else'],
+];
+
 interface Row {
   id: string;
   slug: string;
   name: string;
   blurb: string;
   icon: string;
+  kind: string;
   image: PickedMedia | null;
   examples: string[];
   trips: { id: string; title: string }[];
@@ -27,6 +39,7 @@ interface Form {
   name: string;
   blurb: string;
   icon: string;
+  kind: string;
   image: PickedMedia | null;
   examples: string[];
   tripIds: string[];
@@ -55,7 +68,9 @@ export function ActivitiesScreen({
       description="The things a journey is made of. The order here is the order the page shows them in."
       editId={editId}
       primary={(row) => row.name}
-      secondary={(row) => row.blurb}
+      secondary={(row) =>
+        `${ACTIVITY_KINDS.find(([value]) => value === row.kind)?.[1] ?? 'Experience'} · ${row.blurb}`
+      }
       thumbnail={(row) => row.image?.url ?? null}
       addLabel="Add a grouping"
       emptyTitle="Nothing here yet"
@@ -68,6 +83,7 @@ export function ActivitiesScreen({
         name: '',
         blurb: '',
         icon: 'PAVILION',
+        kind: 'EXPERIENCE',
         image: null,
         examples: [],
         tripIds: [],
@@ -79,6 +95,7 @@ export function ActivitiesScreen({
         name: row.name,
         blurb: row.blurb,
         icon: row.icon,
+        kind: row.kind,
         image: row.image,
         examples: row.examples,
         tripIds: row.trips.map((trip) => trip.id),
@@ -90,6 +107,7 @@ export function ActivitiesScreen({
         name: form.name,
         blurb: form.blurb,
         icon: form.icon,
+        kind: form.kind,
         imageId: form.image?.id ?? null,
         examples: form.examples.filter((line) => line.trim()),
         tripIds: form.tripIds,
@@ -97,6 +115,23 @@ export function ActivitiesScreen({
       })}
       renderForm={(form, set) => (
         <>
+          <Field
+            label="Kind"
+            hint="What sort of thing this is. The site sells journeys today; day tours, retreats and courses are what this is here for, and the page groups by it."
+          >
+            <select
+              value={form.kind}
+              onChange={(event) => set({ kind: event.target.value })}
+              className="h-9 w-full rounded-md border bg-transparent px-2 text-sm"
+            >
+              {ACTIVITY_KINDS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
+
           <Field label="Name">
             <Input
               value={form.name}

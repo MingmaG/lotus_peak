@@ -12,6 +12,10 @@ const patchSchema = z.object({
   placesLeft: z.number().int().min(0).nullable().optional(),
   status: z.enum(['OPEN', 'GUARANTEED', 'FEW_PLACES', 'CLOSED', 'CANCELLED']).optional(),
   note: z.string().max(300).nullable().optional(),
+  /** A fixed departure runs on this date whoever books it. */
+  isFixed: z.boolean().optional(),
+  /** Struck through beside the price, for an early-booking rate. */
+  wasPriceUsd: z.number().int().min(0).max(1_000_000).nullable().optional(),
   isPublished: z.boolean().optional(),
 });
 
@@ -29,6 +33,8 @@ export const PATCH = route<z.infer<typeof patchSchema>, { id: string }>({
         placesLeft: body.placesLeft,
         status: body.status,
         note: body.note === undefined ? undefined : body.note || null,
+        isFixed: body.isFixed,
+        wasPriceUsd: body.wasPriceUsd === undefined ? undefined : body.wasPriceUsd,
         isPublished: body.isPublished,
       },
       include: { trip: { select: { slug: true, title: true } } },

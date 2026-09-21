@@ -39,6 +39,8 @@ interface Row {
   placesLeft: number | null;
   status: string;
   note: string | null;
+  isFixed: boolean;
+  wasPriceUsd: number | null;
   isPublished: boolean;
   trip: { id: string; title: string; slug: string };
 }
@@ -53,6 +55,8 @@ interface Form {
   placesLeft: string;
   status: string;
   note: string;
+  isFixed: boolean;
+  wasPriceUsd: string;
   isPublished: boolean;
 }
 
@@ -96,6 +100,8 @@ export function DeparturesScreen({
         placesLeft: editing.placesLeft ? Number(editing.placesLeft) : null,
         status: editing.status,
         note: editing.note || null,
+        isFixed: editing.isFixed,
+        wasPriceUsd: editing.wasPriceUsd ? Number(editing.wasPriceUsd) : null,
         isPublished: editing.isPublished,
       };
       return editing.id
@@ -134,6 +140,8 @@ export function DeparturesScreen({
       placesLeft: '',
       status: 'OPEN',
       note: '',
+      isFixed: false,
+      wasPriceUsd: '',
       isPublished: true,
     };
   };
@@ -188,6 +196,8 @@ export function DeparturesScreen({
                     placesLeft: row.placesLeft?.toString() ?? '',
                     status: row.status,
                     note: row.note ?? '',
+                    isFixed: row.isFixed,
+                    wasPriceUsd: row.wasPriceUsd?.toString() ?? '',
                     isPublished: row.isPublished,
                   })
                 }
@@ -322,6 +332,31 @@ export function DeparturesScreen({
                     onChange={(event) => setEditing({ ...editing, note: event.target.value })}
                   />
                 </Field>
+
+                <Field
+                  label="Was"
+                  hint="Struck through beside the price, for an early-booking rate. Leave it empty and there is no strike-through."
+                >
+                  <Input
+                    type="number"
+                    min={0}
+                    value={editing.wasPriceUsd}
+                    onChange={(event) =>
+                      setEditing({ ...editing, wasPriceUsd: event.target.value })
+                    }
+                  />
+                </Field>
+
+                <label className="flex items-center gap-2 text-sm">
+                  <Switch
+                    checked={editing.isFixed}
+                    onCheckedChange={(isFixed) => setEditing({ ...editing, isFixed })}
+                  />
+                  {/* Most of these journeys are sold as "we will find a date
+                      together". The fixed ones are the exception, and the site
+                      lists them as a calendar rather than as an invitation. */}
+                  A fixed date, running whoever books it
+                </label>
 
                 <label className="flex items-center gap-2 text-sm">
                   <Switch

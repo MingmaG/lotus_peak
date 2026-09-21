@@ -47,6 +47,7 @@ export const POST = route<z.infer<typeof activitySchema>>({
         name: body.name,
         blurb: body.blurb,
         icon: body.icon,
+        kind: body.kind,
         imageId: body.imageId ?? null,
         examples: body.examples,
         sortOrder: body.sortOrder ?? (await db.activity.count()),

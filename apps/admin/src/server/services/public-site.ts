@@ -516,6 +516,8 @@ function serialiseTrip(trip: TripRow): ApiTrip {
       placesLeft: row.placesLeft,
       status: row.status,
       note: row.note,
+      isFixed: row.isFixed,
+      wasPriceUsd: row.wasPriceUsd,
     })),
     relatedSlugs: trip.relatedFrom.map((link) => link.target.slug),
     featured: trip.featured,

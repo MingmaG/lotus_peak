@@ -16,6 +16,16 @@ const schema = z
       .enum(['OPEN', 'GUARANTEED', 'FEW_PLACES', 'CLOSED', 'CANCELLED'])
       .default('OPEN'),
     note: z.string().max(300).nullable().optional(),
+    /**
+     * A fixed departure runs on this date whoever books it.
+     *
+     * The rest are "we will find a date together", which is how most of these
+     * journeys are actually sold — so the site lists the fixed ones as a
+     * calendar and leaves the others as an invitation to write.
+     */
+    isFixed: z.boolean().default(false),
+    /** Struck through beside the price, for an early-booking rate. */
+    wasPriceUsd: z.number().int().min(0).max(1_000_000).nullable().optional(),
     isPublished: z.boolean().default(true),
   })
   .refine((value) => new Date(value.endDate) > new Date(value.startDate), {
@@ -68,6 +78,8 @@ export const POST = route<z.infer<typeof schema>>({
         placesLeft: body.placesLeft ?? null,
         status: body.status,
         note: body.note || null,
+        isFixed: body.isFixed,
+        wasPriceUsd: body.wasPriceUsd ?? null,
         isPublished: body.isPublished,
       },
       include: { trip: { select: { slug: true, title: true } } },

@@ -400,6 +400,16 @@ export interface ApiDeparture {
   placesLeft: number | null;
   status: 'OPEN' | 'GUARANTEED' | 'FEW_PLACES' | 'CLOSED' | 'CANCELLED';
   note: string | null;
+  /**
+   * A fixed departure runs on this date whoever books it.
+   *
+   * The rest are "we will find a date together", which is how most of these
+   * journeys are sold — so the site lists the fixed ones as a calendar and
+   * leaves the others as an invitation to write.
+   */
+  isFixed: boolean;
+  /** Struck through beside the price, for an early-booking rate. */
+  wasPriceUsd: number | null;
 }
 
 export interface ApiTrip {

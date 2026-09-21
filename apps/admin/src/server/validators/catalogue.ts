@@ -46,6 +46,16 @@ export const activitySchema = z.object({
   name: z.string().min(1, 'Give it a name.').max(120),
   blurb: z.string().min(1, 'One line.').max(300),
   icon: icon.default('PAVILION'),
+  /**
+   * What kind of thing this is.
+   *
+   * The site sells five journeys today and the office expects day tours,
+   * retreats and courses. This is what lets those arrive without a second
+   * table and a second set of screens.
+   */
+  kind: z
+    .enum(['EXPERIENCE', 'DAY_TOUR', 'RETREAT', 'COURSE', 'TREK', 'FESTIVAL', 'OTHER'])
+    .default('EXPERIENCE'),
   imageId: z.string().nullable().optional(),
   /** What the day actually consists of — three to five lines. */
   examples: z.array(z.string().max(400)).max(12).default([]),

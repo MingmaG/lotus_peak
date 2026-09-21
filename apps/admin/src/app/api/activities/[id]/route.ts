@@ -32,6 +32,7 @@ export const PATCH = route<z.infer<typeof patchSchema>, { id: string }>({
         name: body.name,
         blurb: body.blurb,
         icon: body.icon,
+        kind: body.kind,
         imageId: body.imageId === undefined ? undefined : body.imageId,
         examples: body.examples,
         sortOrder: body.sortOrder,
