@@ -23,7 +23,16 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-export const PREVIEW_COOKIE = 'lp_preview_token'
+/**
+ * The cookie name.
+ *
+ * A local constant rather than an export: a route file may only export
+ * handlers and a fixed set of config keys, and exporting anything else fails
+ * the build with a message about an index signature. The one other place that
+ * needs the name — `src/content/api/client.ts` — has it written out, with this
+ * comment as the reason.
+ */
+const PREVIEW_COOKIE = 'lp_preview_token'
 
 export async function GET(request: NextRequest) {
   const secret = process.env.PREVIEW_SECRET
