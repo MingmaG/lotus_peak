@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { siteUrl } from '@/lib/env'
+
 import {
   articleNode,
   breadcrumbNode,
@@ -29,10 +31,6 @@ import type { Post, SiteSettings, Trip } from '@/content/types'
  * keeping the API's vocabulary out of the design system, and it is paid once,
  * here, rather than in every page.
  */
-
-function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lotuspeak.org').replace(/\/$/, '')
-}
 
 /**
  * The company, as the graph builder wants it.

@@ -1,3 +1,4 @@
+import { siteUrl } from '@/lib/env'
 import { getContent } from '@/content'
 
 /**
@@ -21,7 +22,7 @@ export async function GET() {
     content.settings.get(),
   ])
 
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lotuspeak.org').replace(/\/$/, '')
+  const base = siteUrl()
 
   const items = posts
     .map(

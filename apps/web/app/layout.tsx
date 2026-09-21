@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getContent } from '@/content'
 import { IMG } from '@/lib/assets'
+import { siteUrl } from '@/lib/env'
 import { ogImage } from '@/lib/seo'
 import { SiteChrome } from '@/sections/shared/SiteChrome'
 import './globals.css'
@@ -8,7 +9,7 @@ import './globals.css'
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getContent().settings.get()
   return {
-    metadataBase: new URL(process.env.SITE_URL ?? 'https://lotuspeak.org'),
+    metadataBase: new URL(siteUrl()),
     title: { default: settings.defaultSeo.title, template: '%s — Lotus Peak' },
     description: settings.defaultSeo.description,
     openGraph: {

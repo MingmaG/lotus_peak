@@ -106,6 +106,17 @@ export const env = {
       'http://localhost:6013/lotuspeak-media',
     ).replace(/\/$/, ''),
     localDir: optional('STORAGE_LOCAL_DIR', 'storage'),
+    /**
+     * This app's own public origin, for the local driver only.
+     *
+     * The local driver serves media through `/api/storage/...` on this app, so
+     * the website has to be told what to resolve those paths against. With S3
+     * the URLs are already absolute and this is never consulted — which is why
+     * it went unset and undocumented for a while, and why a `local` deployment
+     * would have published `http://localhost:6011/...` as the src of every
+     * photograph on the site.
+     */
+    adminPublicUrl: optional('ADMIN_PUBLIC_URL', 'http://localhost:6011').replace(/\/$/, ''),
   },
 
   mail: {

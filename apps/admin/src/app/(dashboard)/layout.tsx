@@ -1,5 +1,6 @@
 import { AppShell } from '@/components/layout/app-shell';
 import { requireUser } from '@/lib/auth/session';
+import { env } from '@/lib/env';
 
 /**
  * Every screen behind a login.
@@ -25,6 +26,7 @@ export default async function DashboardLayout({
         roleSlug: user.roleSlug,
         permissions: user.permissions,
       }}
+      siteUrl={env.site.url}
     >
       {children}
     </AppShell>

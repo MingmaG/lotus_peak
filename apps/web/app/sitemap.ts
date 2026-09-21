@@ -1,3 +1,4 @@
+import { siteUrl } from '@/lib/env'
 import type { MetadataRoute } from 'next'
 import { getContent } from '@/content'
 
@@ -14,7 +15,7 @@ import { getContent } from '@/content'
  * not to be indexed is a contradiction a crawler reports.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lotuspeak.org').replace(/\/$/, '')
+  const base = siteUrl()
   const entries = await getContent().discovery.sitemap()
 
   return entries.map((entry) => ({

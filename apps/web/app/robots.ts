@@ -1,3 +1,4 @@
+import { siteUrl } from '@/lib/env'
 import type { MetadataRoute } from 'next'
 
 /**
@@ -15,7 +16,7 @@ import type { MetadataRoute } from 'next'
  * where somebody looking for them will look.
  */
 export default function robots(): MetadataRoute.Robots {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lotuspeak.org').replace(/\/$/, '')
+  const base = siteUrl()
 
   return {
     rules: [

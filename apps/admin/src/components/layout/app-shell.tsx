@@ -48,9 +48,20 @@ type Badges = Partial<Record<'enquiries' | 'notFound' | 'scheduled', number>>;
  */
 export function AppShell({
   user,
+  /**
+   * Where "View on site" points.
+   *
+   * Passed in rather than read here. This is a client component, so the only
+   * environment it can see is `NEXT_PUBLIC_*` — and it used to read
+   * `NEXT_PUBLIC_SITE_URL`, which nothing sets: the panel owns `SITE_URL`, and
+   * `env.ts` is the one place that reads it. So every "View on site" link in
+   * production pointed at `http://localhost:6010`.
+   */
+  siteUrl,
   children,
 }: {
   user: AppShellUser;
+  siteUrl: string;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -121,14 +132,14 @@ export function AppShell({
             className="hidden sm:inline-flex"
             title="Open the website"
           >
-            <a href={siteUrl()} target="_blank" rel="noreferrer">
+            <a href={siteUrl} target="_blank" rel="noreferrer">
               <ExternalLink className="size-4" />
               <span className="sr-only">Open the website</span>
             </a>
           </Button>
 
           <ThemeToggle />
-          <AccountMenu user={user} />
+          <AccountMenu user={user} siteUrl={siteUrl} />
         </header>
 
         <main className="min-w-0 flex-1 px-3 py-5 sm:px-5 sm:py-6 lg:px-8">
@@ -166,7 +177,7 @@ function ThemeToggle() {
   );
 }
 
-function AccountMenu({ user }: { user: AppShellUser }) {
+function AccountMenu({ user, siteUrl }: { user: AppShellUser; siteUrl: string }) {
   const router = useRouter();
 
   async function signOut() {
@@ -200,7 +211,7 @@ function AccountMenu({ user }: { user: AppShellUser }) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="sm:hidden">
-          <a href={siteUrl()} target="_blank" rel="noreferrer">
+          <a href={siteUrl} target="_blank" rel="noreferrer">
             <ExternalLink className="mr-2 size-4" />
             Open the website
           </a>
@@ -224,9 +235,6 @@ function initials(name: string): string {
     .join('');
 }
 
-function siteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:6010';
-}
 
 /**
  * The title in the bar.

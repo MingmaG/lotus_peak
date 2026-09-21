@@ -1,3 +1,4 @@
+import { siteUrl } from '@/lib/env'
 import 'server-only'
 
 import { buildLlmsFullTxt, buildLlmsTxt } from '@lotuspeak/seo'
@@ -95,7 +96,7 @@ const FILE_PAGES = [
   { path: '/terms', changeFrequency: 'yearly' as const, priority: 0.3 },
 ]
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lotuspeak.org').replace(/\/$/, '')
+const SITE_URL = siteUrl()
 
 /**
  * This provider's data, in the shapes `@lotuspeak/seo` builds from.

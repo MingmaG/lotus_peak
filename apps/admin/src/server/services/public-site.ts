@@ -34,6 +34,7 @@ import type {
 } from '@prisma/client';
 
 import { db } from '@/lib/db';
+import { env } from '@/lib/env';
 import {
   mediaIdsIn,
   parsePageSections,
@@ -70,7 +71,7 @@ import { MEDIA_INCLUDE, serialiseMedia, type MediaWithRenditions } from './media
  * this is never consulted.
  */
 function adminOrigin(): string {
-  return process.env.ADMIN_PUBLIC_URL?.replace(/\/$/, '') || 'http://localhost:6011';
+  return env.storage.adminPublicUrl;
 }
 
 /* -------------------------------------------------------------------------- */
