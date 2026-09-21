@@ -2,7 +2,7 @@ import 'server-only';
 
 import { NextResponse, type NextRequest } from 'next/server';
 import { Prisma } from '@prisma/client';
-import { ZodError, type ZodSchema } from 'zod';
+import { ZodError, type ZodType, type ZodTypeDef } from 'zod';
 
 import { ForbiddenError, currentUser, type CurrentUser } from '@/lib/auth/session';
 import { can, type Permission } from '@/lib/auth/permissions';
@@ -68,7 +68,15 @@ export interface HandlerContext<TBody, TParams> {
 export interface RouteOptions<TBody, TParams> {
   /** Null means "any signed-in person", which is right for a few read routes. */
   permission: Permission | null;
-  schema?: ZodSchema<TBody>;
+  /**
+   * `ZodType<TBody, ZodTypeDef, unknown>`, not `ZodSchema<TBody>`.
+   *
+   * `ZodSchema<T>` pins the schema's *input* type to `T` as well as its
+   * output, which makes every schema with a `.default()` on it unassignable —
+   * its input has the field optional and its output does not. Leaving the
+   * input as `unknown` is also the truth: the input is a parsed JSON body.
+   */
+  schema?: ZodType<TBody, ZodTypeDef, unknown>;
   handler: (context: HandlerContext<TBody, TParams>) => Promise<unknown>;
 }
 
