@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 
 import { getPage, listPages } from '@/server/services/public-site';
+import { previewAllowed } from '@/lib/api/preview-guard';
 import { missing, ok, publicRoute } from '@/lib/api/public';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,7 @@ export const GET = publicRoute('/api/public/site/pages', async (request: NextReq
   const path = request.nextUrl.searchParams.get('path');
   if (!path) return ok(await listPages());
 
-  const page = await getPage(path);
+  const preview = await previewAllowed(request, path);
+  const page = await getPage(path, { preview });
   return page ? ok(page) : missing('page');
 });

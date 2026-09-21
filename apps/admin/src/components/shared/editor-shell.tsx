@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PreviewFrame } from '@/components/preview/preview-frame';
 import { cn } from '@/lib/utils';
 import type { ContentStatus } from '@prisma/client';
 
@@ -99,6 +100,8 @@ export function EditorShell({
   notice,
   children,
 }: EditorShellProps) {
+  const [previewOpen, setPreviewOpen] = React.useState(false);
+
   /**
    * Warn before leaving with unsaved work.
    *
@@ -178,12 +181,27 @@ export function EditorShell({
             )}
 
             {previewUrl && (
-              <Button variant="outline" size="sm" asChild title="See it as the site draws it">
-                <a href={previewUrl} target="_blank" rel="noreferrer">
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPreviewOpen(true)}
+                  title="See it as the site draws it"
+                  /* Disabled while there is unsaved work, because the preview
+                     renders the saved row — showing the old version beside an
+                     edited form is worse than not offering it. */
+                  disabled={dirty}
+                >
                   <Eye className="size-4 sm:mr-1.5" />
                   <span className="hidden sm:inline">Preview</span>
-                </a>
-              </Button>
+                </Button>
+                <PreviewFrame
+                  url={previewUrl}
+                  title={title}
+                  open={previewOpen}
+                  onOpenChange={setPreviewOpen}
+                />
+              </>
             )}
 
             {viewUrl && (

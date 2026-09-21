@@ -79,6 +79,32 @@ interface FetchOptions {
 }
 
 /**
+ * The preview token this request is carrying, if any.
+ *
+ * Read from the cookie `/api/preview` set. Inside a preview every read goes to
+ * the admin panel with the token attached and `cache: 'no-store'` — because a
+ * draft must never land in the cache entry the published page is served from,
+ * which is the one way a preview can leak an unpublished journey to the public
+ * internet.
+ *
+ * The import is dynamic so `next/headers` is only reached inside a request.
+ * `sitemap.ts` and the `llms` routes call `fetchContent` too, and importing it
+ * at module scope makes them fail with "cookies was called outside a request
+ * scope" — an error that names neither this file nor theirs.
+ */
+async function previewToken(): Promise<string | null> {
+  try {
+    const { draftMode, cookies } = await import('next/headers')
+    const draft = await draftMode()
+    if (!draft.isEnabled) return null
+    const store = await cookies()
+    return store.get('lp_preview_token')?.value ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
  * Reads one resource, or throws.
  *
  * Throwing rather than returning null is deliberate for everything but a 404.
@@ -92,11 +118,16 @@ export async function fetchContent<T>(path: string, options: FetchOptions): Prom
     if (value !== undefined) url.searchParams.set(key, String(value))
   }
 
+  const preview = await previewToken()
+  if (preview) url.searchParams.set('preview', preview)
+
   let response: Response
   try {
     response = await fetch(url, {
       headers: { accept: 'application/json' },
-      next: { tags: [...options.tags], revalidate: revalidateSeconds() },
+      ...(preview
+        ? { cache: 'no-store' as const }
+        : { next: { tags: [...options.tags], revalidate: revalidateSeconds() } }),
     })
   } catch (cause) {
     throw new ContentError(

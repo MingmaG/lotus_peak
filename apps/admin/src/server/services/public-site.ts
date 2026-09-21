@@ -169,6 +169,22 @@ const img = (media: MediaWithRenditions | null | undefined): ApiImage | null =>
 const PUBLISHED = { status: 'PUBLISHED' as const, deletedAt: null };
 
 /**
+ * The status filter, relaxed for a signed preview.
+ *
+ * The website's whole safety property is that it holds no database credential
+ * and therefore cannot see a draft. Preview is the one hole in that, and this
+ * is where the hole is: a caller with a valid, fifteen-minute, path-scoped
+ * token gets everything but a deleted row.
+ *
+ * `deletedAt` is still enforced even in preview. A deleted journey is not a
+ * draft — nobody is working on it — and rendering one would be a page with a
+ * hero image that has been unlinked.
+ */
+function visible(preview: boolean) {
+  return preview ? { deletedAt: null } : PUBLISHED;
+}
+
+/**
  * Everything the root layout needs, in one object.
  *
  * One request rather than five, because the navigation, the footer, the
@@ -412,9 +428,12 @@ export async function listTrips(options?: {
   }));
 }
 
-export async function getTrip(slug: string): Promise<ApiTrip | null> {
+export async function getTrip(
+  slug: string,
+  options?: { preview?: boolean },
+): Promise<ApiTrip | null> {
   const trip = await db.trip.findFirst({
-    where: { slug, ...PUBLISHED },
+    where: { slug, ...visible(options?.preview === true) },
     include: TRIP_INCLUDE,
   });
   return trip ? serialiseTrip(trip) : null;
@@ -541,9 +560,12 @@ export async function listPosts(options?: {
   }));
 }
 
-export async function getPost(slug: string): Promise<ApiPost | null> {
+export async function getPost(
+  slug: string,
+  options?: { preview?: boolean },
+): Promise<ApiPost | null> {
   const post = await db.post.findFirst({
-    where: { slug, ...PUBLISHED },
+    where: { slug, ...visible(options?.preview === true) },
     include: {
       hero: { include: MEDIA_INCLUDE },
       ogImage: { include: MEDIA_INCLUDE },
@@ -813,9 +835,12 @@ export async function listPeople(): Promise<ApiPerson[]> {
 /*  Pages                                                                      */
 /* -------------------------------------------------------------------------- */
 
-export async function getPage(path: string): Promise<ApiPage | null> {
+export async function getPage(
+  path: string,
+  options?: { preview?: boolean },
+): Promise<ApiPage | null> {
   const page = await db.page.findFirst({
-    where: { path, ...PUBLISHED },
+    where: { path, ...visible(options?.preview === true) },
     include: {
       hero: { include: MEDIA_INCLUDE },
       ogImage: { include: MEDIA_INCLUDE },
