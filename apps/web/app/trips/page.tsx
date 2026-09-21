@@ -8,6 +8,8 @@ import { fmt } from '@/content/types'
 import { Reveal } from '@/motion'
 import { TripFilter } from '@/sections/trips/TripFilter'
 import { TYPE_OF, toFilterLabel, type FilterLabel } from '@/sections/trips/filters'
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForTripIndex } from '@/seo/graph'
 
 export const metadata: Metadata = {
   title: 'Our trips',

@@ -13,6 +13,8 @@ import { SectionNav } from '@/sections/trip/SectionNav'
 import { TripFaq, TripItinerary } from '@/sections/trip/TripItinerary'
 import { TripHero } from '@/sections/trip/TripHero'
 import { TripOverviewImages } from '@/sections/trip/TripOverviewImages'
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForTrip } from '@/seo/graph'
 
 export async function generateStaticParams() {
   return (await getContent().trips.slugs()).map((slug) => ({ slug }))
@@ -65,6 +67,7 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
 
   return (
     <main>
+      <JsonLd graph={await graphForTrip(trip)} />
       <TripHero
         image={trip.heroImage}
         alt={trip.heroAlt}

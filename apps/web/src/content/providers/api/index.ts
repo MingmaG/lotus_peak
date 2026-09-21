@@ -18,7 +18,12 @@ import type {
 } from '@lotuspeak/api-contracts'
 
 import { REVALIDATE_TAGS, fetchContent, fetchContentOrNull } from '../../api/client'
-import type { ContentRepository, EnquiryInput } from '../../repository'
+import type {
+  ContentRepository,
+  EnquiryInput,
+  Redirect,
+  SitemapEntry,
+} from '../../repository'
 import type { Activity, CultureArticle, Destination, GalleryImage, Post, Reflection, Season, SiteSettings, Trip } from '../../types'
 import {
   toActivity,
@@ -207,6 +212,38 @@ export function createApiProvider(): ContentRepository {
     settings: {
       async get() {
         return toSettings(await getSite())
+      },
+    },
+
+    discovery: {
+      async sitemap() {
+        return fetchContent<SitemapEntry[]>('/api/public/site/discovery', {
+          tags: [REVALIDATE_TAGS.discovery],
+          query: { part: 'sitemap' },
+        })
+      },
+
+      async redirects() {
+        return fetchContent<Redirect[]>('/api/public/site/discovery', {
+          tags: [REVALIDATE_TAGS.redirects],
+          query: { part: 'redirects' },
+        })
+      },
+
+      async llmsTxt() {
+        const { text } = await fetchContent<{ text: string }>('/api/public/site/discovery', {
+          tags: [REVALIDATE_TAGS.discovery],
+          query: { part: 'llms' },
+        })
+        return text
+      },
+
+      async llmsFullTxt() {
+        const { text } = await fetchContent<{ text: string }>('/api/public/site/discovery', {
+          tags: [REVALIDATE_TAGS.discovery],
+          query: { part: 'llms-full' },
+        })
+        return text
       },
     },
 

@@ -11,6 +11,19 @@ import type {
   TripType,
 } from './types'
 
+export interface SitemapEntry {
+  path: string
+  lastModified: string
+  changeFrequency: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
+  priority: number
+}
+
+export interface Redirect {
+  source: string
+  target: string
+  permanent: boolean
+}
+
 export type EnquiryInput = {
   name: string
   email: string
@@ -66,6 +79,25 @@ export interface ContentRepository {
     list(opts?: { tripSlug?: string; featured?: boolean; limit?: number }): Promise<Reflection[]>
   }
   settings: { get(): Promise<SiteSettings> }
+
+  /**
+   * What the sitemap, the feed, `llms.txt` and the redirect middleware need.
+   *
+   * Its own group rather than methods on each entity, because every one of
+   * these reads *across* the catalogue — a sitemap is journeys and journal
+   * entries and pages together — and because they are the only reads whose
+   * caller is a crawler rather than a page.
+   *
+   * `llmsTxt` and `llmsFullTxt` return finished text. The alternative is this
+   * app fetching every journey and every entry over HTTP to reassemble what is
+   * four queries away on the other side of the wire.
+   */
+  discovery: {
+    sitemap(): Promise<SitemapEntry[]>
+    redirects(): Promise<Redirect[]>
+    llmsTxt(): Promise<string>
+    llmsFullTxt(): Promise<string>
+  }
 
   enquiries: { create(input: EnquiryInput): Promise<{ id: string }> }
 

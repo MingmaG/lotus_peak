@@ -8,6 +8,8 @@ import { HomeHero } from '@/sections/home/HomeHero'
 import { Seasons } from '@/sections/home/Seasons'
 import { BandInquiry, BandLink } from '@/sections/shared/BandCta'
 import { Section } from '@/sections/shared/Section'
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPage } from '@/seo/graph'
 
 export default async function HomePage() {
   const content = getContent()
@@ -21,6 +23,14 @@ export default async function HomePage() {
 
   return (
     <main>
+      <JsonLd
+        graph={await graphForPage({
+          path: '/',
+          title: settings.defaultSeo.title,
+          description: settings.defaultSeo.description,
+          crumbs: [],
+        })}
+      />
       <HomeHero image={IMG.dzong} alt={altFor(IMG.dzong)} />
 
       {/* 01 — Our purpose */}

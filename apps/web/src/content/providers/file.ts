@@ -1,5 +1,8 @@
 import 'server-only'
 
+import { buildLlmsFullTxt, buildLlmsTxt } from '@lotuspeak/seo'
+import type { ApiImage, ApiSite } from '@lotuspeak/api-contracts'
+
 import { altFor } from '@/lib/assets'
 import { ACTIVITIES, CULTURE, DESTINATIONS, GALLERY, REFLECTIONS, SEASONS, SETTINGS } from '../data/site'
 import { POSTS } from '../data/posts'
@@ -49,6 +52,286 @@ const withAlt = {
  * before any database exists. It stays supported forever as the reference
  * implementation and the fixture a new provider is checked against.
  */
+
+/* -------------------------------------------------------------------------- */
+/*  Discovery                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The site's fixed routes, for this provider's sitemap.
+ *
+ * A literal list, which is exactly what the database version replaces — and
+ * correct here, because with no database there is no `pages` table to read and
+ * the routes are the ones this repository actually ships.
+ */
+const FILE_PAGES = [
+  { path: '/', changeFrequency: 'weekly' as const, priority: 1 },
+  { path: '/trips', changeFrequency: 'weekly' as const, priority: 0.9 },
+  { path: '/destinations', changeFrequency: 'monthly' as const, priority: 0.7 },
+  { path: '/activities', changeFrequency: 'monthly' as const, priority: 0.6 },
+  { path: '/journal', changeFrequency: 'weekly' as const, priority: 0.7 },
+  { path: '/gallery', changeFrequency: 'monthly' as const, priority: 0.4 },
+  { path: '/culture', changeFrequency: 'monthly' as const, priority: 0.6 },
+  { path: '/about', changeFrequency: 'yearly' as const, priority: 0.7 },
+  { path: '/contact', changeFrequency: 'yearly' as const, priority: 0.8 },
+  { path: '/travellers-information', changeFrequency: 'yearly' as const, priority: 0.5 },
+  { path: '/terms', changeFrequency: 'yearly' as const, priority: 0.3 },
+]
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lotuspeak.org').replace(/\/$/, '')
+
+/**
+ * This provider's data, in the shapes `@lotuspeak/seo` builds from.
+ *
+ * An adapter rather than a second implementation of `llms.txt`. Two builders
+ * would be two files that describe the same site differently — which is the
+ * failure the shared package exists to prevent, and it would be no less a
+ * failure for being between two providers rather than between two apps.
+ */
+function fileImage(src: string): ApiImage | null {
+  const record = altFor(src)
+  return src
+    ? {
+        id: src,
+        url: `${SITE_URL}${src}`,
+        alt: record,
+        width: 1200,
+        height: 800,
+        blurDataUrl: null,
+        focal: [0.5, 0.5],
+        decorative: record === '',
+        caption: null,
+        credit: null,
+      }
+    : null
+}
+
+function fileSite(): ApiSite {
+  const s = SETTINGS
+  return {
+    company: {
+      legalName: 'Lotus Peak Tours & Travel',
+      name: s.brand,
+      tagline: s.line,
+      description: s.defaultSeo.description,
+      foundedYear: null,
+      licenceNumber: null,
+      registrationNumber: null,
+      logo: null,
+      markLogo: null,
+      address: {
+        line1: 'Thimphu',
+        line2: null,
+        locality: 'Thimphu',
+        region: null,
+        postalCode: null,
+        country: 'Bhutan',
+        countryCode: 'BT',
+        latitude: null,
+        longitude: null,
+        mapUrl: null,
+      },
+      contacts: [
+        {
+          kind: 'MOBILE',
+          label: 'Telephone',
+          value: s.contact.phone.replace(/\s+/g, ''),
+          display: s.contact.phone,
+          isPrimary: true,
+          prefillMessage: null,
+        },
+        {
+          kind: 'EMAIL',
+          label: 'Email',
+          value: s.contact.email,
+          display: s.contact.email,
+          isPrimary: true,
+          prefillMessage: null,
+        },
+      ],
+      socials: [],
+      officeHours: [],
+    },
+    nav: s.nav.map((link) => ({ ...link, external: false, children: [] })),
+    navCta: s.navCta,
+    footer: {
+      columns: s.footer.columns.map((column) => ({
+        title: column.title,
+        links: column.links.map((link) => ({ ...link, external: false, children: [] })),
+      })),
+      note: s.footer.note,
+      copyright: '© {year} {name}',
+    },
+    replyPromise: s.contact.replyPromise,
+    pledge: { percent: s.pledge.percent, beneficiary: s.pledge.beneficiary, note: null },
+    sdfPerNightUsd: s.sdfPerNightUsd,
+    defaultSeo: {
+      titleTemplate: '%s — Lotus Peak',
+      defaultTitle: s.defaultSeo.title,
+      description: s.defaultSeo.description,
+      ogImage: null,
+    },
+    siteUrl: SITE_URL,
+    integrations: {
+      googleAnalyticsId: null,
+      googleTagManagerId: null,
+      googleSiteVerification: null,
+      metaPixelId: null,
+      whatsappNumber: null,
+      whatsappPrefill: null,
+      tripadvisorWidgetId: null,
+    },
+    announcement: null,
+  }
+}
+
+function fileTripSummaries() {
+  return [...TRIPS].sort(byOrder).map((trip) => ({
+    slug: trip.slug,
+    title: trip.title,
+    excerpt: trip.excerpt,
+    type: trip.type,
+    regions: trip.regions,
+    durationDays: trip.durationDays,
+    nights: trip.nights,
+    highPointMetres: trip.highPointMetres,
+    difficulty: trip.difficulty,
+    priceFromUsd: trip.priceFromUsd,
+    seasonLabel: trip.seasonLabel,
+    journeyLabel: trip.journeyLabel,
+    heroImage: fileImage(trip.heroImage),
+    featured: false,
+  }))
+}
+
+const FILE_SEO = {
+  metaTitle: null,
+  metaDescription: null,
+  canonicalUrl: null,
+  noIndex: false,
+  noFollow: false,
+  ogTitle: null,
+  ogDescription: null,
+  ogImage: null,
+  twitterCard: 'summary_large_image' as const,
+  keywords: [],
+  schemaJson: null,
+  sitemapPriority: 0.5,
+  sitemapChangeFreq: 'monthly' as const,
+  updatedAt: new Date(0).toISOString(),
+}
+
+function fileLlmsInput() {
+  return {
+    siteUrl: SITE_URL,
+    site: fileSite(),
+    trips: fileTripSummaries(),
+    posts: [...POSTS].sort(byOrder).map((post) => ({
+      slug: post.slug,
+      title: post.title,
+      standfirst: post.standfirst,
+    })),
+    destinations: [...DESTINATIONS].sort(byOrder).map((row) => ({
+      slug: row.slug,
+      name: row.name,
+      blurb: row.blurb,
+    })),
+    pages: FILE_PAGES.filter((page) => page.priority >= 0.5).map((page) => ({
+      path: page.path,
+      title: page.path === '/' ? 'Home' : page.path.replace('/', '').replace(/-/g, ' '),
+      lead: null,
+    })),
+  }
+}
+
+function fileLlmsFullInput() {
+  return {
+    siteUrl: SITE_URL,
+    site: fileSite(),
+    trips: [...TRIPS].sort(byOrder).map((trip) => ({
+      slug: trip.slug,
+      title: trip.title,
+      excerpt: trip.excerpt,
+      type: trip.type,
+      regions: trip.regions,
+      destinationSlugs: [],
+      durationDays: trip.durationDays,
+      nights: trip.nights,
+      highPointMetres: trip.highPointMetres,
+      difficulty: trip.difficulty,
+      priceFromUsd: trip.priceFromUsd,
+      seasonLabel: trip.seasonLabel,
+      seasonKeys: [],
+      paceNote: trip.paceNote,
+      journeyLabel: trip.journeyLabel,
+      groupSizeMin: null,
+      groupSizeMax: null,
+      heroImage: fileImage(trip.heroImage),
+      overview: trip.overview,
+      highlights: trip.highlights,
+      itinerary: trip.itinerary.map((day, index) => ({
+        day: day.rest ? null : index + 1,
+        rest: day.rest === true,
+        title: day.title,
+        meta: day.meta ?? null,
+        body: day.body ?? null,
+        images: [],
+      })),
+      included: trip.included,
+      excluded: trip.excluded,
+      faq: trip.faq,
+      gallery: [],
+      departures: [],
+      relatedSlugs: [],
+      featured: false,
+      seo: FILE_SEO,
+    })),
+    posts: [...POSTS].sort(byOrder).map((post) => ({
+      slug: post.slug,
+      title: post.title,
+      standfirst: post.standfirst,
+      date: post.date,
+      region: post.region,
+      heroImage: fileImage(post.heroImage),
+      body: post.body.map((block) =>
+        block.kind === 'image'
+          ? { kind: 'image' as const, image: fileImage(block.src)!, ratio: block.ratio ?? null }
+          : block.kind === 'list'
+            ? { kind: 'list' as const, items: block.items, ordered: false }
+            : block.kind === 'quote'
+              ? { kind: 'quote' as const, text: block.text, attribution: null }
+              : block,
+      ),
+      author: null,
+      tags: [],
+      relatedTripSlugs: [],
+      readingMinutes: 1,
+      seo: FILE_SEO,
+    })),
+    destinations: [...DESTINATIONS].sort(byOrder).map((row) => ({
+      slug: row.slug,
+      name: row.name,
+      icon: row.icon,
+      blurb: row.blurb,
+      detail: row.detail,
+      image: fileImage(row.image),
+      tripSlugs: row.tripSlugs,
+      altitudeMetres: null,
+      latitude: null,
+      longitude: null,
+      seo: FILE_SEO,
+    })),
+    culture: [...CULTURE].sort(byOrder).map((row) => ({
+      slug: row.slug,
+      title: row.title,
+      body: row.body,
+      icon: row.icon,
+      image: fileImage(row.image),
+      seo: FILE_SEO,
+    })),
+  }
+}
+
 export function createFileProvider(): ContentRepository {
   return {
     name: 'file',
@@ -128,6 +411,54 @@ export function createFileProvider(): ContentRepository {
         if (tripSlug) out = out.filter((r) => r.tripSlug === tripSlug)
         if (featured !== undefined) out = out.filter((r) => r.featured === featured)
         return limit ? out.slice(0, limit) : out
+      },
+    },
+
+    /**
+     * The discovery surface, built here from the same modules everything else
+     * in this provider reads.
+     *
+     * It duplicates what the admin panel's `/discovery` endpoint does, which
+     * is the price of keeping the file provider a genuine fixture: a provider
+     * that implemented nine of eleven methods and threw on the other two would
+     * not prove anything about whether a page is coupled to a source.
+     */
+    discovery: {
+      async sitemap() {
+        const [trips, posts] = await Promise.all([
+          [...TRIPS].sort(byOrder),
+          [...POSTS].sort(byOrder),
+        ])
+        const now = new Date().toISOString()
+        return [
+          ...FILE_PAGES.map((page) => ({ ...page, lastModified: now })),
+          ...trips.map((trip) => ({
+            path: `/trips/${trip.slug}`,
+            lastModified: now,
+            changeFrequency: 'weekly' as const,
+            priority: 0.8,
+          })),
+          ...posts.map((post) => ({
+            path: `/journal/${post.slug}`,
+            lastModified: `${post.date}T00:00:00.000Z`,
+            changeFrequency: 'monthly' as const,
+            priority: 0.6,
+          })),
+        ]
+      },
+
+      /* The file provider has no redirect table. An empty list is the truth,
+         not a stub: with no database there is nowhere for one to live. */
+      async redirects() {
+        return []
+      },
+
+      async llmsTxt() {
+        return buildLlmsTxt(fileLlmsInput())
+      },
+
+      async llmsFullTxt() {
+        return buildLlmsFullTxt(fileLlmsFullInput())
       },
     },
 

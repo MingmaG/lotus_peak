@@ -8,6 +8,8 @@ import { ogImage } from '@/lib/seo'
 import { Parallax, Reveal } from '@/motion'
 import { PostBody } from '@/sections/journal/PostBody'
 import { heroOffset } from '@/sections/shared/Section'
+import { JsonLd } from '@/seo/JsonLd'
+import { graphForPost } from '@/seo/graph'
 
 export async function generateStaticParams() {
   const slugs = await getContent().posts.slugs()
@@ -46,6 +48,7 @@ export default async function JournalEntryPage({ params }: { params: Promise<{ s
 
   return (
     <main>
+      <JsonLd graph={await graphForPost(post)} />
       <Parallax
         src={post.heroImage}
         alt={post.heroAlt}
