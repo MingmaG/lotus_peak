@@ -4,8 +4,10 @@ Marketing site for **Lotus Peak Tours & Travel**, a Bhutanese company running sm
 mindfulness, meditation, festival and trekking journeys.
 
 The visual design is already finished and lives in a Claude design-system project
-(`60f3a02b-9cc7-43ff-8aed-3458ffd6d9e3`, "Bhutan Sanctuary"). This repo is the
-**production Next.js implementation** of that design. Read `docs/specs/` before writing code.
+(`60f3a02b-9cc7-43ff-8aed-3458ffd6d9e3`, "Bhutan Sanctuary"). This app is the
+**production Next.js implementation** of that design, and the design is approved: match
+it, do not improve it. Read `docs/specs/` before writing code, and the monorepo's
+`../../CLAUDE.md` for anything that crosses into the admin panel.
 
 ---
 
@@ -39,26 +41,25 @@ These come from the design system's own rules. Breaking one is a bug, not a styl
 | Styling | CSS custom properties + inline style objects | Ported 1:1 from the design project, whose hover states are JS-state-driven; Tailwind would add a translation layer that drifts |
 | Motion | Hand-written hooks over `IntersectionObserver` + one shared rAF broker | The prototype's effects are cheap and specific; a general animation library would not reproduce them and would cost more |
 | Content | Provider-agnostic repository (`src/content`) | See §4 |
-| Admin | Pluggable; Payload CMS mounted at `/admin` is the default | See §4 |
-| Validation | Zod at every provider boundary | Content from a CMS is untrusted input |
-| Email | Adapter interface, Resend adapter by default | Enquiries are the only conversion path |
+| Admin | `apps/admin`, a separate Next app, reached over HTTP | See §4 |
+| Validation | Zod at every provider boundary | Content from an API is untrusted input |
+| Email | Sent by the admin panel, not here | This app has no mail credential |
 
-Package manager is **pnpm**. Node 20+.
+**npm workspaces**, Node 20+. Run everything from the repo root.
 
 ## 3. Layout
 
 ```
 app/                      routes only — thin, no business logic
-  (site)/                 public marketing site
-  (admin)/                CMS admin, when the Payload provider is active
-  api/                    enquiry intake, revalidation webhooks
+  api/                    enquiry intake, revalidation, preview, 404 beacon
+  sitemap.ts robots.ts llms.txt feed.xml
 src/
   design-system/          tokens + presentational components (ported 1:1 from the design project)
   sections/               page sections composed from design-system + motion
   motion/                 the effects system — Reveal, Parallax, Band, Strip, Split, Dignities
-  content/                schema, repository interface, provider adapters, factory
-  lib/                    env, seo, images, mail, analytics
-content/                  seed data for the file provider
+  content/                domain types, the repository interface, the api and file providers
+  seo/                    the JSON-LD graph for each page type
+  lib/                    env, seo helpers, the asset registry, enquiry submission
 docs/specs/               the build specification — authoritative
 docs/audit/               findings carried over from the prototype
 design-source/            imported reference from the design project (do not import at runtime)
@@ -67,28 +68,36 @@ design-source/            imported reference from the design project (do not imp
 **`design-source/` is reference material, never a build input.** Nothing under `app/` or
 `src/` may import from it.
 
-## 4. The two axes of pluggability
+## 4. Where the content comes from
 
-The whole point of the architecture. Read `docs/specs/05-data-layer.md` and
-`docs/specs/06-cms-and-admin.md` before touching either.
+Read `docs/specs/05-data-layer.md` before touching any of it.
 
-**Database-agnostic.** Pages never touch a database. They call
-`getContent()` → a `ContentRepository`. Swapping Postgres for MongoDB, or a
-file-based seed for a hosted CMS, is one env var and one adapter file. Adapters map their
-own shape into the domain types in `src/content/schema/` and validate with Zod on the way
-out. No provider type ever leaks past `src/content/providers/`.
+**Pages never touch a database, and this app holds no credential for one.** They call
+`getContent()` → a `ContentRepository`. Two providers implement it:
 
-**CMS-agnostic.** The admin panel is an opt-in surface, not a dependency. Payload is the
-default because it runs inside this Next app and carries its own database adapters
-(Postgres / MongoDB / SQLite), which satisfies both axes at once — but `SanityProvider`,
-`StrapiProvider` and `DirectusProvider` are equally first-class and must stay buildable.
+- `api` (the default) reads `apps/admin`'s public endpoints over HTTP. Everything a
+  visitor sees is a row the office can edit.
+- `file` reads `src/content/data/` and needs nothing running. It is the fixture, and it
+  is also the proof that no page is coupled to a provider — if a page only works under
+  `api`, something has leaked.
+
+`CONTENT_SOURCE` picks between them. No provider type ever leaks past
+`src/content/providers/`; the domain types in `src/content/types.ts` are what pages see.
 
 Rules:
-- Never `import` a CMS SDK outside `src/content/providers/<name>/`.
-- Never reference `process.env` outside `src/lib/env.ts`.
-- Every new provider implements the **whole** `ContentRepository` interface or fails at
-  construction — no partial providers with silent `undefined` returns.
-- Adding a field means: schema → every provider → seed data → the component. In that order.
+- **Never import `@prisma/client`, `@/lib/db`, or anything from `apps/admin`.** The HTTP
+  boundary is the architecture, not an inconvenience.
+- **Never memoise content on a module-scope closure.** The closure outlives the request,
+  so publishing stops reaching the site while every cache header still says it worked.
+  This happened once and took a while to see.
+- Both providers implement the **whole** interface or neither does — no partial providers
+  with silent `undefined` returns.
+- Adding a field means: `packages/api-contracts` → the admin's serialiser → `types.ts` →
+  both providers → the component. In that order, because the first step makes the rest
+  fail to compile until they are done.
+- Anything a component needs must travel **on the record**. A module-level registry keyed
+  by image path worked on the server and silently produced `alt=""` on every client
+  component — see `docs/CUTOVER.md`.
 
 ## 5. Effects
 
@@ -123,7 +132,10 @@ Copy is part of the design. When you write or edit user-facing text:
 - Bhutanese terms are used unglossed where the context carries them (dzong, tshechu, kira,
   gho, thongdrel, Lam, Rinpoche, Jomzo, Zorig Chusum) and explained in a `Tooltip` where
   they are not (SDF).
-- Real contact details: `+975 17984485`, `info@lotuspeak.org`.
+- **Never type a contact detail into a component.** The phone number, the WhatsApp
+  number, the address, the email and every social link come from the settings the layout
+  already has. Three hardcoded copies of the phone number survived into this app and had
+  to be hunted down when the office changed it; the fourth is on you.
 
 ## 7. Working agreements
 
@@ -131,21 +143,37 @@ Copy is part of the design. When you write or edit user-facing text:
   Do not bulk-convert the prototype JSX.
 - When the design and this repo disagree, **the design project wins** — fetch the current
   file rather than trusting `design-source/`, which is a snapshot.
-- Run `pnpm typecheck && pnpm lint && pnpm test` before declaring anything done.
-- Every new route needs `generateMetadata`, an entry in the sitemap, and a reduced-motion
-  pass.
+- `npm run typecheck && npm run lint` before declaring anything done — and understand
+  that neither of them can tell you a page still says what it said. For anything that
+  moves data, diff the prerendered HTML (`scripts/compare-html.mjs`); for anything with a
+  form in it, open a browser.
+- Every new route needs `generateMetadata`, JSON-LD via `src/seo/`, an entry in the
+  sitemap, a reduced-motion pass, and a check that it is still `○` in the build output.
 - Images go through `next/image` with explicit `width`/`height` and a real `alt`
   (decorative ones get `alt=""` and `aria-hidden`).
+- Reduced motion must switch off **transitions**, not only animations. Almost all of this
+  design's movement is a transition written as an inline style, which a media query
+  cannot override one at a time — `src/motion/motion.css` turns them off together.
 - Do not add a dependency for something a 30-line hook does.
 
 ## 8. Commands
 
+From the repo root, which brings the database and the admin panel up too:
+
 ```
-pnpm dev            # next dev
-pnpm build          # next build
-pnpm typecheck      # tsc --noEmit
-pnpm lint           # eslint
-pnpm test           # vitest
-pnpm test:e2e       # playwright, includes the reduced-motion + no-JS suites
-pnpm content:seed   # load content/ seed data into the active provider
+npm run dev              # both apps — this one on :6010
+npm run build            # admin then web, in that order
+npm run typecheck
+npm run lint
 ```
+
+In this workspace:
+
+```
+npm run assets:check     # which brand assets are still placeholders
+npm run assets:build     # regenerate image renditions and font subsets
+node scripts/compare-html.mjs <before> <after>
+```
+
+There is no test runner here yet. What stands in for one is the prerendered-HTML diff
+and the browser; `docs/CUTOVER.md` is the record of what that caught.

@@ -1,16 +1,19 @@
-# Lotus Peak
+# @lotuspeak/web
 
-The Lotus Peak Tours & Travel website — Next.js 15, App Router, TypeScript.
-
-Built from the Claude design-system project "Bhutan Sanctuary"
+The Lotus Peak Tours & Travel website — Next.js 15, App Router, React 19,
+TypeScript. Built from the Claude design-system project "Bhutan Sanctuary"
 (`60f3a02b-9cc7-43ff-8aed-3458ffd6d9e3`).
 
+Start it from the repo root (`npm run dev`), which brings up the database and
+the admin panel this app reads from. See the root `README.md` for setup and
+`CLAUDE.md` in this folder for the design rules, which are not suggestions.
+
 ```bash
-npm install
-npm run dev          # http://localhost:3000
-npm run build && npm start
+npm run dev          # http://localhost:6010
+npm run build        # every route must come out ○ or ●, never ƒ
 npm run typecheck
-npm run assets:check # which brand assets are still placeholders
+npm run lint
+npm run assets:check # which brand assets are still placeholders — currently none
 ```
 
 ## Where things are
@@ -21,38 +24,31 @@ npm run assets:check # which brand assets are still placeholders
 | `src/design-system/` | Tokens and the 20 components, ported 1:1 from the design project |
 | `src/motion/` | The effects: Reveal, Parallax, Band, Split, Strip, Dignities, ShadowArt |
 | `src/sections/` | Page sections composed from the two above |
-| `src/content/` | Domain types, `ContentRepository`, the file provider |
+| `src/content/` | Domain types, `ContentRepository`, and the `api` and `file` providers |
+| `src/seo/` | The JSON-LD graph each page type emits |
 | `docs/specs/` | The build specification |
 | `docs/audit/` | What the prototype got wrong, and what was done about it |
 | `design-source/` | Reference snapshot. Never imported at runtime |
 
-## Two things are outstanding
+## Content
 
-**1. Brand assets are not exported yet.** Fonts, photography, illustrations, icons,
-ornaments and textures still live only in the design project. Until they are exported into
-`public/assets/`, `app/assets/[...path]/route.ts` serves tinted SVG placeholders at the right
-shapes — so every layout, aspect ratio, mask and parallax crop is already correct, and the
-real art drops straight in over them. Files in `public/` are served ahead of routes, so no
-code changes when they land. Run `npm run assets:check` to see what is still missing, and
-delete that route once nothing is.
+Everything on this site is a row in the admin panel's database, read over HTTP
+through `/api/public/site/*`. This app holds no database credential, and
+`CONTENT_SOURCE=file` swaps in the fixture under `src/content/data/` — which is
+how you can build and browse the whole site with nothing else running, and how
+you find out if a page has quietly coupled itself to a provider.
 
-Fonts return 404 rather than a placeholder, so `@font-face` falls back to the system stack
-instead of rendering tofu.
+`docs/../../docs/CUTOVER.md` (repo root, `docs/CUTOVER.md`) describes the move
+from static modules to the database and the seven defects that only a
+prerendered-HTML diff could find. Read it before changing anything that touches
+the content layer.
 
-**2. Three itineraries need sign-off.** The design project only has day-by-day content for
-the sacred-valleys journey; the prototype silently shows it under all four titles. The
-itineraries, highlights, inclusions and FAQ for `meditation`, `festival` and `jomolhari` in
-`src/content/data/trips.ts` were drafted from each journey's own description, region list,
-length and altitude. **They are plausible, not authoritative** — Lotus Peak must check them
-before launch.
+## Still outstanding
 
-## Backend and CMS
-
-There is none yet, by design. Content is TypeScript modules read through a
-`ContentRepository`, so pages never touch a data source directly. Adding Postgres, Payload or
-Sanity later is one adapter in `src/content/providers/` and one case in the factory — no page,
-section or component changes. `docs/specs/05-data-layer.md` and `06-cms-and-admin.md` describe
-exactly how.
-
-Enquiries currently POST to `/api/enquiries`, which validates, rate-limits, checks a honeypot
-and hands the record to the provider, which logs it. The mail adapter is phase 5.
+**Three itineraries need sign-off.** The design project only ever had
+day-by-day content for the sacred-valleys journey. The itineraries, highlights,
+inclusions and FAQ now in the database for the meditation, festival and
+Jomolhari journeys were drafted from each journey's own description, region
+list, length and altitude. **They are plausible, not authoritative** — Lotus
+Peak must check them before launch. They are all editable in the panel under
+Journeys.
