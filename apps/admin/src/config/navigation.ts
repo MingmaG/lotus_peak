@@ -1,27 +1,40 @@
 import {
   Activity,
+  BarChart3,
+  BookMarked,
   BookOpen,
   Building2,
   CalendarRange,
+  CircleDollarSign,
+  ClipboardList,
   Compass,
+  FileBadge,
   FileText,
+  Film,
+  FolderTree,
   Footprints,
+  Globe,
   Images,
   Inbox,
   LayoutDashboard,
   Link2,
+  ListTree,
   Mail,
   MapPin,
   Menu,
+  MessageCircle,
+  MessageSquare,
   MessageSquareQuote,
   Mountain,
+  Percent,
   Search,
   Send,
   Settings,
   Sparkles,
+  Star,
   Sun,
-  Users,
   UserSquare,
+  Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -112,6 +125,18 @@ export const NAVIGATION: NavGroup[] = [
         permission: 'activities.read',
       },
       {
+        label: 'Countries',
+        href: '/countries',
+        icon: Globe,
+        permission: 'countries.read',
+      },
+      {
+        label: 'Categories',
+        href: '/categories',
+        icon: FolderTree,
+        permission: 'categories.read',
+      },
+      {
         label: 'Seasons',
         href: '/seasons',
         icon: Sun,
@@ -168,10 +193,60 @@ export const NAVIGATION: NavGroup[] = [
         permission: 'media.read',
       },
       {
+        label: 'Moments',
+        href: '/moments',
+        icon: Film,
+        permission: 'moments.read',
+      },
+      {
+        label: 'Reviews',
+        href: '/reviews',
+        icon: Star,
+        permission: 'reviews.read',
+        hint: 'Gathered from elsewhere. Reflections are the ones the design shows',
+      },
+      {
+        label: 'Comments',
+        href: '/comments',
+        icon: MessageSquare,
+        permission: 'comments.read',
+      },
+      {
         label: 'Navigation',
         href: '/navigation',
         icon: Menu,
         permission: 'navigation.write',
+      },
+    ],
+  },
+  {
+    /**
+     * The half of the business this panel does not run yet.
+     *
+     * Every screen in this group is a placeholder — see `NotBuiltYet`. They are
+     * here so the navigation is the one the office will end up with rather than
+     * one that grows under them, and so a role granted today already covers a
+     * screen built next month.
+     */
+    label: 'Selling',
+    items: [
+      {
+        label: 'Bookings',
+        href: '/bookings',
+        icon: BookMarked,
+        permission: 'bookings.read',
+      },
+      {
+        label: 'Payments',
+        href: '/payments',
+        icon: CircleDollarSign,
+        permission: 'payments.read',
+      },
+      {
+        label: 'Coupons',
+        href: '/coupons',
+        icon: Percent,
+        permission: 'coupons.read',
       },
     ],
   },
@@ -196,6 +271,35 @@ export const NAVIGATION: NavGroup[] = [
         icon: Mail,
         permission: 'emails.read',
         hint: 'What was sent, and the words it was sent in',
+      },
+    ],
+  },
+  {
+    label: 'Reaching people',
+    items: [
+      {
+        label: 'WhatsApp',
+        href: '/whatsapp',
+        icon: MessageCircle,
+        permission: 'messaging.read',
+      },
+      {
+        label: 'Forms',
+        href: '/forms',
+        icon: ClipboardList,
+        permission: 'forms.read',
+      },
+      {
+        label: 'Banners',
+        href: '/banners',
+        icon: ListTree,
+        permission: 'banners.read',
+      },
+      {
+        label: 'Analytics',
+        href: '/analytics',
+        icon: BarChart3,
+        permission: 'analytics.read',
       },
     ],
   },
@@ -239,6 +343,13 @@ export const NAVIGATION: NavGroup[] = [
         href: '/settings',
         icon: Settings,
         permission: 'settings.read',
+      },
+      {
+        label: 'Documents',
+        href: '/company-documents',
+        icon: FileBadge,
+        permission: 'documents.read',
+        hint: 'Licences and certificates, and when they expire',
       },
       {
         label: 'Users',

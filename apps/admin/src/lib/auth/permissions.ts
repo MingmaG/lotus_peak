@@ -33,6 +33,29 @@ export const RESOURCES = [
   'seo',
   'users',
   'activity',
+
+  /**
+   * Reserved, for the parts of the business this panel does not run yet.
+   *
+   * Bookings, payments and the rest are screens with no data model behind
+   * them. The permissions exist now because a role is a thing the office sets
+   * up once and rarely revisits — adding `bookings.read` later would mean
+   * going back through every role to grant it, and until then every new screen
+   * would be visible to everybody or to nobody.
+   */
+  'bookings',
+  'payments',
+  'coupons',
+  'reviews',
+  'comments',
+  'moments',
+  'banners',
+  'countries',
+  'categories',
+  'documents',
+  'forms',
+  'messaging',
+  'analytics',
 ] as const;
 
 export type Resource = (typeof RESOURCES)[number];
