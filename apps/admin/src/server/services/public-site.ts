@@ -33,6 +33,7 @@ import type {
   TripType,
 } from '@prisma/client';
 
+import { parseElevationProfile, parseTripStats } from '@/server/schema/blocks';
 import { db } from '@/lib/db';
 import { env } from '@/lib/env';
 import {
@@ -357,10 +358,16 @@ function toNavLink(all: MenuItem[]) {
 
 const TRIP_INCLUDE = {
   hero: { include: MEDIA_INCLUDE },
+  routeMap: { include: MEDIA_INCLUDE },
   ogImage: { include: MEDIA_INCLUDE },
   highlights: { orderBy: { sortOrder: 'asc' } },
   inclusions: { orderBy: { sortOrder: 'asc' } },
   faqs: { orderBy: { sortOrder: 'asc' } },
+  faqGroups: {
+    orderBy: { sortOrder: 'asc' },
+    include: { faqs: { orderBy: { sortOrder: 'asc' } } },
+  },
+  pricingTiers: { orderBy: { sortOrder: 'asc' } },
   itinerary: {
     orderBy: { sortOrder: 'asc' },
     include: {
@@ -450,6 +457,16 @@ function serialiseTrip(trip: TripRow): ApiTrip {
     highPointMetres: trip.highPointMetres,
     difficulty: DIFFICULTY[trip.difficulty],
     priceFromUsd: trip.priceFromUsd,
+    priceCurrency: trip.priceCurrency,
+    priceNote: trip.priceNote,
+    pricingTiers: trip.pricingTiers.map((tier) => ({
+      label: tier.label,
+      minPeople: tier.minPeople,
+      maxPeople: tier.maxPeople,
+      priceUsd: tier.priceUsd,
+      wasPriceUsd: tier.wasPriceUsd,
+      note: tier.note,
+    })),
     seasonLabel: trip.seasonLabel,
     seasonKeys: trip.seasonKeys.map((key) => SEASON_KEY[key]),
     paceNote: trip.paceNote,
@@ -457,12 +474,33 @@ function serialiseTrip(trip: TripRow): ApiTrip {
     groupSizeMin: trip.groupSizeMin,
     groupSizeMax: trip.groupSizeMax,
     heroImage: img(trip.hero),
+    routeMap: img(trip.routeMap),
+    videoUrl: trip.videoUrl,
     overview: trip.overview,
+    stats: parseTripStats(trip.stats, `trip ${trip.slug}`),
+    elevationProfile: parseElevationProfile(trip.elevationProfile, `trip ${trip.slug}`),
     highlights: trip.highlights.map((row) => row.text),
     itinerary: numberItinerary(trip.itinerary),
     included: trip.inclusions.filter((row) => row.isIncluded).map((row) => row.text),
     excluded: trip.inclusions.filter((row) => !row.isIncluded).map((row) => row.text),
-    faq: trip.faqs.map((row) => ({ question: row.question, answer: row.answer })),
+    /**
+     * The ungrouped questions, and then the groups.
+     *
+     * Split here rather than on the page, because the page draws them
+     * differently — the ungrouped ones have no heading above them at all — and
+     * a renderer that has to filter a flat list by a null field is one that
+     * will eventually forget to.
+     */
+    faq: trip.faqs
+      .filter((row) => row.groupId === null)
+      .map((row) => ({ question: row.question, answer: row.answer })),
+    faqGroups: trip.faqGroups
+      .filter((group) => group.faqs.length > 0)
+      .map((group) => ({
+        title: group.title,
+        blurb: group.blurb,
+        items: group.faqs.map((row) => ({ question: row.question, answer: row.answer })),
+      })),
     gallery: trip.gallery
       .map((item) => {
         const image = img(item.media);

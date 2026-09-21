@@ -217,3 +217,57 @@ export function mediaIdsIn(
   }
   return [...ids];
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Journeys                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The figures under a journey's title, where the fixed five are not the story.
+ *
+ * Duration, nights, high point, difficulty and price are columns, because every
+ * journey has them and the design draws them in a fixed row. This is the sixth
+ * and the seventh — "11 days walking", "SDF included" — and it is Json for the
+ * same reason the others are columns: there is no fixed set of them, and a
+ * table would be a join on every journey read for a list that is usually empty.
+ */
+export const tripStatSchema = z.object({
+  label: z.string().min(1).max(60),
+  value: z.string().min(1).max(60),
+  note: z.string().max(200).nullable().default(null),
+});
+
+export const tripStatsSchema = z.array(tripStatSchema).max(8);
+
+export type TripStat = z.infer<typeof tripStatSchema>;
+
+/**
+ * A journey's walking profile, as the chart reads it.
+ *
+ * `day` is the day number the itinerary shows, not an index — a rest day
+ * consumes a number, and a profile whose days disagree with the itinerary's is
+ * worse than no profile.
+ */
+export const elevationPointSchema = z.object({
+  day: z.number().int().min(0).max(60),
+  label: z.string().min(1).max(80),
+  metres: z.number().int().min(-500).max(9000),
+});
+
+export const elevationProfileSchema = z.array(elevationPointSchema).max(60);
+
+export type ElevationPoint = z.infer<typeof elevationPointSchema>;
+
+export function parseTripStats(value: unknown, label: string): TripStat[] {
+  const result = tripStatsSchema.safeParse(value);
+  if (result.success) return result.data;
+  console.error(`[content] ${label}: the stats did not parse`, result.error.issues);
+  return [];
+}
+
+export function parseElevationProfile(value: unknown, label: string): ElevationPoint[] {
+  const result = elevationProfileSchema.safeParse(value);
+  if (result.success) return result.data;
+  console.error(`[content] ${label}: the elevation profile did not parse`, result.error.issues);
+  return [];
+}

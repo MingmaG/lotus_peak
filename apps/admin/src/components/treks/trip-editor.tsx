@@ -1,5 +1,6 @@
 'use client';
 
+import { parseVideoSource, providerLabel } from '@lotuspeak/video';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Moon, Wand2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -57,6 +58,9 @@ export interface TripFormData {
   highPointMetres: number;
   difficulty: 'GENTLE' | 'MODERATE' | 'DEMANDING';
   priceFromUsd: number;
+  priceCurrency: string;
+  priceNote: string;
+  pricingTiers: PricingTierForm[];
   seasonLabel: string;
   seasonKeys: ('SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER')[];
   paceNote: string;
@@ -68,9 +72,14 @@ export interface TripFormData {
   included: string[];
   excluded: string[];
   itinerary: ItineraryDayForm[];
-  faqs: { question: string; answer: string }[];
+  faqs: FaqForm[];
+  faqGroups: FaqGroupForm[];
   gallery: { mediaId: string; url: string; alt: string; ratio: string | null; width: string | null }[];
+  stats: StatForm[];
+  elevationProfile: ElevationPointForm[];
+  videoUrl: string;
   hero: PickedMedia | null;
+  routeMap: PickedMedia | null;
   ogImage: PickedMedia | null;
   destinationIds: string[];
   offeredByDestinationIds: string[];
@@ -78,6 +87,49 @@ export interface TripFormData {
   featured: boolean;
   status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
   seo: SeoValue;
+}
+
+/** A price at a party size. `maxPeople` null means "and above". */
+export interface PricingTierForm {
+  key: string;
+  label: string;
+  minPeople: number;
+  maxPeople: number | null;
+  priceUsd: number;
+  wasPriceUsd: number | null;
+  note: string;
+}
+
+/**
+ * A question, and the heading it sits under.
+ *
+ * `groupKey` is the heading's *title*, not a row id, because a heading created
+ * in this session has no id until the save writes it. Null is a question with
+ * no heading, which renders first and above the grouped ones.
+ */
+export interface FaqForm {
+  question: string;
+  answer: string;
+  groupKey: string | null;
+}
+
+export interface FaqGroupForm {
+  key: string;
+  title: string;
+  blurb: string;
+}
+
+/** One of the figures under the title, beyond the fixed five. */
+export interface StatForm {
+  label: string;
+  value: string;
+  note: string | null;
+}
+
+export interface ElevationPointForm {
+  day: number;
+  label: string;
+  metres: number;
 }
 
 export interface ItineraryDayForm {
@@ -100,6 +152,7 @@ const TABS = [
   { value: 'journey', label: 'Journey' },
   { value: 'itinerary', label: 'Itinerary' },
   { value: 'details', label: 'Details' },
+  { value: 'pricing', label: 'Pricing' },
   { value: 'photographs', label: 'Photographs' },
   { value: 'questions', label: 'Questions' },
   { value: 'links', label: 'Links' },
@@ -143,6 +196,18 @@ export function TripEditor({
         highPointMetres: form.highPointMetres,
         difficulty: form.difficulty,
         priceFromUsd: form.priceFromUsd,
+        priceCurrency: form.priceCurrency || 'USD',
+        priceNote: form.priceNote || null,
+        pricingTiers: form.pricingTiers
+          .filter((tier) => tier.label.trim())
+          .map((tier) => ({
+            label: tier.label,
+            minPeople: tier.minPeople,
+            maxPeople: tier.maxPeople,
+            priceUsd: tier.priceUsd,
+            wasPriceUsd: tier.wasPriceUsd,
+            note: tier.note || null,
+          })),
         seasonLabel: form.seasonLabel,
         seasonKeys: form.seasonKeys,
         paceNote: form.paceNote,
@@ -160,12 +225,23 @@ export function TripEditor({
           body: day.body || null,
         })),
         faqs: form.faqs.filter((faq) => faq.question.trim() && faq.answer.trim()),
+        faqGroups: form.faqGroups
+          .filter((group) => group.title.trim())
+          .map((group) => ({
+            key: group.key,
+            title: group.title,
+            blurb: group.blurb || null,
+          })),
         gallery: form.gallery.map((item) => ({
           mediaId: item.mediaId,
           ratio: item.ratio,
           width: item.width,
         })),
+        stats: form.stats.filter((stat) => stat.label.trim() && stat.value.trim()),
+        elevationProfile: form.elevationProfile.filter((point) => point.label.trim()),
+        videoUrl: form.videoUrl.trim() || null,
         heroId: form.hero?.id ?? null,
+        routeMapId: form.routeMap?.id ?? null,
         destinationIds: form.destinationIds,
         offeredByDestinationIds: form.offeredByDestinationIds,
         relatedTripIds: form.relatedTripIds,
@@ -239,7 +315,9 @@ export function TripEditor({
           ? form.gallery.length
           : item.value === 'questions'
             ? form.faqs.length
-            : undefined,
+            : item.value === 'pricing'
+              ? form.pricingTiers.length || undefined
+              : undefined,
   }));
 
   return (
@@ -625,17 +703,369 @@ export function TripEditor({
               empty="Nothing listed."
             />
           </Section>
+
+          <Section
+            title="Extra figures"
+            description="The row under the title already shows the length, the nights, the high point, the grade and the price. This is for the sixth figure, where a journey has one — “11 days walking”, “4 nights under canvas”. Empty is the normal answer."
+          >
+            <SortableList
+              items={form.stats}
+              itemKey={(_, index) => `stat-${index}`}
+              onChange={(stats) => set('stats', stats)}
+              onRemove={(index) =>
+                set('stats', form.stats.filter((_, i) => i !== index))
+              }
+              onAdd={() => set('stats', [...form.stats, { label: '', value: '', note: null }])}
+              addLabel="Add a figure"
+              empty="None, which is right for most journeys."
+              describeItem={(stat, index) => stat.label || `figure ${index + 1}`}
+              renderItem={(stat, index) => {
+                const patch = (changes: Partial<StatForm>) => {
+                  const next = [...form.stats];
+                  next[index] = { ...stat, ...changes };
+                  set('stats', next);
+                };
+                return (
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <Input
+                      value={stat.label}
+                      placeholder="Walking"
+                      aria-label={`Label for figure ${index + 1}`}
+                      onChange={(event) => patch({ label: event.target.value })}
+                    />
+                    <Input
+                      value={stat.value}
+                      placeholder="11 days"
+                      aria-label={`Value for figure ${index + 1}`}
+                      onChange={(event) => patch({ value: event.target.value })}
+                    />
+                    <Input
+                      value={stat.note ?? ''}
+                      placeholder="Note (optional)"
+                      aria-label={`Note for figure ${index + 1}`}
+                      onChange={(event) => patch({ note: event.target.value || null })}
+                    />
+                  </div>
+                );
+              }}
+            />
+          </Section>
+
+          <Section
+            title="The walking profile"
+            description="One row per day that gains or loses height. The day number is the one the itinerary shows — a rest day consumes a number, and a profile whose days disagree with the itinerary is worse than none."
+          >
+            <SortableList
+              items={form.elevationProfile}
+              itemKey={(_, index) => `elev-${index}`}
+              onChange={(elevationProfile) => set('elevationProfile', elevationProfile)}
+              onRemove={(index) =>
+                set(
+                  'elevationProfile',
+                  form.elevationProfile.filter((_, i) => i !== index),
+                )
+              }
+              onAdd={() =>
+                set('elevationProfile', [
+                  ...form.elevationProfile,
+                  { day: form.elevationProfile.length + 1, label: '', metres: 2_400 },
+                ])
+              }
+              addLabel="Add a point"
+              empty="No profile. Only the trekking journeys need one."
+              describeItem={(point, index) => point.label || `point ${index + 1}`}
+              renderItem={(point, index) => {
+                const patch = (changes: Partial<ElevationPointForm>) => {
+                  const next = [...form.elevationProfile];
+                  next[index] = { ...point, ...changes };
+                  set('elevationProfile', next);
+                };
+                return (
+                  <div className="grid gap-2 sm:grid-cols-[1fr_3fr_1fr]">
+                    <Input
+                      type="number"
+                      min={0}
+                      value={point.day}
+                      aria-label={`Day for point ${index + 1}`}
+                      onChange={(event) => patch({ day: Number(event.target.value) || 0 })}
+                    />
+                    <Input
+                      value={point.label}
+                      placeholder="Jangothang"
+                      aria-label={`Place for point ${index + 1}`}
+                      onChange={(event) => patch({ label: event.target.value })}
+                    />
+                    <Input
+                      type="number"
+                      value={point.metres}
+                      aria-label={`Height in metres for point ${index + 1}`}
+                      onChange={(event) => patch({ metres: Number(event.target.value) || 0 })}
+                    />
+                  </div>
+                );
+              }}
+            />
+          </Section>
         </div>
       )}
 
       {tab === 'photographs' && (
-        <TripGalleryEditor
-          items={form.gallery}
-          onChange={(gallery) => set('gallery', gallery)}
-        />
+        <div className="space-y-5">
+          <TripGalleryEditor
+            items={form.gallery}
+            onChange={(gallery) => set('gallery', gallery)}
+          />
+
+          <Section
+            title="The route, as a map"
+            description="A drawing, not a live map. A live one is a third-party script on every journey page, a tile bill and a thing to keep working, for a route that changes about once a year."
+          >
+            <MediaPicker
+              label="Map"
+              value={form.routeMap}
+              onChange={(routeMap) => set('routeMap', routeMap)}
+            />
+          </Section>
+
+          <Section
+            title="A film"
+            description="YouTube or Vimeo. The page shows the still and only loads the player when somebody presses play — half a megabyte per film, on a page somebody came to read."
+          >
+            <Field
+              label="Address"
+              hint={
+                form.videoUrl.trim() === ''
+                  ? undefined
+                  : parseVideoSource(form.videoUrl)
+                    ? `Recognised: ${providerLabel(parseVideoSource(form.videoUrl))}`
+                    : 'That does not name a film. A channel page or a playlist has no video in it.'
+              }
+            >
+              <Input
+                value={form.videoUrl}
+                placeholder="https://www.youtube.com/watch?v=…"
+                onChange={(event) => set('videoUrl', event.target.value)}
+              />
+            </Field>
+          </Section>
+        </div>
+      )}
+
+      {tab === 'pricing' && (
+        <>
+          <Section
+            title="What it costs"
+            description="The headline figure and the sentence under it. Every price on this site is per adult and in US dollars, which is how Bhutan quotes."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="From" hint="The lowest price a traveller can pay — usually the largest group.">
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.priceFromUsd}
+                  onChange={(event) => set('priceFromUsd', Number(event.target.value) || 0)}
+                />
+              </Field>
+              <Field label="Currency" hint="ISO 4217. Changing it does not convert anything.">
+                <Input
+                  value={form.priceCurrency}
+                  maxLength={3}
+                  onChange={(event) => set('priceCurrency', event.target.value.toUpperCase())}
+                />
+              </Field>
+            </div>
+
+            <Field
+              label="What the price says"
+              hint="What it includes and what it does not — the SDF, internal flights, the single supplement. Shown under the figure."
+            >
+              <RichTextEditor
+                value={form.priceNote}
+                onChange={(priceNote) => set('priceNote', priceNote)}
+                compact
+                minHeight="min-h-[100px]"
+                placeholder="Includes the Sustainable Development Fee, all permits, meals and accommodation."
+              />
+            </Field>
+          </Section>
+
+          <Section
+            title="By party size"
+            description="Bhutan's tariff falls as a group grows, so one price is either wrong for a couple or wrong for eight. Leave this empty and the page shows the single figure above."
+          >
+            <SortableList
+              items={form.pricingTiers}
+              itemKey={(tier) => tier.key}
+              onChange={(pricingTiers) => set('pricingTiers', pricingTiers)}
+              onRemove={(index) =>
+                set(
+                  'pricingTiers',
+                  form.pricingTiers.filter((_, i) => i !== index),
+                )
+              }
+              onAdd={() =>
+                set('pricingTiers', [
+                  ...form.pricingTiers,
+                  {
+                    key: `tier-${Date.now()}`,
+                    label: '',
+                    minPeople: 1,
+                    maxPeople: null,
+                    priceUsd: 0,
+                    wasPriceUsd: null,
+                    note: '',
+                  },
+                ])
+              }
+              addLabel="Add a tier"
+              empty="No tiers. Two, three to five, and six or more is the shape most of these take."
+              describeItem={(tier, index) => tier.label || `tier ${index + 1}`}
+              renderItem={(tier, index) => {
+                const patch = (changes: Partial<PricingTierForm>) => {
+                  const next = [...form.pricingTiers];
+                  next[index] = { ...tier, ...changes };
+                  set('pricingTiers', next);
+                };
+                return (
+                  <div className="space-y-2">
+                    <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr]">
+                      <Input
+                        value={tier.label}
+                        placeholder="Two travellers"
+                        aria-label={`Name for tier ${index + 1}`}
+                        onChange={(event) => patch({ label: event.target.value })}
+                      />
+                      <Input
+                        type="number"
+                        min={1}
+                        value={tier.minPeople}
+                        aria-label={`Smallest party for tier ${index + 1}`}
+                        onChange={(event) => patch({ minPeople: Number(event.target.value) || 1 })}
+                      />
+                      <Input
+                        type="number"
+                        min={1}
+                        value={tier.maxPeople ?? ''}
+                        placeholder="and above"
+                        aria-label={`Largest party for tier ${index + 1}`}
+                        onChange={(event) =>
+                          patch({
+                            /* Empty means no ceiling — the last tier is
+                               "six or more" and there is no number for that. */
+                            maxPeople: event.target.value === '' ? null : Number(event.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-[1fr_1fr_2fr]">
+                      <Input
+                        type="number"
+                        min={0}
+                        value={tier.priceUsd}
+                        aria-label={`Price for tier ${index + 1}`}
+                        onChange={(event) => patch({ priceUsd: Number(event.target.value) || 0 })}
+                      />
+                      <Input
+                        type="number"
+                        min={0}
+                        value={tier.wasPriceUsd ?? ''}
+                        placeholder="was"
+                        aria-label={`Previous price for tier ${index + 1}`}
+                        onChange={(event) =>
+                          patch({
+                            wasPriceUsd: event.target.value === '' ? null : Number(event.target.value),
+                          })
+                        }
+                      />
+                      <Input
+                        value={tier.note}
+                        placeholder="Per adult, twin share"
+                        aria-label={`Note for tier ${index + 1}`}
+                        onChange={(event) => patch({ note: event.target.value })}
+                      />
+                    </div>
+                  </div>
+                );
+              }}
+            />
+          </Section>
+        </>
       )}
 
       {tab === 'questions' && (
+        <>
+        <Section
+          title="Headings"
+          description="Optional, and genuinely optional. Six questions want a flat list; thirty want “Before you go”, “On the trek”, “Money”. A question with no heading renders first, above the grouped ones — so nobody has to invent a heading to add a question."
+        >
+          <SortableList
+            items={form.faqGroups}
+            itemKey={(group) => group.key}
+            onChange={(faqGroups) => set('faqGroups', faqGroups)}
+            onRemove={(index) => {
+              const removed = form.faqGroups[index];
+              set(
+                'faqGroups',
+                form.faqGroups.filter((_, i) => i !== index),
+              );
+              /* The questions under it are kept and ungrouped. Deleting a
+                 heading is a decision about headings, not about questions. */
+              if (removed) {
+                set(
+                  'faqs',
+                  form.faqs.map((faq) =>
+                    faq.groupKey === removed.key ? { ...faq, groupKey: null } : faq,
+                  ),
+                );
+              }
+            }}
+            onAdd={() =>
+              set('faqGroups', [
+                ...form.faqGroups,
+                { key: `group-${Date.now()}`, title: '', blurb: '' },
+              ])
+            }
+            addLabel="Add a heading"
+            empty="No headings. The questions below render as one list, which is right until there are more than about ten."
+            describeItem={(group, index) => group.title || `heading ${index + 1}`}
+            renderItem={(group, index) => {
+              const patch = (changes: Partial<FaqGroupForm>) => {
+                const next = [...form.faqGroups];
+                next[index] = { ...group, ...changes };
+                set('faqGroups', next);
+                /* The key is the title, so renaming has to carry the questions
+                   with it — see `groupKey` on `FaqForm`. */
+                if (changes.title !== undefined) {
+                  set(
+                    'faqs',
+                    form.faqs.map((faq) =>
+                      faq.groupKey === group.key ? { ...faq, groupKey: changes.title ?? null } : faq,
+                    ),
+                  );
+                  next[index] = { ...group, ...changes, key: changes.title ?? group.key };
+                  set('faqGroups', next);
+                }
+              };
+              return (
+                <div className="space-y-2">
+                  <Input
+                    value={group.title}
+                    placeholder="Before you go"
+                    aria-label={`Heading ${index + 1}`}
+                    onChange={(event) => patch({ title: event.target.value })}
+                  />
+                  <Input
+                    value={group.blurb}
+                    placeholder="A sentence under it (optional)"
+                    aria-label={`Note under heading ${index + 1}`}
+                    onChange={(event) => patch({ blurb: event.target.value })}
+                  />
+                </div>
+              );
+            }}
+          />
+        </Section>
+
         <Section
           title="Questions"
           description="These render as an expandable list, and as the FAQ structured data — which is why they only go in the markup if they are on the page. Write the question the way somebody would ask it."
@@ -647,21 +1077,48 @@ export function TripEditor({
             onRemove={(index) =>
               set('faqs', form.faqs.filter((_, i) => i !== index))
             }
-            onAdd={() => set('faqs', [...form.faqs, { question: '', answer: '' }])}
+            onAdd={() =>
+              set('faqs', [...form.faqs, { question: '', answer: '', groupKey: null }])
+            }
             addLabel="Add a question"
             empty="No questions yet. The five on every journey — why Bhutan, who guides, when to come, what the SDF is, can the pace change — are a good start."
             describeItem={(faq, index) => faq.question || `question ${index + 1}`}
             renderItem={(faq, index) => (
               <div className="space-y-2">
-                <Input
-                  value={faq.question}
-                  placeholder="What is the SDF?"
-                  onChange={(event) => {
-                    const next = [...form.faqs];
-                    next[index] = { ...faq, question: event.target.value };
-                    set('faqs', next);
-                  }}
-                />
+                <div className="grid gap-2 sm:grid-cols-[3fr_1fr]">
+                  <Input
+                    value={faq.question}
+                    placeholder="What is the SDF?"
+                    aria-label={`Question ${index + 1}`}
+                    onChange={(event) => {
+                      const next = [...form.faqs];
+                      next[index] = { ...faq, question: event.target.value };
+                      set('faqs', next);
+                    }}
+                  />
+                  {/* Shown only once there is a heading to choose. A select with
+                      one option that means "none" is a control that asks a
+                      question with no answers. */}
+                  {form.faqGroups.length > 0 && (
+                    <select
+                      value={faq.groupKey ?? ''}
+                      aria-label={`Heading for question ${index + 1}`}
+                      onChange={(event) => {
+                        const next = [...form.faqs];
+                        next[index] = { ...faq, groupKey: event.target.value || null };
+                        set('faqs', next);
+                      }}
+                      className="h-9 rounded-md border bg-transparent px-2 text-sm"
+                    >
+                      <option value="">No heading</option>
+                      {form.faqGroups.map((group) => (
+                        <option key={group.key} value={group.key}>
+                          {group.title || 'Untitled'}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
                 <RichTextEditor
                   value={faq.answer}
                   compact
@@ -677,6 +1134,7 @@ export function TripEditor({
             )}
           />
         </Section>
+        </>
       )}
 
       {tab === 'links' && (

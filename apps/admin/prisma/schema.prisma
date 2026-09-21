@@ -416,6 +416,7 @@ model Media {
   // --- Back-relations. Prisma requires one per named relation. -------------
   userAvatars       User[]            @relation("UserAvatar")
   tripHeroes        Trip[]            @relation("TripHero")
+  tripRouteMaps     Trip[]            @relation("TripRouteMap")
   tripOgImages      Trip[]            @relation("TripOgImage")
   tripGalleryItems  TripGalleryItem[]
   itineraryImages   ItineraryImage[]
@@ -499,6 +500,12 @@ model Trip {
   /// The *from* price. Never the price — group size and season move it, and a
   /// single figure presented as final is contradicted by the first quote.
   priceFromUsd Int
+  /// ISO 4217. Bhutan quotes in dollars and always has.
+  priceCurrency String @default("USD")
+  /// The sentence under the price — what it excludes, when it changes.
+  priceNote     String?
+  /// Group pricing: the same journey costs less per head with more people.
+  pricingTiers  TripPricingTier[]
   /// "Spring and autumn". Prose, because the honest answer is not a range.
   seasonLabel  String
   seasonKeys   SeasonKey[] @default([])
@@ -509,6 +516,15 @@ model Trip {
 
   /// The opening paragraphs, one row per paragraph in `overview`.
   overview String[] @default([])
+
+  /// The figures under the title, when the five fixed ones are not the story.
+  ///
+  /// `[{ label, value, note? }]`. Duration, nights, high point, difficulty and
+  /// price are columns because every journey has them and the design lays them
+  /// out in a fixed row. This is for the sixth: "11 days walking", "4 nights
+  /// under canvas", "SDF included". Empty — which is the normal case — and the
+  /// page shows the five it always did.
+  stats Json?
 
   /// The region line, as the card prints it: "Paro · Bumthang · Trongsa".
   ///
@@ -530,10 +546,30 @@ model Trip {
   heroId String?
   hero   Media?  @relation("TripHero", fields: [heroId], references: [id], onDelete: SetNull)
 
+  /// The route drawn on a map, as a picture.
+  ///
+  /// A picture rather than coordinates, because that is what the office has: a
+  /// map their cartographer draws once per journey. A live map would be a
+  /// third-party script on every journey page, a tile bill and a thing to keep
+  /// working — for a route that changes about once a year.
+  routeMapId String?
+  routeMap   Media?  @relation("TripRouteMap", fields: [routeMapId], references: [id], onDelete: SetNull)
+
+  /// The walking profile: `[{ day, label, metres }]`, ascending by day.
+  ///
+  /// Json because it is a list whose only consumer is one chart, and a table
+  /// for it would be a fifth thing to join on every journey read. Parsed by Zod
+  /// on the way in and on the way out, like every other Json column here.
+  elevationProfile Json?
+
+  /// The film, where there is one. Parsed by `@lotuspeak/video`.
+  videoUrl String?
+
   highlights   TripHighlight[]
   inclusions   TripInclusion[]
   itinerary    ItineraryDay[]
   faqs         TripFaq[]
+  faqGroups    TripFaqGroup[]
   gallery      TripGalleryItem[]
   destinations TripOnDestination[]
   activities   ActivityOnTrip[]
@@ -660,8 +696,70 @@ model TripFaq {
   answer    String
   sortOrder Int    @default(0)
 
+  /// Which heading this question sits under, or none.
+  ///
+  /// Nullable, and that is the feature. A journey with six questions wants a
+  /// flat list; one with thirty wants "Before you go", "On the trek", "Money".
+  /// A grouped question and an ungrouped one coexist on the same journey — the
+  /// ungrouped ones render first, under no heading at all — so the office is
+  /// never made to invent a heading to add a question.
+  groupId String?
+  group   TripFaqGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
   @@index([tripId, sortOrder])
+  @@index([groupId, sortOrder])
   @@map("trip_faqs")
+}
+
+/// A heading over some of a journey's questions.
+///
+/// Its own table rather than a string on `TripFaq`, so renaming a heading is
+/// one edit rather than thirty, and so the order of the headings is something
+/// somebody drags rather than an alphabetical accident.
+model TripFaqGroup {
+  id     String @id @default(cuid())
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  title     String
+  /// A sentence under the heading, where the heading is not enough.
+  blurb     String?
+  sortOrder Int    @default(0)
+
+  faqs TripFaq[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tripId, sortOrder])
+  @@map("trip_faq_groups")
+}
+
+/// What a journey costs at a given party size.
+///
+/// Bhutan's tariff is per person per night and falls with group size, so one
+/// price on a journey is either wrong for a couple or wrong for eight.
+/// `maxPeople` is nullable because the last tier is "six or more" and has no
+/// ceiling.
+model TripPricingTier {
+  id     String @id @default(cuid())
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  label     String
+  minPeople Int
+  maxPeople Int?
+  priceUsd  Int
+  /// Struck through beside the price, for a season's offer.
+  wasPriceUsd Int?
+  note      String?
+  sortOrder Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tripId, sortOrder])
+  @@map("trip_pricing_tiers")
 }
 
 model TripGalleryItem {
@@ -718,6 +816,15 @@ model Departure {
   placesLeft  Int?
   status      DepartureStatus @default(OPEN)
   note        String?
+
+  /// A fixed departure runs on this date whoever books it.
+  ///
+  /// The rest are "we will find a date together", which is how most of these
+  /// journeys are actually sold. The site lists the fixed ones as a calendar
+  /// and says so; the others stay an invitation to write.
+  isFixed     Boolean @default(false)
+  /// Struck through beside the price, for an early-booking rate.
+  wasPriceUsd Int?
 
   isPublished Boolean @default(true)
 
@@ -816,11 +923,29 @@ model TripOnDestination {
   @@map("trip_on_destinations")
 }
 
+/// What kind of thing an activity is.
+///
+/// The site sells five journeys today, and the office expects to sell day
+/// tours, retreats and courses. A `kind` on the row is what lets those arrive
+/// without a second table and a second set of screens — the page groups by it.
+/// `OTHER` is here so that a sixth kind does not need a migration on the
+/// afternoon somebody invents it.
+enum ActivityKind {
+  EXPERIENCE
+  DAY_TOUR
+  RETREAT
+  COURSE
+  TREK
+  FESTIVAL
+  OTHER
+}
+
 model Activity {
   id    String   @id @default(cuid())
   slug  String   @unique
   name  String
   blurb String
+  kind  ActivityKind @default(EXPERIENCE)
   icon  SiteIcon @default(PAVILION)
 
   imageId String?

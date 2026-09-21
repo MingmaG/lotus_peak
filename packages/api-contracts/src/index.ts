@@ -344,6 +344,38 @@ export interface ApiItineraryDay {
   images: ApiImage[];
 }
 
+/** A heading over some of a journey's questions. */
+export interface ApiTripFaqGroup {
+  title: string;
+  blurb: string | null;
+  items: ApiTripFaq[];
+}
+
+/** What a journey costs at a given party size. */
+export interface ApiPricingTier {
+  label: string;
+  minPeople: number;
+  /** Null is "and above" — the last tier has no ceiling. */
+  maxPeople: number | null;
+  priceUsd: number;
+  wasPriceUsd: number | null;
+  note: string | null;
+}
+
+/** One of the figures under the title, beyond the fixed five. */
+export interface ApiTripStat {
+  label: string;
+  value: string;
+  note: string | null;
+}
+
+/** A point on the walking profile. `day` is the number the itinerary shows. */
+export interface ApiElevationPoint {
+  day: number;
+  label: string;
+  metres: number;
+}
+
 export interface ApiTripFaq {
   question: string;
   answer: string;
@@ -383,6 +415,12 @@ export interface ApiTrip {
   highPointMetres: number;
   difficulty: Difficulty;
   priceFromUsd: number;
+  /** ISO 4217. Bhutan quotes in dollars and always has. */
+  priceCurrency: string;
+  /** Rich text: what the price includes, under the figure. */
+  priceNote: string | null;
+  /** Empty where one price covers every party size. */
+  pricingTiers: ApiPricingTier[];
   /** "Spring and autumn". Prose, because the real answer is not a month range. */
   seasonLabel: string;
   seasonKeys: SeasonKey[];
@@ -392,12 +430,29 @@ export interface ApiTrip {
   groupSizeMin: number | null;
   groupSizeMax: number | null;
   heroImage: ApiImage | null;
+  /** The route drawn on a map. A picture, not a live map. */
+  routeMap: ApiImage | null;
+  /** A film, where there is one. Rendered as a façade, never as an iframe. */
+  videoUrl: string | null;
   overview: string[];
+  /** Beyond the fixed five. Usually empty. */
+  stats: ApiTripStat[];
+  /** Empty for everything but the trekking journeys. */
+  elevationProfile: ApiElevationPoint[];
   highlights: string[];
   itinerary: ApiItineraryDay[];
   included: string[];
   excluded: string[];
+  /**
+   * The questions with no heading, which render first.
+   *
+   * Split from `faqGroups` rather than given a nullable `group`, because the
+   * page draws them differently — these have no heading above them at all —
+   * and a renderer that has to filter a flat list by a null field is a
+   * renderer that will one day forget to.
+   */
   faq: ApiTripFaq[];
+  faqGroups: ApiTripFaqGroup[];
   gallery: ApiTripGalleryItem[];
   departures: ApiDeparture[];
   /** Other journeys to offer at the foot of this one, in the order chosen. */

@@ -1,6 +1,7 @@
 import 'server-only';
 
-import type { Prisma, Trip } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import type { Trip } from '@prisma/client';
 
 import { db } from '@/lib/db';
 import { toSlug, uniqueSlug } from '@/lib/slug';
@@ -27,10 +28,13 @@ import type { TripPatch } from '@/server/validators/trip';
 
 export const TRIP_DETAIL_INCLUDE = {
   hero: { include: { renditions: { where: { format: 'webp' } } } },
+  routeMap: { include: { renditions: { where: { format: 'webp' } } } },
   ogImage: { include: { renditions: { where: { format: 'webp' } } } },
   highlights: { orderBy: { sortOrder: 'asc' } },
   inclusions: { orderBy: { sortOrder: 'asc' } },
   faqs: { orderBy: { sortOrder: 'asc' } },
+  faqGroups: { orderBy: { sortOrder: 'asc' } },
+  pricingTiers: { orderBy: { sortOrder: 'asc' } },
   itinerary: {
     orderBy: { sortOrder: 'asc' },
     include: {
@@ -146,7 +150,21 @@ export async function updateTrip(id: string, patch: TripPatch): Promise<TripDeta
         groupSizeMax: patch.groupSizeMax,
         regions: patch.regions,
         overview: patch.overview,
+        priceCurrency: patch.priceCurrency,
+        priceNote: patch.priceNote === undefined ? undefined : patch.priceNote,
+        videoUrl: patch.videoUrl === undefined ? undefined : patch.videoUrl,
         heroId: patch.heroId === undefined ? undefined : patch.heroId,
+        routeMapId: patch.routeMapId === undefined ? undefined : patch.routeMapId,
+        /* Json columns. `undefined` leaves the column alone — a save from the
+           SEO tab must not empty the elevation profile — and an empty array is
+           stored as `null`, so "has one" is one check rather than two. */
+        stats: patch.stats === undefined ? undefined : patch.stats.length ? patch.stats : Prisma.DbNull,
+        elevationProfile:
+          patch.elevationProfile === undefined
+            ? undefined
+            : patch.elevationProfile.length
+              ? patch.elevationProfile
+              : Prisma.DbNull,
         featured: patch.featured,
         sortOrder: patch.sortOrder,
         ...(publishing ?? {}),
@@ -186,13 +204,68 @@ export async function updateTrip(id: string, patch: TripPatch): Promise<TripDeta
       });
     }
 
-    if (patch.faqs) {
-      await tx.tripFaq.deleteMany({ where: { tripId: id } });
-      await tx.tripFaq.createMany({
-        data: patch.faqs.map((faq, index) => ({
+    /**
+     * The groups first, then the questions, because a question names its
+     * group by a key the client made up.
+     *
+     * `groupKey` rather than an id: a heading created in the same save has no
+     * id until this transaction writes it. The keys are mapped to the rows
+     * here, and a question whose key names no group comes out ungrouped —
+     * which is the right answer rather than an error to refuse a save over,
+     * since an ungrouped question is a shape this journey supports.
+     *
+     * The two are replaced together. Writing groups without questions would
+     * leave every question orphaned for the width of a request.
+     */
+    if (patch.faqGroups || patch.faqs) {
+      const keyToId = new Map<string, string>();
+
+      if (patch.faqGroups) {
+        await tx.tripFaqGroup.deleteMany({ where: { tripId: id } });
+        for (const [index, group] of patch.faqGroups.entries()) {
+          const row = await tx.tripFaqGroup.create({
+            data: {
+              tripId: id,
+              title: group.title.trim(),
+              blurb: group.blurb?.trim() || null,
+              sortOrder: index,
+            },
+          });
+          keyToId.set(group.key, row.id);
+        }
+      } else {
+        /* Questions saved without touching the headings: keep the existing
+           ones and match on their title, which is what the client sends as a
+           key when it did not create them. */
+        const existing = await tx.tripFaqGroup.findMany({ where: { tripId: id } });
+        for (const group of existing) keyToId.set(group.title, group.id);
+      }
+
+      if (patch.faqs) {
+        await tx.tripFaq.deleteMany({ where: { tripId: id } });
+        await tx.tripFaq.createMany({
+          data: patch.faqs.map((faq, index) => ({
+            tripId: id,
+            question: faq.question.trim(),
+            answer: faq.answer.trim(),
+            groupId: faq.groupKey ? (keyToId.get(faq.groupKey) ?? null) : null,
+            sortOrder: index,
+          })),
+        });
+      }
+    }
+
+    if (patch.pricingTiers) {
+      await tx.tripPricingTier.deleteMany({ where: { tripId: id } });
+      await tx.tripPricingTier.createMany({
+        data: patch.pricingTiers.map((tier, index) => ({
           tripId: id,
-          question: faq.question.trim(),
-          answer: faq.answer.trim(),
+          label: tier.label.trim(),
+          minPeople: tier.minPeople,
+          maxPeople: tier.maxPeople ?? null,
+          priceUsd: tier.priceUsd,
+          wasPriceUsd: tier.wasPriceUsd ?? null,
+          note: tier.note?.trim() || null,
           sortOrder: index,
         })),
       });

@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { parseElevationProfile, parseTripStats } from '@/server/schema/blocks';
 import { db } from '@/lib/db';
 import { storage } from '@/lib/storage';
 import { TRIP_DETAIL_INCLUDE, type TripDetail } from './trip';
@@ -33,6 +34,9 @@ export function emptyTripForm(): TripFormData {
     highPointMetres: 0,
     difficulty: 'MODERATE',
     priceFromUsd: 0,
+    priceCurrency: 'USD',
+    priceNote: '',
+    pricingTiers: [],
     seasonLabel: '',
     seasonKeys: [],
     paceNote: '',
@@ -45,7 +49,12 @@ export function emptyTripForm(): TripFormData {
     excluded: [],
     itinerary: [],
     faqs: [],
+    faqGroups: [],
     gallery: [],
+    stats: [],
+    elevationProfile: [],
+    videoUrl: '',
+    routeMap: null,
     hero: null,
     ogImage: null,
     destinationIds: [],
@@ -89,6 +98,17 @@ function toForm(trip: TripDetail): TripFormData {
     highPointMetres: trip.highPointMetres,
     difficulty: trip.difficulty,
     priceFromUsd: trip.priceFromUsd,
+    priceCurrency: trip.priceCurrency,
+    priceNote: trip.priceNote ?? '',
+    pricingTiers: trip.pricingTiers.map((tier) => ({
+      key: tier.id,
+      label: tier.label,
+      minPeople: tier.minPeople,
+      maxPeople: tier.maxPeople,
+      priceUsd: tier.priceUsd,
+      wasPriceUsd: tier.wasPriceUsd,
+      note: tier.note ?? '',
+    })),
     seasonLabel: trip.seasonLabel,
     seasonKeys: trip.seasonKeys,
     paceNote: trip.paceNote,
@@ -109,7 +129,27 @@ function toForm(trip: TripDetail): TripFormData {
       meta: day.meta ?? '',
       body: day.body ?? '',
     })),
-    faqs: trip.faqs.map((faq) => ({ question: faq.question, answer: faq.answer })),
+    /**
+     * A question refers to its heading by title, not by id.
+     *
+     * The editor builds new headings before they exist as rows, so the key it
+     * uses has to be something it can invent. Reading them back by title keeps
+     * the two directions symmetrical — see `groupKey` in the validator.
+     */
+    faqGroups: trip.faqGroups.map((group) => ({
+      key: group.title,
+      title: group.title,
+      blurb: group.blurb ?? '',
+    })),
+    faqs: trip.faqs.map((faq) => ({
+      question: faq.question,
+      answer: faq.answer,
+      groupKey:
+        trip.faqGroups.find((group) => group.id === faq.groupId)?.title ?? null,
+    })),
+    stats: parseTripStats(trip.stats, `trip ${trip.slug}`),
+    elevationProfile: parseElevationProfile(trip.elevationProfile, `trip ${trip.slug}`),
+    videoUrl: trip.videoUrl ?? '',
     gallery: trip.gallery.map((item) => ({
       mediaId: item.mediaId,
       url: pick(item.media),
@@ -118,6 +158,7 @@ function toForm(trip: TripDetail): TripFormData {
       width: item.width,
     })),
     hero: toPicked(trip.hero),
+    routeMap: toPicked(trip.routeMap),
     ogImage: toPicked(trip.ogImage),
     destinationIds: trip.destinations.map((link) => link.destinationId),
     offeredByDestinationIds: trip.destinations

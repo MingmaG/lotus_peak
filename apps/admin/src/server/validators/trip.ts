@@ -50,6 +50,45 @@ const faqSchema = z.object({
   id: z.string().optional(),
   question: z.string().min(1, 'Write the question.').max(300),
   answer: z.string().min(1, 'Write the answer.').max(4_000),
+  /**
+   * The heading this question sits under, by the *client's* key.
+   *
+   * Not the row id: a group created in the same save has no id yet. The client
+   * sends a stable key it made up, the service maps keys to rows once the
+   * groups are written, and a question whose key names no group is simply
+   * ungrouped — which is a correct answer, not an error to refuse a save over.
+   */
+  groupKey: z.string().max(60).nullable().optional(),
+});
+
+const faqGroupSchema = z.object({
+  id: z.string().optional(),
+  /** What the questions in it refer to. See `groupKey` above. */
+  key: z.string().min(1).max(60),
+  title: z.string().min(1, 'Give the group a heading.').max(200),
+  blurb: z.string().max(600).nullable().optional(),
+});
+
+const pricingTierSchema = z.object({
+  id: z.string().optional(),
+  label: z.string().min(1, 'Name the tier — "Two travellers".').max(120),
+  minPeople: z.number().int().min(1).max(60),
+  maxPeople: z.number().int().min(1).max(60).nullable().optional(),
+  priceUsd: z.number().int().min(0).max(1_000_000),
+  wasPriceUsd: z.number().int().min(0).max(1_000_000).nullable().optional(),
+  note: z.string().max(400).nullable().optional(),
+});
+
+const statSchema = z.object({
+  label: z.string().min(1).max(60),
+  value: z.string().min(1).max(60),
+  note: z.string().max(200).nullable().optional(),
+});
+
+const elevationPointSchema = z.object({
+  day: z.number().int().min(0).max(60),
+  label: z.string().min(1).max(80),
+  metres: z.number().int().min(-500).max(9_000),
 });
 
 const galleryItemSchema = z.object({
@@ -70,6 +109,9 @@ export const tripSchema = z.object({
   highPointMetres: z.number().int().min(0).max(9_000),
   difficulty: z.enum(['GENTLE', 'MODERATE', 'DEMANDING']),
   priceFromUsd: z.number().int().min(0).max(1_000_000),
+  priceCurrency: z.string().length(3).default('USD'),
+  priceNote: z.string().max(600).nullable().optional(),
+  pricingTiers: z.array(pricingTierSchema).max(12).default([]),
   seasonLabel: z.string().max(120).default(''),
   seasonKeys: z.array(z.enum(['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'])).default([]),
   paceNote: z.string().max(400).default(''),
@@ -91,10 +133,15 @@ export const tripSchema = z.object({
   excluded: z.array(z.string().max(400)).max(40).default([]),
 
   itinerary: z.array(itineraryDaySchema).max(60).default([]),
-  faqs: z.array(faqSchema).max(40).default([]),
+  faqs: z.array(faqSchema).max(60).default([]),
+  faqGroups: z.array(faqGroupSchema).max(12).default([]),
   gallery: z.array(galleryItemSchema).max(60).default([]),
+  stats: z.array(statSchema).max(8).default([]),
+  elevationProfile: z.array(elevationPointSchema).max(60).default([]),
 
   heroId: z.string().nullable().optional(),
+  routeMapId: z.string().nullable().optional(),
+  videoUrl: z.string().max(500).nullable().optional(),
   destinationIds: z.array(z.string()).max(30).default([]),
   /** Destinations that offer this journey, in the order they offer it. */
   offeredByDestinationIds: z.array(z.string()).max(30).default([]),
