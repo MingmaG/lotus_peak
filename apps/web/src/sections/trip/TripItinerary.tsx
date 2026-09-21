@@ -1,5 +1,6 @@
 'use client'
 
+import { Prose } from '@/components/site/Prose'
 import { useState } from 'react'
 import { Button, Disclosure, Itinerary } from '@/design-system'
 import type { ItineraryDayData } from '@/content/types'
@@ -39,7 +40,7 @@ export function TripFaq({ items }: { items: { question: string; answer: string }
             summary={item.question}
           >
             <p style={{ margin: '0 0 24px', color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}>
-              {item.answer}
+              <Prose html={item.answer} compact />
             </p>
           </Disclosure>
         </div>

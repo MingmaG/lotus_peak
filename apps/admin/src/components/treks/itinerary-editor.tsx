@@ -7,8 +7,8 @@ import type { ItineraryDayForm } from './trip-editor';
 import { Section } from '@/components/shared/editor-shell';
 import { SortableList } from '@/components/shared/sortable-list';
 import { Button } from '@/components/ui/button';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 /**
@@ -122,13 +122,13 @@ export function ItineraryEditor({
               aria-label={`Details line for day ${index + 1}`}
             />
 
-            <Textarea
+            <RichTextEditor
               value={day.body}
-              rows={2}
+              onChange={(body) => patch(index, { body })}
+              compact
+              minHeight="min-h-[90px]"
               placeholder="What the day is."
-              onChange={(event) => patch(index, { body: event.target.value })}
-              className="text-sm"
-              aria-label={`Description for day ${index + 1}`}
+              aria-labelledby={`day-${index}-label`}
             />
           </div>
         )}

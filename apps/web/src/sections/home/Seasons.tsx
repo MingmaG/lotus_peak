@@ -1,5 +1,6 @@
 'use client'
 
+import { Prose } from '@/components/site/Prose'
 import { useState } from 'react'
 import { Disclosure, Eyebrow } from '@/design-system'
 import { Parallax, Reveal } from '@/motion'
@@ -52,9 +53,11 @@ function SeasonRow({ season, index }: { season: Season; index: number }) {
 
       <div>
         <h3 style={{ fontSize: 'var(--text-h3)' }}>{season.headline}</h3>
-        <p style={{ marginTop: 14, color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}>
-          {season.summary}
-        </p>
+        <Prose
+          html={season.summary}
+          compact
+          style={{ marginTop: 14, color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}
+        />
 
         <Disclosure
           variant="inline"
@@ -63,9 +66,11 @@ function SeasonRow({ season, index }: { season: Season; index: number }) {
           summary={null}
           labels={['Read more', 'Read less']}
         >
-          <p style={{ margin: '14px 0 0', color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}>
-            {season.detail}
-          </p>
+          <Prose
+            html={season.detail}
+            compact
+            style={{ margin: '14px 0 0', color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}
+          />
         </Disclosure>
       </div>
 

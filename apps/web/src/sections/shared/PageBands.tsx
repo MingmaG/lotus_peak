@@ -1,5 +1,4 @@
 import { Prose } from '@/components/site/Prose'
-import { renderStoredRichText } from '@/lib/rich-text'
 import Image from 'next/image'
 import { Button, Divider, Eyebrow, Reflection, SiteIcon, TrekCard } from '@/design-system'
 import { getContent } from '@/content'
@@ -114,19 +113,15 @@ function Band({
           </Reveal>
           <Reveal delay={200}>
             {/**
-             * The body is HTML the office wrote in the rich-text editor, and
-             * it is rebuilt before it is rendered.
+             * Already sanitised, by the mapper that read it.
              *
-             * It used to be set straight into the page on the grounds that the
-             * editor's schema had already dropped anything it had no node for.
-             * That was true of what the editor wrote and says nothing about
-             * what is in the column — an older editor wrote some of these, and
-             * the API is what stands between them and the page. `Prose` takes
-             * the output of `renderStoredRichText`, which rebuilds the body
-             * from an allowlist and refuses an image from a host that is not
-             * the media store.
+             * `toBand` runs `renderStoredRichText` over every rich-text field
+             * on its way out of the provider — see the note there. Doing it
+             * again here would be wasted work on a string that is already
+             * rebuilt, and a second pass over a film's façade markup is a
+             * chance to damage it.
              */}
-            <Prose html={renderStoredRichText(band.body)} style={{ marginTop: 20, maxWidth: 'var(--measure)' }} />
+            <Prose html={band.body} style={{ marginTop: 20, maxWidth: 'var(--measure)' }} />
           </Reveal>
         </Section>
       )
@@ -172,7 +167,7 @@ function Band({
                   <Divider variant="gold" />
                 )}
                 <h3 style={{ marginTop: 16, fontSize: 'var(--text-h4)' }}>{point.title}</h3>
-                <p style={{ marginTop: 10, color: 'var(--text-muted)' }}>{point.body}</p>
+                <Prose html={point.body} compact style={{ marginTop: 10, color: 'var(--text-muted)' }} />
               </Reveal>
             ))}
           </div>
@@ -234,7 +229,7 @@ function Band({
               <Reveal key={item.question} delay={120 + i * 80}>
                 <div style={{ padding: '18px 0', borderBottom: '1px solid var(--line)' }}>
                   <h3 style={{ fontSize: 'var(--text-h4)' }}>{item.question}</h3>
-                  <p style={{ marginTop: 10, color: 'var(--text-muted)' }}>{item.answer}</p>
+                  <Prose html={item.answer} compact style={{ marginTop: 10, color: 'var(--text-muted)' }} />
                 </div>
               </Reveal>
             ))}
@@ -439,7 +434,7 @@ function Band({
                 <p style={{ marginTop: 4, fontSize: 'var(--text-small)', color: 'var(--gold)' }}>
                   {person.role}
                 </p>
-                <p style={{ marginTop: 10, color: 'var(--text-muted)' }}>{person.bio}</p>
+                <Prose html={person.bio} compact style={{ marginTop: 10, color: 'var(--text-muted)' }} />
               </Reveal>
             ))}
           </div>

@@ -8,9 +8,9 @@ import { toast } from 'sonner';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field, Section } from '@/components/shared/editor-shell';
 import { Button } from '@/components/ui/button';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
 import { apiPatch } from '@/lib/api-client';
 
 interface Season {
@@ -107,11 +107,13 @@ export function SeasonsScreen({ canWrite }: { canWrite: boolean }) {
             </Field>
 
             <Field label="Summary" hint="Two sentences, shown closed.">
-              <Textarea
+              <RichTextEditor
                 value={draft.summary}
-                rows={2}
+                onChange={(summary) => set({ summary })}
                 disabled={!canWrite}
-                onChange={(event) => set({ summary: event.target.value })}
+                compact
+                minHeight="min-h-[80px]"
+                placeholder="Two sentences."
               />
             </Field>
 
@@ -119,11 +121,11 @@ export function SeasonsScreen({ canWrite }: { canWrite: boolean }) {
               label="The detail"
               hint="Behind “Read more”. Temperatures, rainfall, which festivals fall in it."
             >
-              <Textarea
+              <RichTextEditor
                 value={draft.detail}
-                rows={6}
+                onChange={(detail) => set({ detail })}
                 disabled={!canWrite}
-                onChange={(event) => set({ detail: event.target.value })}
+                placeholder="Temperatures, rainfall, which festivals fall in it."
               />
             </Field>
 

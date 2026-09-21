@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 
 interface Row {
   id: string;
@@ -98,10 +98,12 @@ export function ReflectionsScreen({
       renderForm={(form, set) => (
         <>
           <Field label="What they said" hint="Their words. Do not tidy them up.">
-            <Textarea
+            <RichTextEditor
               value={form.quote}
-              rows={5}
-              onChange={(event) => set({ quote: event.target.value })}
+              onChange={(quote) => set({ quote })}
+              compact
+              minHeight="min-h-[120px]"
+              placeholder="Their words."
             />
           </Field>
 

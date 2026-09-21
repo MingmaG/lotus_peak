@@ -1,6 +1,9 @@
 import type { CSSProperties } from 'react'
 
+import { Prose } from '@/components/site/Prose'
+
 export type ReflectionProps = {
+  /** Rich text, already sanitised by the mapper that read it. */
   quote: string
   name: string
   detail?: string
@@ -22,7 +25,7 @@ export function Reflection({ quote, name, detail, style }: ReflectionProps) {
           maxWidth: '30ch',
         }}
       >
-        {quote}
+        <Prose html={quote} compact />
       </blockquote>
       <figcaption style={{ marginTop: 22, fontSize: 'var(--text-small)', color: 'var(--text-muted)' }}>
         {name}

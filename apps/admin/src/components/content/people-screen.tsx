@@ -5,7 +5,7 @@ import { StatusSelect } from './icon-select';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field } from '@/components/shared/editor-shell';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 
 interface Row {
   id: string;
@@ -80,7 +80,13 @@ export function PeopleScreen({ canWrite, canDelete }: { canWrite: boolean; canDe
             <Input value={form.role} onChange={(event) => set({ role: event.target.value })} />
           </Field>
           <Field label="A few sentences">
-            <Textarea value={form.bio} rows={6} onChange={(event) => set({ bio: event.target.value })} />
+            <RichTextEditor
+              value={form.bio}
+              onChange={(bio) => set({ bio })}
+              compact
+              minHeight="min-h-[140px]"
+              placeholder="Who they are, and what they do on a journey."
+            />
           </Field>
           <MediaPicker
             label="Photograph"

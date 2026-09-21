@@ -20,6 +20,7 @@ import { SortableList, StringList } from '@/components/shared/sortable-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -661,13 +662,14 @@ export function TripEditor({
                     set('faqs', next);
                   }}
                 />
-                <Textarea
+                <RichTextEditor
                   value={faq.answer}
-                  rows={3}
+                  compact
+                  minHeight="min-h-[100px]"
                   placeholder="The answer, in plain words."
-                  onChange={(event) => {
+                  onChange={(answer) => {
                     const next = [...form.faqs];
-                    next[index] = { ...faq, answer: event.target.value };
+                    next[index] = { ...faq, answer };
                     set('faqs', next);
                   }}
                 />

@@ -1,5 +1,6 @@
 'use client'
 
+import { Prose } from '@/components/site/Prose'
 import { useId, useState, type CSSProperties } from 'react'
 import { PlusMinus } from '../primitives/Disclosure'
 
@@ -119,7 +120,11 @@ export function Itinerary({ days = [], collapsible = false, expanded, onToggle, 
                 </div>
               )}
               {d.body && (
-                <p style={{ margin: '14px 0 0', color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}>{d.body}</p>
+                <Prose
+                  html={d.body}
+                  compact
+                  style={{ margin: '14px 0 0', color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}
+                />
               )}
             </div>
           </li>
@@ -262,7 +267,9 @@ export function Itinerary({ days = [], collapsible = false, expanded, onToggle, 
                   }}
                 >
                   <div style={{ overflow: 'hidden' }}>
-                    <p
+                    <Prose
+                      html={d.body ?? ''}
+                      compact
                       style={{
                         margin: '16px 0 0',
                         color: 'var(--text-muted)',
@@ -272,9 +279,7 @@ export function Itinerary({ days = [], collapsible = false, expanded, onToggle, 
                         transition:
                           'opacity var(--dur-slow) var(--ease-breath),transform var(--dur-slow) var(--ease-breath)',
                       }}
-                    >
-                      {d.body}
-                    </p>
+                    />
                   </div>
                 </div>
               )}

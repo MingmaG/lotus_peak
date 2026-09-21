@@ -1,3 +1,4 @@
+import { Prose } from '@/components/site/Prose'
 import type { Metadata } from 'next'
 import { Eyebrow, SiteIcon } from '@/design-system'
 import { getContent } from '@/content'
@@ -140,7 +141,7 @@ export default async function CulturePage() {
                         lineHeight: 'var(--leading-lead)',
                       }}
                     >
-                      {a.body}
+                      <Prose html={a.body} compact />
                     </p>
                   </Reveal>
                 </div>

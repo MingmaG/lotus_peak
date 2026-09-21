@@ -1,3 +1,4 @@
+import { Prose } from '@/components/site/Prose'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Eyebrow, SiteIcon } from '@/design-system'
@@ -149,7 +150,7 @@ export default async function DestinationsPage() {
                         lineHeight: 'var(--leading-lead)',
                       }}
                     >
-                      {destination.detail}
+                      <Prose html={destination.detail} compact />
                     </p>
                   </Reveal>
 

@@ -5,7 +5,7 @@ import { IconSelect, StatusSelect } from './icon-select';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field } from '@/components/shared/editor-shell';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { toSlug } from '@/lib/slug';
 
 interface Row {
@@ -89,7 +89,11 @@ export function CultureScreen({ canWrite, canDelete }: { canWrite: boolean; canD
             label="The piece"
             hint="A paragraph or two. Plain and specific — the voice the rest of the site uses."
           >
-            <Textarea value={form.body} rows={8} onChange={(event) => set({ body: event.target.value })} />
+            <RichTextEditor
+              value={form.body}
+              onChange={(body) => set({ body })}
+              placeholder="A paragraph or two."
+            />
           </Field>
           <Field label="Silhouette">
             <IconSelect value={form.icon} onChange={(icon) => set({ icon })} />

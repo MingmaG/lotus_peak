@@ -5,7 +5,7 @@ import { IconSelect, StatusSelect } from './icon-select';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Field } from '@/components/shared/editor-shell';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { toSlug } from '@/lib/slug';
 
 interface Row {
@@ -138,10 +138,10 @@ export function DestinationsScreen({
           </Field>
 
           <Field label="The paragraph" hint="What is actually there, and what a journey does in it.">
-            <Textarea
+            <RichTextEditor
               value={form.detail}
-              rows={6}
-              onChange={(event) => set({ detail: event.target.value })}
+              onChange={(detail) => set({ detail })}
+              placeholder="What is actually there."
             />
           </Field>
 

@@ -36,7 +36,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 
 /**
  * The bands an editorial page is made of.
@@ -249,12 +248,12 @@ export function SectionEditor({
                     className="h-8 text-sm"
                   />
                 </div>
-                <Textarea
+                <RichTextEditor
                   value={section.lead ?? ''}
-                  onChange={(event) => patch(index, { lead: event.target.value || null })}
+                  onChange={(lead) => patch(index, { lead: lead || null })}
                   placeholder="A sentence under the heading (optional)"
-                  rows={2}
-                  className="text-sm"
+                  compact
+                  minHeight="min-h-[70px]"
                 />
 
                 <div className="space-y-2">
@@ -296,14 +295,15 @@ export function SectionEditor({
                           ×
                         </Button>
                       </div>
-                      <Textarea
+                      <RichTextEditor
                         value={point.body}
-                        onChange={(event) => {
+                        onChange={(body) => {
                           const points = [...section.points];
-                          points[pointIndex] = { ...point, body: event.target.value };
+                          points[pointIndex] = { ...point, body };
                           patch(index, { points });
                         }}
-                        rows={2}
+                        compact
+                        minHeight="min-h-[80px]"
                         placeholder="A sentence or two."
                         className="text-sm"
                       />
@@ -418,14 +418,15 @@ export function SectionEditor({
                         ×
                       </Button>
                     </div>
-                    <Textarea
+                    <RichTextEditor
                       value={item.answer}
-                      onChange={(event) => {
+                      onChange={(answer) => {
                         const items = [...section.items];
-                        items[itemIndex] = { ...item, answer: event.target.value };
+                        items[itemIndex] = { ...item, answer };
                         patch(index, { items });
                       }}
-                      rows={2}
+                      compact
+                      minHeight="min-h-[80px]"
                       placeholder="The answer."
                       className="text-sm"
                     />
@@ -556,12 +557,12 @@ export function SectionEditor({
                   placeholder="Heading (optional)"
                   className="h-8 text-sm"
                 />
-                <Textarea
+                <RichTextEditor
                   value={section.lead ?? ''}
-                  onChange={(event) => patch(index, { lead: event.target.value || null })}
-                  rows={2}
+                  onChange={(lead) => patch(index, { lead: lead || null })}
                   placeholder="A sentence under it (optional)"
-                  className="text-sm"
+                  compact
+                  minHeight="min-h-[70px]"
                 />
                 <Picker
                   hint="Leave everything unticked to show the catalogue in its own order — which is right unless this page has just argued for three particular journeys."
@@ -597,12 +598,12 @@ export function SectionEditor({
                   placeholder="Come and see"
                   className="h-8 text-sm"
                 />
-                <Textarea
+                <RichTextEditor
                   value={section.lead ?? ''}
-                  onChange={(event) => patch(index, { lead: event.target.value || null })}
-                  rows={2}
+                  onChange={(lead) => patch(index, { lead: lead || null })}
                   placeholder="A sentence."
-                  className="text-sm"
+                  compact
+                  minHeight="min-h-[70px]"
                 />
                 <div className="grid gap-2 sm:grid-cols-2">
                   <Input

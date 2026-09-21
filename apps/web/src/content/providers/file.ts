@@ -1,3 +1,4 @@
+import { renderStoredRichText } from '@/lib/rich-text'
 import { siteUrl } from '@/lib/env'
 import 'server-only'
 
@@ -292,7 +293,7 @@ function fileLlmsFullInput() {
         rest: day.rest === true,
         title: day.title,
         meta: day.meta ?? null,
-        body: day.body ?? null,
+        body: day.body ? renderStoredRichText(day.body) : null,
         images: [],
       })),
       included: trip.included,
@@ -331,7 +332,7 @@ function fileLlmsFullInput() {
       name: row.name,
       icon: row.icon,
       blurb: row.blurb,
-      detail: row.detail,
+      detail: renderStoredRichText(row.detail),
       image: fileImage(row.image),
       tripSlugs: row.tripSlugs,
       altitudeMetres: null,
@@ -342,7 +343,7 @@ function fileLlmsFullInput() {
     culture: [...CULTURE].sort(byOrder).map((row) => ({
       slug: row.slug,
       title: row.title,
-      body: row.body,
+      body: renderStoredRichText(row.body),
       icon: row.icon,
       image: fileImage(row.image),
       seo: FILE_SEO,

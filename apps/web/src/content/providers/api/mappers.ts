@@ -1,3 +1,4 @@
+import { renderStoredRichText } from '@/lib/rich-text'
 import type {
   ApiActivity,
   ApiPage,
@@ -165,11 +166,14 @@ export function toTrip(row: ApiTrip): Trip {
       ...(day.rest ? { rest: true } : {}),
       title: day.title,
       ...(day.meta ? { meta: day.meta } : {}),
-      ...(day.body ? { body: day.body } : {}),
+      ...(day.body ? { body: renderStoredRichText(day.body) } : {}),
     })),
     included: row.included,
     excluded: row.excluded,
-    faq: row.faq,
+    faq: row.faq.map((item) => ({
+      question: item.question,
+      answer: renderStoredRichText(item.answer),
+    })),
     gallery: row.gallery.map((item) => {
       const cell: [string, string?, string?, string?] = [imagePath(item.image)]
       if (item.ratio) cell[1] = item.ratio
@@ -215,7 +219,7 @@ export function toPost(row: ApiPost): Post {
 function toBlock(block: ApiPost['body'][number]): PostBlock {
   switch (block.kind) {
     case 'text':
-      return { kind: 'text', body: block.body }
+      return { kind: 'text', body: renderStoredRichText(block.body) }
     case 'heading':
       return { kind: 'heading', text: block.text }
     case 'list':
@@ -247,7 +251,7 @@ export function toDestination(row: ApiDestination, index = 0): Destination {
     name: row.name,
     icon: row.icon ?? ICON_FALLBACK,
     blurb: row.blurb,
-    detail: row.detail,
+    detail: renderStoredRichText(row.detail),
     image: imagePath(row.image),
     imageAlt: row.image?.alt,
     tripSlugs: row.tripSlugs,
@@ -275,19 +279,35 @@ export function toSeason(row: ApiSeason, index = 0): Season {
     monthsLabel: row.monthsLabel,
     name: row.name,
     headline: row.headline,
-    summary: row.summary,
-    detail: row.detail,
+    summary: renderStoredRichText(row.summary),
+    detail: renderStoredRichText(row.detail),
     image: imagePath(row.image),
     imageAlt: row.image?.alt,
     order: index,
   }
 }
 
+/**
+ * Rich text is sanitised here, once, at the boundary.
+ *
+ * Not in the components that draw it. `Itinerary`, `Reflection` and the rest
+ * of the design system are client components, and `renderStoredRichText` is
+ * `server-only` — but the real reason is that a body should be safe because
+ * of where it came from, not because of what happened to draw it. A component
+ * that receives a body and forgets to sanitise it is a bug you find in
+ * production; a mapper that forgets is a bug you find in this file.
+ *
+ * `renderStoredRichText` rather than `renderRichText`, because these columns
+ * predate their editor. Half of them hold `<p>…</p><ul>…` written in the
+ * rich-text editor and half hold a paragraph somebody typed into a box before
+ * there was one. Both are what the office wrote, and both have to draw as
+ * prose.
+ */
 export function toCultureArticle(row: ApiCultureArticle, index = 0): CultureArticle {
   return {
     slug: row.slug,
     title: row.title,
-    body: row.body,
+    body: renderStoredRichText(row.body),
     icon: row.icon ?? ICON_FALLBACK,
     image: imagePath(row.image),
     imageAlt: row.image?.alt,
@@ -308,7 +328,7 @@ export function toGalleryImage(row: ApiGalleryImage, index = 0): GalleryImage {
 export function toReflection(row: ApiReflection, index = 0): Reflection {
   return {
     id: row.id,
-    quote: row.quote,
+    quote: renderStoredRichText(row.quote),
     name: row.name,
     ...(row.detail ? { detail: row.detail } : {}),
     ...(row.tripSlug ? { tripSlug: row.tripSlug } : {}),
@@ -404,7 +424,7 @@ function toBand(section: ApiPageSection): PageBand | null {
         kind: 'prose',
         eyebrow: section.eyebrow,
         title: section.title,
-        body: section.body,
+        body: renderStoredRichText(section.body),
         anchor: section.anchor,
       }
 
@@ -413,10 +433,10 @@ function toBand(section: ApiPageSection): PageBand | null {
         kind: 'points',
         eyebrow: section.eyebrow,
         title: section.title,
-        lead: section.lead,
+        lead: renderStoredRichText(section.lead),
         points: section.points.map((point) => ({
           title: point.title,
-          body: point.body,
+          body: renderStoredRichText(point.body),
           icon: point.icon,
         })),
       }
@@ -425,7 +445,14 @@ function toBand(section: ApiPageSection): PageBand | null {
       return { kind: 'facts', title: section.title, rows: section.rows }
 
     case 'faq':
-      return { kind: 'faq', title: section.title, items: section.items }
+      return {
+        kind: 'faq',
+        title: section.title,
+        items: section.items.map((item) => ({
+          question: item.question,
+          answer: renderStoredRichText(item.answer),
+        })),
+      }
 
     case 'figure':
       return {
@@ -456,7 +483,7 @@ function toBand(section: ApiPageSection): PageBand | null {
       return {
         kind: 'trips',
         title: section.title,
-        lead: section.lead,
+        lead: renderStoredRichText(section.lead),
         tripSlugs: section.tripSlugs,
       }
 
@@ -464,7 +491,7 @@ function toBand(section: ApiPageSection): PageBand | null {
       return {
         kind: 'cta',
         title: section.title,
-        lead: section.lead,
+        lead: renderStoredRichText(section.lead),
         label: section.label,
         href: section.href,
         band: section.band,
@@ -474,7 +501,7 @@ function toBand(section: ApiPageSection): PageBand | null {
       return {
         kind: 'people',
         title: section.title,
-        lead: section.lead,
+        lead: renderStoredRichText(section.lead),
         personIds: section.personIds,
       }
   }
@@ -485,7 +512,7 @@ export function toPerson(row: ApiPerson): Person {
     id: row.id,
     name: row.name,
     role: row.role,
-    bio: row.bio,
+    bio: renderStoredRichText(row.bio),
     photo: row.photo ? imagePath(row.photo) : null,
     photoAlt: row.photo?.alt,
     languages: row.languages,
