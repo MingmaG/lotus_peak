@@ -157,3 +157,19 @@
   text-decoration-color: var(--gold);
   text-underline-offset: 4px;
 }
+
+/* The journeys index filters in the browser so the page can stay static.
+   `TripFilter` writes the active type onto the grid and these hide the rest;
+   with no JavaScript the attribute stays `all` and every journey is shown,
+   which is the right answer to "what journeys are there".
+
+   One rule per type, each hiding what does not match, rather than a blanket
+   hide with exceptions — `[data-trip-filter]:not([data-trip-filter="all"]) >
+   [data-trip-type]` carries three attribute selectors and out-specifies any
+   two-attribute rule trying to show one again, so the exceptions never won. */
+[data-trip-filter="mindfulness"] > [data-trip-type]:not([data-trip-type="mindfulness"]),
+[data-trip-filter="meditation"]  > [data-trip-type]:not([data-trip-type="meditation"]),
+[data-trip-filter="festival"]    > [data-trip-type]:not([data-trip-type="festival"]),
+[data-trip-filter="trekking"]    > [data-trip-type]:not([data-trip-type="trekking"]) {
+  display: none;
+}

@@ -7,7 +7,6 @@ import { IMG } from '@/lib/assets'
 import { fmt } from '@/content/types'
 import { Reveal } from '@/motion'
 import { TripFilter } from '@/sections/trips/TripFilter'
-import { TYPE_OF, toFilterLabel, type FilterLabel } from '@/sections/trips/filters'
 import { JsonLd } from '@/seo/JsonLd'
 import { graphForTripIndex } from '@/seo/graph'
 
@@ -36,16 +35,19 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default async function TripsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ type?: string }>
-}) {
-  const { type } = await searchParams
-  const label = toFilterLabel(type)
-  const trips = await getContent().trips.list(
-    label === 'All' ? undefined : { type: TYPE_OF[label as Exclude<FilterLabel, 'All'>] },
-  )
+/**
+ * Every journey, prerendered; the filter runs in the browser.
+ *
+ * This page used to read `searchParams`, which made it the one route on the
+ * site rendered on every request — and it is the journeys index, the page that
+ * matters most to a crawler and is most often opened on a slow connection. All
+ * five are in the static HTML now and `TripFilter` hides the ones that do not
+ * match, which also means a crawler sees the whole catalogue whatever the URL
+ * says. See the note in `src/sections/trips/TripFilter.tsx`.
+ */
+export default async function TripsPage() {
+  const trips = await getContent().trips.list()
+  const present = [...new Set(trips.map((t) => t.type))]
 
   return (
     <main
@@ -83,24 +85,25 @@ export default async function TripsPage({
 
       <Reveal delay={400}>
         <Suspense fallback={<div style={{ height: 49, marginTop: 'var(--space-8)' }} />}>
-          <TripFilter value={label} />
+          <TripFilter present={present} />
         </Suspense>
       </Reveal>
 
-      {trips.length === 0 ? (
-        <Reveal delay={200}>
-          <div style={{ marginTop: 'var(--space-9)', maxWidth: 'var(--measure-narrow)' }}>
-            <p style={{ fontSize: 'var(--text-lead)', color: 'var(--text-muted)' }}>
-              No journeys of that kind yet. Write to us and we will build one.
-            </p>
-            <div style={{ marginTop: 'var(--space-6)' }}>
-              <Button href="/contact">Begin a conversation</Button>
-            </div>
-          </div>
-        </Reveal>
-      ) : (
+      {/* Rendered always and hidden always, until the filter says otherwise.
+          `hidden` rather than absent, because this is static HTML and there is
+          no server render in which it could be decided. */}
+      <div data-trip-empty hidden style={{ marginTop: 'var(--space-9)', maxWidth: 'var(--measure-narrow)' }}>
+        <p style={{ fontSize: 'var(--text-lead)', color: 'var(--text-muted)' }}>
+          No journeys of that kind yet. Write to us and we will build one.
+        </p>
+        <div style={{ marginTop: 'var(--space-6)' }}>
+          <Button href="/contact">Begin a conversation</Button>
+        </div>
+      </div>
+
+      {trips.length > 0 && (
         <div
-          key={label}
+          data-trip-filter="all"
           className="lp-trip-grid"
           style={{
             display: 'grid',
@@ -109,8 +112,26 @@ export default async function TripsPage({
             marginTop: 'var(--space-8)',
           }}
         >
+          {/**
+            * The cards are not wrapped in `Reveal`, and this is the one index
+            * where that is right.
+            *
+            * `Reveal` fades an element in when an `IntersectionObserver` first
+            * sees it, and an observer does not reliably report an element that
+            * was `display: none` when it becomes visible again — so a card
+            * filtered out and then filtered back in could stay at `opacity: 0`
+            * permanently, which is a journey nobody can read. Marking it
+            * arrived from the filter does not work either: it is a DOM
+            * attribute React owns and overwrites on its next render.
+            *
+            * Losing the stagger here costs nothing: the design project's own
+            * trips index has no entrance animation on the cards at all
+            * (docs/audit/effects-integration.md B2). The eyebrow, heading and
+            * lead above still stage in, so the page arrives the way every
+            * other page does.
+            */}
           {trips.map((t, i) => (
-            <Reveal key={t.slug} delay={i * 220} y={40}>
+            <div key={t.slug} data-trip-type={t.type}>
               <TrekCard
                 href={`/trips/${t.slug}`}
                 size="lg"
@@ -126,7 +147,7 @@ export default async function TripsPage({
                 excerpt={t.excerpt}
                 priority={i < 2}
               />
-            </Reveal>
+            </div>
           ))}
         </div>
       )}
