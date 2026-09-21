@@ -1,3 +1,5 @@
+import { Prose } from '@/components/site/Prose'
+import { renderStoredRichText } from '@/lib/rich-text'
 import { Eyebrow } from '@/design-system'
 import type { PageBand } from '@/content/types'
 import { Reveal } from '@/motion'
@@ -137,10 +139,10 @@ export function InfoPage({
                 * the treatment the mapped version had, including the gold
                 * middot before each list item.
                 */}
-              <div
+              <Prose
                 className="lp-info-prose"
+                html={renderStoredRichText(section.body)}
                 style={{ marginTop: 18, maxWidth: 'var(--measure)' }}
-                dangerouslySetInnerHTML={{ __html: section.body }}
               />
             </Reveal>
           ))}

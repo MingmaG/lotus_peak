@@ -1,3 +1,5 @@
+import { Prose } from '@/components/site/Prose'
+import { renderStoredRichText } from '@/lib/rich-text'
 import Image from 'next/image'
 import { Eyebrow } from '@/design-system'
 import type { PostBlock } from '@/content/types'
@@ -40,18 +42,24 @@ function Block({ block }: { block: PostBlock }) {
       )
 
     case 'text':
+      /**
+       * Rendered as markup, not as a string.
+       *
+       * This drew `{block.body}` as the text of a `<p>`, which was right while
+       * the editor could only produce a paragraph. It produces headings, lists,
+       * links, photographs, tables and films now, and a body set as text shows
+       * the reader `<strong>Paro</strong>` rather than the word in bold.
+       */
       return (
-        <p
+        <Prose
+          html={renderStoredRichText(block.body)}
           style={{
-            margin: 0,
             maxWidth: 'var(--measure)',
             fontSize: 'var(--text-lead)',
             lineHeight: 'var(--leading-lead)',
             color: 'var(--text-muted)',
           }}
-        >
-          {block.body}
-        </p>
+        />
       )
 
     case 'list':
@@ -98,7 +106,7 @@ function Block({ block }: { block: PostBlock }) {
             lineHeight: 'var(--leading-lead)',
           }}
         >
-          {block.text}
+          <Prose html={renderStoredRichText(block.text)} compact />
         </blockquote>
       )
 

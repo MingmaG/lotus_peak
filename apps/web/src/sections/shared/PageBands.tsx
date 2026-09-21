@@ -1,3 +1,5 @@
+import { Prose } from '@/components/site/Prose'
+import { renderStoredRichText } from '@/lib/rich-text'
 import Image from 'next/image'
 import { Button, Divider, Eyebrow, Reflection, SiteIcon, TrekCard } from '@/design-system'
 import { getContent } from '@/content'
@@ -112,16 +114,19 @@ function Band({
           </Reveal>
           <Reveal delay={200}>
             {/**
-             * The body is HTML from the restricted editor — paragraphs, lists,
-             * bold, italic and links, and nothing else. It is sanitised on the
-             * way in by the editor's schema, which drops any node the schema
-             * has no place for; a pasted `<script>` never reaches the column.
+             * The body is HTML the office wrote in the rich-text editor, and
+             * it is rebuilt before it is rendered.
+             *
+             * It used to be set straight into the page on the grounds that the
+             * editor's schema had already dropped anything it had no node for.
+             * That was true of what the editor wrote and says nothing about
+             * what is in the column — an older editor wrote some of these, and
+             * the API is what stands between them and the page. `Prose` takes
+             * the output of `renderStoredRichText`, which rebuilds the body
+             * from an allowlist and refuses an image from a host that is not
+             * the media store.
              */}
-            <div
-              className="lp-prose"
-              style={{ marginTop: 20, maxWidth: 'var(--measure)' }}
-              dangerouslySetInnerHTML={{ __html: band.body }}
-            />
+            <Prose html={renderStoredRichText(band.body)} style={{ marginTop: 20, maxWidth: 'var(--measure)' }} />
           </Reveal>
         </Section>
       )
