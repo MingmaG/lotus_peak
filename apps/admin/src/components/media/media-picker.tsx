@@ -40,6 +40,15 @@ export interface PickedMedia {
      because most rows have neither. */
   caption: string | null;
   credit: string | null;
+  /**
+   * The 400 px rendition, where the row has one.
+   *
+   * Optional because `toPicked` on the server builds a `PickedMedia` from a
+   * record that is already the small one. It matters in the grid below, which
+   * drew `url` — the *largest* WebP — sixty times over, so opening the picker
+   * pulled sixty 1200 px files down to paint sixty 200 px squares.
+   */
+  thumbnailUrl?: string;
   width: number | null;
   height: number | null;
   filename: string;
@@ -201,9 +210,21 @@ function MediaDialog({
   }, [open]);
 
   const upload = useMutation({
-    mutationFn: async (files: FileList) => {
+      /**
+       * An array, not the live `FileList`.
+       *
+       * `mutate()` does not call this function synchronously — it goes through
+       * the mutation observer first — and the `onChange` handler that starts
+       * an upload clears the input (`event.target.value = ''`) as its next
+       * statement. That empties the very `FileList` this closure is holding,
+       * so by the time it ran there were no files in it: the loop did nothing,
+       * the mutation "succeeded", and the panel said "Uploaded" having sent
+       * no request at all. Snapshotting at the call site is what fixes it; the
+       * signature is `File[]` so it cannot regress.
+       */
+    mutationFn: async (files: File[]) => {
       const out: PickedMedia[] = [];
-      for (const file of Array.from(files)) {
+      for (const file of files) {
         const form = new FormData();
         form.append('file', file);
         /**
@@ -239,7 +260,16 @@ function MediaDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      {/**
+        * `size`, not a `max-w-*` in `className`.
+        *
+        * `DialogContent`'s own width is `sm:max-w-lg`, a *variant*, and a bare
+        * `max-w-4xl` passed in is a different tailwind-merge group — so both
+        * survived, and above 640px the variant won. The dialog was 512 px wide
+        * on every screen, which put five columns of thumbnails at 84 px each
+        * and made choosing a photograph a guessing game.
+        */}
+      <DialogContent size="full" className="flex max-h-[min(90dvh,56rem)] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>Media library</DialogTitle>
           <DialogDescription>
@@ -271,7 +301,8 @@ function MediaDialog({
                 accept="image/*"
                 className="sr-only"
                 onChange={(event) => {
-                  if (event.target.files?.length) upload.mutate(event.target.files);
+                  if (event.target.files?.length) upload.mutate(Array.from(event.target.files));
+                  /* See the note on `mutationFn`: this empties `files`. */
                   event.target.value = '';
                 }}
               />
@@ -279,12 +310,15 @@ function MediaDialog({
           </Button>
         </div>
 
+        {/* The one part of the dialog that scrolls: the header, the search row
+            and the footer stay put, so the count and the Add button are still
+            reachable with sixty photographs in the list. */}
         <div
-          className="grid max-h-[55vh] grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-4 lg:grid-cols-5"
+          className="-mx-1 grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-3 overflow-y-auto px-1 pb-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => {
             event.preventDefault();
-            if (event.dataTransfer.files.length) upload.mutate(event.dataTransfer.files);
+            if (event.dataTransfer.files.length) upload.mutate(Array.from(event.dataTransfer.files));
           }}
         >
           {isLoading && (
@@ -320,19 +354,20 @@ function MediaDialog({
                 )}
               >
                 <img
-                  src={media.url}
+                  src={media.thumbnailUrl ?? media.url}
                   alt=""
                   loading="lazy"
-                  className="aspect-4/3 w-full object-cover"
+                  decoding="async"
+                  className="aspect-4/3 w-full bg-muted object-cover"
                   style={{
                     objectPosition: `${media.focalX * 100}% ${media.focalY * 100}%`,
                   }}
                 />
-                <div className="p-1.5">
-                  <p className="truncate text-[11px] font-medium">{media.filename}</p>
+                <div className="space-y-0.5 p-2">
+                  <p className="truncate text-xs font-medium">{media.filename}</p>
                   <p
                     className={cn(
-                      'line-clamp-2 text-[11px]',
+                      'line-clamp-2 text-[11px] leading-snug',
                       undescribed ? 'text-destructive' : 'text-muted-foreground',
                     )}
                   >

@@ -104,8 +104,20 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
   });
 
   const upload = useMutation({
-    mutationFn: async (files: FileList) => {
-      for (const file of Array.from(files)) {
+      /**
+       * An array, not the live `FileList`.
+       *
+       * `mutate()` does not call this function synchronously — it goes through
+       * the mutation observer first — and the `onChange` handler that starts
+       * an upload clears the input (`event.target.value = ''`) as its next
+       * statement. That empties the very `FileList` this closure is holding,
+       * so by the time it ran there were no files in it: the loop did nothing,
+       * the mutation "succeeded", and the panel said "Uploaded" having sent
+       * no request at all. Snapshotting at the call site is what fixes it; the
+       * signature is `File[]` so it cannot regress.
+       */
+    mutationFn: async (files: File[]) => {
+      for (const file of files) {
         const form = new FormData();
         form.append('file', file);
         form.append('alt', file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '));
@@ -134,7 +146,9 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
-        if (canWrite && event.dataTransfer.files.length) upload.mutate(event.dataTransfer.files);
+        if (canWrite && event.dataTransfer.files.length) {
+          upload.mutate(Array.from(event.dataTransfer.files));
+        }
       }}
     >
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -175,7 +189,10 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
                 accept="image/*"
                 className="sr-only"
                 onChange={(event) => {
-                  if (event.target.files?.length) upload.mutate(event.target.files);
+                  if (event.target.files?.length) upload.mutate(Array.from(event.target.files));
+                  /* Clears the input so the same file can be chosen twice running.
+                     It also empties `event.target.files`, which is why the line
+                     above copies it first. */
                   event.target.value = '';
                 }}
               />
@@ -185,7 +202,7 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 10 }).map((_, index) => (
             <Skeleton key={index} className="aspect-4/3 w-full rounded-lg" />
           ))}
@@ -206,7 +223,7 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
           }
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {items.map((media) => {
             const undescribed = !media.alt && !media.isDecorative;
             return (
