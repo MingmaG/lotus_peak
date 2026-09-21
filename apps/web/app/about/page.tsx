@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Button, Divider, Eyebrow, Reflection, WindowFrame } from '@/design-system'
 import { getContent } from '@/content'
+import { ABOUT_PURPOSES as PURPOSES, COMMITMENTS } from '@/content/data/pages'
 import { ogImage } from '@/lib/seo'
 import { IMG, altFor } from '@/lib/assets'
 import { Reveal } from '@/motion'
@@ -14,29 +15,6 @@ export const metadata: Metadata = {
     'Lotus Peak is a Bhutanese tour company running small-group journeys built around meditation, pilgrimage, the living arts and time with local teachers. Thirty percent of our income supports a monastery in the hills above Paro.',
   openGraph: { images: ogImage(IMG.taktshang) },
 }
-
-const COMMITMENTS: [string, string][] = [
-  ['Mindfulness guide', 'We teach meditation as a lifelong skill, not a holiday activity. It opens the mind to see the world as it is.'],
-  ['Peaceful journey', 'Loving compassion opens the heart. We travel that way, and you are welcome to.'],
-]
-
-const PURPOSES: [string, string, string][] = [
-  [
-    'Travel with heart.',
-    'A journey is not the reaching of a destination. Every day is built around intention, awareness and going slowly enough to notice — the landscapes and the living traditions, and also what they do to you while you are in them.',
-    IMG.rainbow,
-  ],
-  [
-    'Travel with guided principles.',
-    'The journeys are shaped with Rinpoches and Lams, and rooted in their teaching. You meditate in the monasteries, walk the pilgrimage paths, and sit in silence where people have sat for eight hundred years. The lineage is doing the work; we are only arranging the days around it.',
-    IMG.recitation,
-  ],
-  [
-    'Arts, crafts and living Jomzo.',
-    'Zorig Chusum, the thirteen arts. Jomzo is the one that shapes clay, copper and gold into sacred images, and the workshops are open: you can stand at the bench while a figure comes up out of the clay, and try it yourself. Not an exhibition — a trade still being practised.',
-    IMG.jomzo,
-  ],
-]
 
 export default async function AboutPage() {
   const content = getContent()

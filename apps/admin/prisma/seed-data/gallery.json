@@ -1,0 +1,170 @@
+[
+  {
+    "src": "/assets/imagery/cham-masked-dance.webp",
+    "caption": "Cham, Paro Tshechu",
+    "ratio": "3/2",
+    "order": 1
+  },
+  {
+    "src": "/assets/imagery/taktshang.webp",
+    "caption": "Taktsang, above the Paro valley",
+    "ratio": "3/2",
+    "order": 2
+  },
+  {
+    "src": "/assets/imagery/thangkas.webp",
+    "caption": "Thangkas and silks, market stall",
+    "ratio": "2/3",
+    "order": 3
+  },
+  {
+    "src": "/assets/imagery/dochula-pass.webp",
+    "caption": "The 108 chortens at Dochula",
+    "ratio": "3/2",
+    "order": 4
+  },
+  {
+    "src": "/assets/imagery/alo.webp",
+    "caption": "An atsara and a young monk",
+    "ratio": "2/3",
+    "order": 5
+  },
+  {
+    "src": "/assets/imagery/phobjikha-valley.webp",
+    "caption": "The Phobjikha valley",
+    "ratio": "4/3",
+    "order": 6
+  },
+  {
+    "src": "/assets/imagery/lam-with-sculpture.webp",
+    "caption": "Jomzo: clay, and a Lam watching",
+    "ratio": "3/4",
+    "order": 7
+  },
+  {
+    "src": "/assets/imagery/thimphu-dzong.webp",
+    "caption": "Tashichho Dzong, across the rice",
+    "ratio": "3/2",
+    "order": 8
+  },
+  {
+    "src": "/assets/imagery/mask-dance.webp",
+    "caption": "A wrathful mask, mid-step",
+    "ratio": "3/4",
+    "order": 9
+  },
+  {
+    "src": "/assets/imagery/gelongs-walking.webp",
+    "caption": "The gallery at Punakha Dzong",
+    "ratio": "3/2",
+    "order": 10
+  },
+  {
+    "src": "/assets/imagery/paro-dzong.jpg",
+    "caption": "Rinpung Dzong under fresh snow",
+    "ratio": "4/3",
+    "order": 11
+  },
+  {
+    "src": "/assets/imagery/archery.webp",
+    "caption": "Archery, the arrow away",
+    "ratio": "3/2",
+    "order": 12
+  },
+  {
+    "src": "/assets/imagery/gangtey-goenpa.webp",
+    "caption": "Gangtey Goenpa under low cloud",
+    "ratio": "4/3",
+    "order": 13
+  },
+  {
+    "src": "/assets/imagery/reciting-gelongs.webp",
+    "caption": "Morning recitation",
+    "ratio": "16/9",
+    "order": 14
+  },
+  {
+    "src": "/assets/imagery/thimphu-valley.jpg",
+    "caption": "Thimphu, through the flags",
+    "ratio": "3/2",
+    "order": 15
+  },
+  {
+    "src": "/assets/imagery/cham-dancer.webp",
+    "caption": "Waiting to dance",
+    "ratio": "3/2",
+    "order": 16
+  },
+  {
+    "src": "/assets/imagery/cuisine.webp",
+    "caption": "Red rice, curries and ezay",
+    "ratio": "3/2",
+    "order": 17
+  },
+  {
+    "src": "/assets/imagery/kurjey-lhakhang.webp",
+    "caption": "Kurjey Lhakhang, Bumthang",
+    "ratio": "4/3",
+    "order": 18
+  },
+  {
+    "src": "/assets/imagery/khuru.webp",
+    "caption": "Khuru darts",
+    "ratio": "2/3",
+    "order": 19
+  },
+  {
+    "src": "/assets/imagery/tharpaling.webp",
+    "caption": "Tharpaling, against the rock",
+    "ratio": "3/2",
+    "order": 20
+  },
+  {
+    "src": "/assets/imagery/khadar-lama.webp",
+    "caption": "A khadar carried to the ceremony",
+    "ratio": "4/3",
+    "order": 21
+  },
+  {
+    "src": "/assets/imagery/foggy-valley.jpg",
+    "caption": "Frost, and the valley waking",
+    "ratio": "3/2",
+    "order": 22
+  },
+  {
+    "src": "/assets/imagery/bell-and-drum.webp",
+    "caption": "Bowls and drum, set out",
+    "ratio": "3/2",
+    "order": 23
+  },
+  {
+    "src": "/assets/imagery/chimi-lhakhang.webp",
+    "caption": "Chimi Lhakhang, Punakha",
+    "ratio": "4/3",
+    "order": 24
+  },
+  {
+    "src": "/assets/imagery/peace.webp",
+    "caption": "Above the cloud, doing nothing",
+    "ratio": "3/4",
+    "order": 25
+  },
+  {
+    "src": "/assets/imagery/trongsa-dzong.webp",
+    "caption": "Trongsa, ridge behind ridge",
+    "ratio": "3/2",
+    "order": 26
+  },
+  {
+    "src": "/assets/imagery/travel-with-heart.webp",
+    "caption": "A rainbow over the village",
+    "ratio": "3/4",
+    "order": 27
+  },
+  {
+    "src": "/assets/imagery/paro-airport-view.webp",
+    "caption": "Paro, from above the runway",
+    "ratio": "16/9",
+    "order": 28
+  }
+]

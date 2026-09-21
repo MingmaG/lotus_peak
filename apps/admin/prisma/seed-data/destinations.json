@@ -1,0 +1,85 @@
+[
+  {
+    "slug": "paro",
+    "name": "Paro",
+    "icon": "dzong",
+    "blurb": "Taktsang, Kichu and Dungtse Lhakhang",
+    "detail": "The valley you arrive in, and the only one with an airport. Rinpung Dzong stands over the town with the old watchtower above it, now the National Museum. Kyichu Lhakhang is one of the oldest temples in the country. Taktsang is a morning’s walk up the cliff at the head of the valley.",
+    "image": "/assets/imagery/paro-dzong.jpg",
+    "tripSlugs": [
+      "tshechu",
+      "valleys",
+      "meditation",
+      "jomolhari"
+    ],
+    "order": 1
+  },
+  {
+    "slug": "thimphu",
+    "name": "Thimphu",
+    "icon": "buddha",
+    "blurb": "Buddha Dordenma and Tashichho Dzong",
+    "detail": "The capital, at 2,320 m along the Wang Chhu. Tashichho Dzong is still the seat of government. Buddha Dordenma sits gilded on the ridge to the south, the Memorial Chorten is circled from dawn to dusk, and Simtokha, the oldest dzong in the country, is five kilometres down the road.",
+    "image": "/assets/imagery/thimphu-dzong.webp",
+    "tripSlugs": [
+      "tshechu",
+      "meditation",
+      "festival"
+    ],
+    "order": 2
+  },
+  {
+    "slug": "punakha",
+    "name": "Punakha",
+    "icon": "dzong-long",
+    "blurb": "The dzong between two rivers",
+    "detail": "Warm, low and green, an hour beyond Dochula. The dzong stands where the Pho Chhu and Mo Chhu meet and is reached by a roofed cantilever bridge. Every king of Bhutan has been crowned in it, and the monk body moves down here for the winter.",
+    "image": "/assets/imagery/punakha-foggy-dzong.webp",
+    "tripSlugs": [
+      "valleys",
+      "meditation",
+      "festival",
+      "tshechu"
+    ],
+    "order": 3
+  },
+  {
+    "slug": "bumthang",
+    "name": "Bumthang",
+    "icon": "monastery",
+    "blurb": "Jakar, Kurjey, Tamshing, Könchogsum",
+    "detail": "Four high valleys in the centre of the country and the spiritual heartland of it. Jakar Dzong above the main valley, Kurjey over Guru Rinpoche’s cave, Pema Lingpa’s unrestored murals at Tamshing, the burning lake in the Tang Chhu, and Tharpaling at 3,600 m.",
+    "image": "/assets/imagery/kurjey-lhakhang.webp",
+    "tripSlugs": [
+      "valleys",
+      "meditation"
+    ],
+    "order": 4
+  },
+  {
+    "slug": "trongsa",
+    "name": "Trongsa",
+    "icon": "chorten",
+    "blurb": "The gateway dzong to the centre",
+    "detail": "The largest dzong in the country, strung along a ridge above the Mangde Chhu, and the ancestral seat of the Wangchuck dynasty. For centuries every journey between east and west passed beneath it.",
+    "image": "/assets/imagery/trongsa-dzong.webp",
+    "tripSlugs": [
+      "valleys",
+      "meditation"
+    ],
+    "order": 5
+  },
+  {
+    "slug": "phobjikha",
+    "name": "Phobjikha",
+    "icon": "pavilion",
+    "blurb": "Gangtey and the black-necked cranes",
+    "detail": "A wide glacial valley at about 2,900 m, with no trees on its floor and very little on it at all. Gangtey Goenpa sits above the village at the head of it. The black-necked cranes winter here, from late October to February.",
+    "image": "/assets/imagery/phobjikha-valley.webp",
+    "tripSlugs": [
+      "tshechu",
+      "valleys"
+    ],
+    "order": 6
+  }
+]

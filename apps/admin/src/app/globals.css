@@ -1,0 +1,274 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/**
+ * The admin panel's own surface.
+ *
+ * Related to the website's palette but not the same thing, and deliberately
+ * so. The site's rules — white grounds, saffron as the single call to action,
+ * at most one filled button per section — are about a visitor reading slowly.
+ * This is a workplace: an editor needs twelve buttons on a screen, a table
+ * that stays legible at a glance for eight hours, and a destructive action
+ * that looks destructive.
+ *
+ * What carries across is the family. Stone greys rather than blue-greys,
+ * saffron for the primary action, gold for the quiet accents, pine for the
+ * dark surfaces. Somebody moving between the two should feel one company.
+ */
+
+:root {
+  --radius: 0.5rem;
+
+  /* Lotus Peak's own values, from apps/web/src/design-system/tokens. */
+  --lp-saffron: oklch(0.66 0.16 55);
+  --lp-gold: oklch(0.68 0.09 78);
+  --lp-pine: oklch(0.29 0.03 155);
+
+  --background: oklch(0.99 0.002 90);
+  --foreground: oklch(0.21 0.005 85);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.005 85);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.005 85);
+
+  --primary: var(--lp-saffron);
+  --primary-foreground: oklch(0.99 0.002 90);
+
+  --secondary: oklch(0.96 0.003 90);
+  --secondary-foreground: oklch(0.28 0.006 85);
+
+  --muted: oklch(0.96 0.003 90);
+  --muted-foreground: oklch(0.52 0.006 85);
+
+  --accent: oklch(0.955 0.012 78);
+  --accent-foreground: oklch(0.28 0.006 85);
+
+  --destructive: oklch(0.58 0.2 27);
+  --destructive-foreground: oklch(0.99 0.002 90);
+
+  --border: oklch(0.91 0.004 88);
+  --input: oklch(0.91 0.004 88);
+  --ring: var(--lp-saffron);
+
+  /* Status colours. Used by badges and by nothing else, so they are named for
+     what they mean rather than for their hue. */
+  --status-draft: oklch(0.55 0.01 85);
+  --status-scheduled: oklch(0.6 0.12 250);
+  --status-published: oklch(0.58 0.13 150);
+  --status-archived: oklch(0.6 0.01 85);
+  --status-attention: oklch(0.65 0.16 45);
+
+  --sidebar: oklch(0.975 0.004 88);
+  --sidebar-foreground: oklch(0.28 0.006 85);
+  --sidebar-border: oklch(0.91 0.004 88);
+  --sidebar-accent: oklch(0.94 0.008 80);
+  --sidebar-accent-foreground: oklch(0.24 0.006 85);
+
+  --chart-1: var(--lp-saffron);
+  --chart-2: oklch(0.6 0.09 155);
+  --chart-3: var(--lp-gold);
+  --chart-4: oklch(0.6 0.1 250);
+  --chart-5: oklch(0.62 0.12 330);
+}
+
+.dark {
+  --background: oklch(0.18 0.004 90);
+  --foreground: oklch(0.94 0.003 90);
+
+  --card: oklch(0.22 0.005 90);
+  --card-foreground: oklch(0.94 0.003 90);
+  --popover: oklch(0.22 0.005 90);
+  --popover-foreground: oklch(0.94 0.003 90);
+
+  --primary: oklch(0.72 0.15 58);
+  --primary-foreground: oklch(0.18 0.004 90);
+
+  --secondary: oklch(0.27 0.005 90);
+  --secondary-foreground: oklch(0.94 0.003 90);
+
+  --muted: oklch(0.27 0.005 90);
+  --muted-foreground: oklch(0.68 0.006 88);
+
+  --accent: oklch(0.3 0.012 78);
+  --accent-foreground: oklch(0.94 0.003 90);
+
+  --destructive: oklch(0.62 0.19 27);
+  --destructive-foreground: oklch(0.97 0.002 90);
+
+  --border: oklch(0.3 0.005 90);
+  --input: oklch(0.32 0.005 90);
+  --ring: oklch(0.72 0.15 58);
+
+  --status-draft: oklch(0.65 0.01 85);
+  --status-scheduled: oklch(0.68 0.12 250);
+  --status-published: oklch(0.7 0.13 155);
+  --status-archived: oklch(0.6 0.01 85);
+  --status-attention: oklch(0.74 0.15 50);
+
+  --sidebar: oklch(0.21 0.005 90);
+  --sidebar-foreground: oklch(0.9 0.003 90);
+  --sidebar-border: oklch(0.29 0.005 90);
+  --sidebar-accent: oklch(0.27 0.008 85);
+  --sidebar-accent-foreground: oklch(0.95 0.003 90);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-gold: var(--lp-gold);
+  --color-pine: var(--lp-pine);
+  --color-status-draft: var(--status-draft);
+  --color-status-scheduled: var(--status-scheduled);
+  --color-status-published: var(--status-published);
+  --color-status-archived: var(--status-archived);
+  --color-status-attention: var(--status-attention);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans:
+    'Commissioner', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /**
+   * The site's typeface.
+   *
+   * Three weights and the Latin subset only — the website ships sixteen files
+   * because its display sizes need Thin and Black, and a panel of tables and
+   * form labels needs Regular, Medium and SemiBold. Loading all sixteen here
+   * would be 200 KB for twelve weights nothing renders.
+   *
+   * `font-display: swap` because an editor waiting on a webfont to read their
+   * own table is absurd, and the fallback stack is close enough in metrics
+   * that the swap is not a jolt.
+   */
+  @font-face {
+    font-family: 'Commissioner';
+    src: url('/fonts/Commissioner-Regular-latin.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Commissioner';
+    src: url('/fonts/Commissioner-Medium-latin.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Commissioner';
+    src: url('/fonts/Commissioner-SemiBold-latin.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /**
+   * Nothing in this panel animates for decoration, but the components that do
+   * animate — sheets, dialogs, dropdowns — must stop when asked. The website
+   * honours this rule in CSS and in JS; an admin panel that ignores it is the
+   * same accessibility failure with fewer witnesses.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /**
+   * A table that becomes a list of cards under 768 px.
+   *
+   * Every list screen uses it. The alternative an admin panel usually ships —
+   * a table in a horizontal scroller — is a table nobody can read on a phone,
+   * and this office answers enquiries from one.
+   */
+  .lp-table-card {
+    @apply block rounded-lg border bg-card p-4 md:table-row md:rounded-none md:border-0 md:border-b md:p-0;
+  }
+
+  .lp-table-card > td {
+    @apply flex items-baseline justify-between gap-4 border-0 py-1 md:table-cell md:py-3;
+  }
+
+  .lp-table-card > td::before {
+    content: attr(data-label);
+    @apply text-xs font-medium uppercase tracking-wide text-muted-foreground md:hidden;
+  }
+
+  /** Long prose inside a preview pane, at the website's own measure. */
+  .lp-prose {
+    @apply max-w-[68ch] text-[15px] leading-relaxed;
+  }
+
+  .lp-prose p + p {
+    @apply mt-4;
+  }
+
+  .lp-prose a {
+    @apply underline decoration-gold underline-offset-4;
+  }
+
+  /**
+   * The preview canvas.
+   *
+   * White, always, in both themes. A dark-mode preview of a site whose grounds
+   * are white by rule is a preview of a different website, and the one thing
+   * a preview may not do is show something that will not be shipped.
+   */
+  .lp-preview-canvas {
+    background: #ffffff;
+    color: #1a1a18;
+    color-scheme: light;
+  }
+}

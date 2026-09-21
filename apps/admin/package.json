@@ -13,9 +13,10 @@
     "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "tsx --conditions=react-server prisma/seed.ts",
     "db:check": "tsx scripts/install-check.ts",
-    "storage:verify": "tsx scripts/storage-verify.ts"
+    "storage:verify": "tsx scripts/storage-verify.ts",
+    "media:rebuild": "tsx --conditions=react-server scripts/media-rebuild.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.700.0",

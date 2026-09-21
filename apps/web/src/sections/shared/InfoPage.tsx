@@ -1,13 +1,10 @@
+import type { InfoBlock, InfoSection } from '@/content/data/pages'
 import { Eyebrow } from '@/design-system'
 import { Reveal } from '@/motion'
 
-export type InfoBlock = string | { list: string[] }
-
-export type InfoSection = {
-  id: string
-  title: string
-  body: InfoBlock[]
-}
+/* The shape is defined beside the content it describes, so the component and
+   the export script cannot disagree about what a section is. */
+export type { InfoBlock, InfoSection } from '@/content/data/pages'
 
 /**
  * The layout the two long reference pages share: travellers' information and

@@ -1,5 +1,6 @@
 import { Button, Divider, Eyebrow, Reflection, SiteIcon, TrekCard } from '@/design-system'
 import { getContent } from '@/content'
+import { HOME_PURPOSES as PURPOSES } from '@/content/data/pages'
 import { fmt } from '@/content/types'
 import { IMG } from '@/lib/assets'
 import { Reveal, Split, Strip } from '@/motion'
@@ -7,15 +8,6 @@ import { HomeHero } from '@/sections/home/HomeHero'
 import { Seasons } from '@/sections/home/Seasons'
 import { BandInquiry, BandLink } from '@/sections/shared/BandCta'
 import { Section } from '@/sections/shared/Section'
-
-const PURPOSES: [string, string][] = [
-  ['Guided by teachers', 'Journeys are led with Rinpoches and Lams, in monasteries and on pilgrimage paths.'],
-  ['Meditation on the road', 'Drives between valleys are practice too: attention to what passes by.'],
-  [
-    'A share returned',
-    'Thirty percent of our income supports Osel Ling Perila Goenpa, a monastery in the hills.',
-  ],
-]
 
 export default async function HomePage() {
   const content = getContent()
