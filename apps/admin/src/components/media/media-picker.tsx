@@ -1,9 +1,8 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ImageIcon, Loader2, Search, Upload } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ImageIcon, Search, Upload } from 'lucide-react';
 import * as React from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { UploadDialog } from './upload-dialog';
 import { apiGet, query } from '@/lib/api-client';
 import { fileSize } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -209,52 +209,37 @@ function MediaDialog({
     if (!open) setSelected([]);
   }, [open]);
 
-  const upload = useMutation({
-      /**
-       * An array, not the live `FileList`.
-       *
-       * `mutate()` does not call this function synchronously — it goes through
-       * the mutation observer first — and the `onChange` handler that starts
-       * an upload clears the input (`event.target.value = ''`) as its next
-       * statement. That empties the very `FileList` this closure is holding,
-       * so by the time it ran there were no files in it: the loop did nothing,
-       * the mutation "succeeded", and the panel said "Uploaded" having sent
-       * no request at all. Snapshotting at the call site is what fixes it; the
-       * signature is `File[]` so it cannot regress.
-       */
-    mutationFn: async (files: File[]) => {
-      const out: PickedMedia[] = [];
-      for (const file of files) {
-        const form = new FormData();
-        form.append('file', file);
-        /**
-         * Uploaded with the filename as a placeholder description.
-         *
-         * Not blank. A blank one is refused by the service — which is right —
-         * and refusing a drag-and-drop of twenty photographs because none of
-         * them has been described yet is a dialog nobody can use. The filename
-         * is visibly a placeholder, the tile flags it, and the library's Needs
-         * a description filter lists every one.
-         */
-        form.append('alt', file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '));
-        const response = await fetch('/api/media/upload', { method: 'POST', body: form });
-        if (!response.ok) {
-          const body = (await response.json().catch(() => null)) as
-            | { error?: { message?: string } }
-            | null;
-          throw new Error(body?.error?.message ?? `${file.name} could not be uploaded.`);
-        }
-        out.push(((await response.json()) as { media: PickedMedia }).media);
-      }
-      return out;
-    },
-    onSuccess: (media) => {
-      void client.invalidateQueries({ queryKey: ['media'] });
-      toast.success(`${media.length} ${media.length === 1 ? 'photograph' : 'photographs'} uploaded`);
-      if (!multiple && media[0]) onPick?.(media[0]);
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
+  /**
+   * Files chosen but not yet sent.
+   *
+   * They go to `UploadDialog` first, which asks for a description before
+   * anything leaves the browser — see the note there for why that matters
+   * more than it sounds like it does.
+   */
+  const [pending, setPending] = React.useState<File[]>([]);
+
+  /**
+   * What just arrived, selected for you.
+   *
+   * Uploading used to drop the new photographs into a grid of sixty and leave
+   * you to find them. They come back from the server in order, so they can
+   * simply be selected — and the search is cleared, because a filter that no
+   * longer matches is the other way a fresh upload goes missing. A single-pick
+   * dialog takes the first one and closes, which is what asking for one
+   * photograph and then uploading one means.
+   */
+  function afterUpload(media: PickedMedia[]) {
+    void client.invalidateQueries({ queryKey: ['media'] });
+    setSearch('');
+    if (!multiple) {
+      if (media[0]) onPick?.(media[0]);
+      return;
+    }
+    setSelected((current) => [
+      ...current,
+      ...media.filter((row) => !current.some((item) => item.id === row.id)),
+    ]);
+  }
 
   const items = data?.items ?? [];
 
@@ -287,13 +272,9 @@ function MediaDialog({
               className="pl-8.5"
             />
           </div>
-          <Button type="button" variant="outline" asChild disabled={upload.isPending}>
+          <Button type="button" variant="outline" asChild>
             <label className="cursor-pointer">
-              {upload.isPending ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : (
-                <Upload className="mr-2 size-4" />
-              )}
+              <Upload className="mr-2 size-4" />
               Upload
               <input
                 type="file"
@@ -301,8 +282,10 @@ function MediaDialog({
                 accept="image/*"
                 className="sr-only"
                 onChange={(event) => {
-                  if (event.target.files?.length) upload.mutate(Array.from(event.target.files));
-                  /* See the note on `mutationFn`: this empties `files`. */
+                  if (event.target.files?.length) setPending(Array.from(event.target.files));
+                  /* Clears the input so the same file can be chosen twice
+                     running — and it empties `event.target.files`, which is why
+                     the line above copies it first. */
                   event.target.value = '';
                 }}
               />
@@ -318,7 +301,7 @@ function MediaDialog({
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => {
             event.preventDefault();
-            if (event.dataTransfer.files.length) upload.mutate(Array.from(event.dataTransfer.files));
+            if (event.dataTransfer.files.length) setPending(Array.from(event.dataTransfer.files));
           }}
         >
           {isLoading && (
@@ -406,6 +389,15 @@ function MediaDialog({
           </DialogFooter>
         )}
       </DialogContent>
+
+      {/* Nested inside this dialog rather than beside it: Radix keeps focus
+          inside the outermost open one, and a describe form you cannot type
+          into is worse than no describe form. */}
+      <UploadDialog
+        files={pending}
+        onClose={() => setPending([])}
+        onUploaded={afterUpload}
+      />
     </Dialog>
   );
 }

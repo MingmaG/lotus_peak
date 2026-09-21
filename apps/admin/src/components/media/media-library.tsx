@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { MediaDetailsFields } from './media-picker';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
+import { UploadDialog } from './upload-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -103,39 +104,15 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
     onError: (error: Error) => toast.error(error.message, { duration: 8_000 }),
   });
 
-  const upload = useMutation({
-      /**
-       * An array, not the live `FileList`.
-       *
-       * `mutate()` does not call this function synchronously — it goes through
-       * the mutation observer first — and the `onChange` handler that starts
-       * an upload clears the input (`event.target.value = ''`) as its next
-       * statement. That empties the very `FileList` this closure is holding,
-       * so by the time it ran there were no files in it: the loop did nothing,
-       * the mutation "succeeded", and the panel said "Uploaded" having sent
-       * no request at all. Snapshotting at the call site is what fixes it; the
-       * signature is `File[]` so it cannot regress.
-       */
-    mutationFn: async (files: File[]) => {
-      for (const file of files) {
-        const form = new FormData();
-        form.append('file', file);
-        form.append('alt', file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '));
-        const response = await fetch('/api/media/upload', { method: 'POST', body: form });
-        if (!response.ok) {
-          const body = (await response.json().catch(() => null)) as
-            | { error?: { message?: string } }
-            | null;
-          throw new Error(body?.error?.message ?? `${file.name} could not be uploaded.`);
-        }
-      }
-    },
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ['media'] });
-      toast.success('Uploaded. Give them a real description before they go on a page.');
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
+  /**
+   * Files chosen but not yet sent.
+   *
+   * `UploadDialog` asks for a description first. Before it existed the
+   * filename was sent as the description — "IMG 4471" — which is not one, and
+   * which is not blank either, so the "Needs a description" filter beside this
+   * could not see a single one of them.
+   */
+  const [pending, setPending] = React.useState<File[]>([]);
 
   const items = data?.items ?? [];
   const current = open ? { ...open, ...draft } : null;
@@ -147,7 +124,7 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
       onDrop={(event) => {
         event.preventDefault();
         if (canWrite && event.dataTransfer.files.length) {
-          upload.mutate(Array.from(event.dataTransfer.files));
+          setPending(Array.from(event.dataTransfer.files));
         }
       }}
     >
@@ -175,13 +152,9 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
         </Button>
 
         {canWrite && (
-          <Button variant="outline" asChild disabled={upload.isPending} className="shrink-0">
+          <Button variant="outline" asChild className="shrink-0">
             <label className="cursor-pointer">
-              {upload.isPending ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : (
-                <Upload className="mr-2 size-4" />
-              )}
+              <Upload className="mr-2 size-4" />
               Upload
               <input
                 type="file"
@@ -189,7 +162,7 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
                 accept="image/*"
                 className="sr-only"
                 onChange={(event) => {
-                  if (event.target.files?.length) upload.mutate(Array.from(event.target.files));
+                  if (event.target.files?.length) setPending(Array.from(event.target.files));
                   /* Clears the input so the same file can be chosen twice running.
                      It also empties `event.target.files`, which is why the line
                      above copies it first. */
@@ -332,6 +305,19 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
           )}
         </SheetContent>
       </Sheet>
+
+      <UploadDialog
+        files={pending}
+        onClose={() => setPending([])}
+        onUploaded={() => {
+          void client.invalidateQueries({ queryKey: ['media'] });
+          /* Both filters are cleared, because the commonest way a fresh upload
+             goes missing is that the list is still showing a search, or the
+             "Needs a description" backlog it is no longer part of. */
+          setSearch('');
+          setNeedsAlt(false);
+        }}
+      />
     </div>
   );
 }
