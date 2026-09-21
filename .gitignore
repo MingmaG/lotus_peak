@@ -19,3 +19,7 @@ apps/web/public/assets/**/PLACEHOLDER
 # was theme furniture (shape*.webp, backgrounds, logos).
 /content-import/wordpress/images/
 /content-import/wordpress/content/**/*.html
+
+# Browser snapshots from Playwright MCP — scratch output of a debugging
+# session, not a fixture. Regenerated every run.
+.playwright-mcp/
