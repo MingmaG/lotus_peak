@@ -1,0 +1,1651 @@
+// Lotus Peak — the schema.
+//
+// One database, owned by the admin panel. The website has no credential for it
+// and reads everything through /api/public/site/*.
+//
+// The model is read off what the approved design actually renders, not off a
+// generic travel CMS. Where the two disagree the design wins: there are no star
+// ratings because the design has none, `Reflection` is a quote and an
+// attribution because that is what the component draws, and an itinerary day
+// can be a rest day with no number because the Jomolhari journey has two.
+//
+// Two conventions worth stating once:
+//
+//   * **Ordered value objects get their own table, not a Json column.** The
+//     itinerary, the highlights, the inclusions and the gallery are reordered
+//     constantly by the office, and a drag handle over a Json array means
+//     rewriting the whole column on every drop and losing a concurrent edit.
+//     Rows with a `sortOrder` reorder one integer at a time.
+//
+//   * **Json is for shapes the site renders as a unit and never queries into.**
+//     The journal body and a page's sections are the two: closed discriminated
+//     unions, validated by Zod at both ends of the wire, rendered by a switch.
+//     Normalising them would be six tables to reproduce one array.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+/// Draft → Published, with Scheduled between them for a festival page that
+/// should appear on a date rather than when somebody remembers.
+enum ContentStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+/// The four kinds of journey Lotus Peak runs. Stored as an enum rather than a
+/// taxonomy because the design's filter has exactly these four tabs and a
+/// fifth would need a design decision, not a database row.
+enum TripType {
+  MINDFULNESS
+  MEDITATION
+  FESTIVAL
+  TREKKING
+}
+
+/// The design writes these as words, not stars. `Gentle` is not "easy" — it is
+/// the word on the card.
+enum Difficulty {
+  GENTLE
+  MODERATE
+  DEMANDING
+}
+
+enum SeasonKey {
+  SPRING
+  SUMMER
+  AUTUMN
+  WINTER
+}
+
+/// The Bhutanese architectural silhouettes in `src/design-system/core/SiteIcon`.
+/// An enum because the component switches on it: a value outside this set
+/// renders nothing, silently.
+enum SiteIcon {
+  DZONG
+  CHORTEN
+  STUPA
+  MONASTERY
+  PAVILION
+  DZONG_LONG
+  BUDDHA
+}
+
+enum DepartureStatus {
+  OPEN
+  GUARANTEED
+  FEW_PLACES
+  CLOSED
+  CANCELLED
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+enum EnquiryStatus {
+  NEW
+  READ
+  REPLIED
+  QUOTED
+  CONVERTED
+  CLOSED
+  SPAM
+}
+
+enum EnquiryPriority {
+  LOW
+  NORMAL
+  HIGH
+}
+
+enum EnquirySource {
+  CONTACT
+  TRIP_DETAIL
+  DRAWER
+  NEWSLETTER
+  PHONE
+  WHATSAPP
+  EMAIL
+  WALK_IN
+}
+
+/// The platforms the footer and the JSON-LD `sameAs` know about.
+///
+/// An enum, not a free string, because the site picks an icon from it and a
+/// typo'd "Instgram" would render a gap. `OTHER` carries its own label and a
+/// generic icon, which is the escape hatch that keeps the enum closed.
+enum SocialPlatform {
+  INSTAGRAM
+  FACEBOOK
+  YOUTUBE
+  X
+  TIKTOK
+  LINKEDIN
+  PINTEREST
+  TRIPADVISOR
+  WHATSAPP
+  THREADS
+  OTHER
+}
+
+enum ContactKind {
+  PHONE
+  MOBILE
+  WHATSAPP
+  EMAIL
+  FAX
+}
+
+enum MenuLocation {
+  HEADER
+  FOOTER_ONE
+  FOOTER_TWO
+  FOOTER_THREE
+  LEGAL
+}
+
+enum RedirectType {
+  MOVED_301
+  FOUND_302
+}
+
+enum ActivityAction {
+  CREATE
+  UPDATE
+  DELETE
+  PUBLISH
+  UNPUBLISH
+  LOGIN
+  LOGOUT
+  UPLOAD
+  RESTORE
+  EXPORT
+}
+
+enum EmailKind {
+  ENQUIRY_ACKNOWLEDGEMENT
+  ENQUIRY_NOTIFICATION
+  NEWSLETTER_WELCOME
+  NEWSLETTER_CONFIRM
+  PASSWORD_RESET
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  COMPLAINED
+  FAILED
+}
+
+enum SubscriberStatus {
+  PENDING
+  SUBSCRIBED
+  UNSUBSCRIBED
+  BOUNCED
+}
+
+enum TaskStatus {
+  OPEN
+  DONE
+  CANCELLED
+}
+
+// =============================================================================
+// PEOPLE WHO USE THE PANEL
+// =============================================================================
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String
+  name         String
+  /// What the office calls this person. Shown beside a journal entry.
+  jobTitle     String?
+  phone        String?
+
+  avatarId String?
+  avatar   Media?  @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+  /// Consecutive failures. Cleared on a success; a lock is a count, not a flag,
+  /// so the message can say how many attempts remain.
+  failedLogins Int      @default(0)
+  lockedUntil  DateTime?
+
+  sessions      Session[]
+  resetTokens   PasswordResetToken[]
+  activityLogs  ActivityLog[]
+  uploads       Media[]              @relation("MediaUploader")
+  assigned      Enquiry[]            @relation("EnquiryAssignee")
+  notes         Note[]
+  tasks         Task[]               @relation("TaskOwner")
+  authoredPosts Post[]               @relation("PostAuthor")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([email])
+  @@index([roleId])
+  @@map("users")
+}
+
+/// A named set of permissions.
+///
+/// Permissions are strings — `trips.publish`, `enquiries.read` — held in an
+/// array rather than a join table. They are read on every request and written
+/// perhaps twice a year, they are never queried individually, and a join table
+/// for them is four joins on the hot path to express a set membership Postgres
+/// can answer from an array.
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  permissions String[] @default([])
+  /// Owner and the three shipped roles, which the UI will not let anyone
+  /// delete. Deleting the only role with `users.write` locks everyone out.
+  isSystem    Boolean  @default(false)
+
+  users User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roles")
+}
+
+/// A signed-in browser.
+///
+/// A row rather than a stateless JWT alone, because "sign this person out of
+/// every device" and "show me where I am signed in" are both things an owner
+/// asks for, and neither is answerable without one. The access token is short
+/// and stateless; this is what the refresh token points at.
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SHA-256 of the refresh token. The token itself is never stored: a leaked
+  /// database should not be a set of working sessions.
+  tokenHash    String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  lastSeenAt   DateTime  @default(now())
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+/// Who changed what.
+///
+/// Written on every mutating request by the API wrapper, not by each handler,
+/// so a route that forgets cannot exist. `before`/`after` hold the changed
+/// fields only — a full row snapshot of a journey with its itinerary is
+/// several kilobytes per save, and the question this table answers is "what
+/// changed", not "what did it look like".
+model ActivityLog {
+  id       String         @id @default(cuid())
+  userId   String?
+  user     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action   ActivityAction
+  /// `trip`, `page`, `enquiry` — the kind of thing, in the office's words.
+  entity   String
+  entityId String?
+  /// What it was called at the time. A deleted row's name is otherwise lost,
+  /// and "deleted trip cm3x9…" is not an audit trail anyone can read.
+  entityLabel String?
+  before   Json?
+  after    Json?
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// =============================================================================
+// MEDIA
+// =============================================================================
+
+model MediaFolder {
+  id        String        @id @default(cuid())
+  name      String
+  slug      String
+  parentId  String?
+  parent    MediaFolder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  MediaFolder[] @relation("FolderTree")
+  media     Media[]
+  sortOrder Int           @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([parentId, slug])
+  @@map("media_folders")
+}
+
+/// A photograph, and what is known about it.
+///
+/// `alt` is `String`, not `String?`. An optional alt is an empty alt: the field
+/// gets skipped, the image ships without it, and nobody finds out until an
+/// audit. Decorative images carry `alt: ""` *and* `isDecorative: true`, which
+/// is a decision somebody made rather than a field somebody missed — and the
+/// upload form refuses to close without one or the other.
+model Media {
+  id       String    @id @default(cuid())
+  kind     MediaKind @default(IMAGE)
+  /// Storage key, e.g. `media/<id>/original.jpg`. Not a URL: the public origin
+  /// is config, so moving from MinIO to a CDN is an env var and not an UPDATE
+  /// over every row.
+  storageKey String  @unique
+  filename   String
+  mimeType   String
+  sizeBytes  Int
+  width      Int?
+  height     Int?
+  /// Blurred placeholder, base64. Null where it could not be made — a PDF, or
+  /// a source Sharp refused.
+  blurDataUrl String?
+
+  alt          String
+  isDecorative Boolean @default(false)
+  caption      String?
+  credit       String?
+
+  /// Where to hold the crop, as fractions of the box.
+  ///
+  /// The design crops hard — parallax bands, masked strips, 3/4 masonry cells.
+  /// A face centred in a 3/2 source is not centred in a 16/9 crop of it, and
+  /// the site has no way to know that without being told.
+  focalX Float @default(0.5)
+  focalY Float @default(0.5)
+
+  folderId String?
+  folder   MediaFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  uploadedById String?
+  uploadedBy   User?   @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  renditions MediaRendition[]
+
+  // --- Back-relations. Prisma requires one per named relation. -------------
+  userAvatars       User[]            @relation("UserAvatar")
+  tripHeroes        Trip[]            @relation("TripHero")
+  tripOgImages      Trip[]            @relation("TripOgImage")
+  tripGalleryItems  TripGalleryItem[]
+  itineraryImages   ItineraryImage[]
+  destinationImages Destination[]     @relation("DestinationImage")
+  destinationOg     Destination[]     @relation("DestinationOgImage")
+  activityImages    Activity[]        @relation("ActivityImage")
+  activityOg        Activity[]        @relation("ActivityOgImage")
+  seasonImages      Season[]
+  cultureImages     CultureArticle[]  @relation("CultureImage")
+  cultureOg         CultureArticle[]  @relation("CultureOgImage")
+  galleryImages     GalleryImage[]
+  postHeroes        Post[]            @relation("PostHero")
+  postOgImages      Post[]            @relation("PostOgImage")
+  pageHeroes        Page[]            @relation("PageHero")
+  pageOgImages      Page[]            @relation("PageOgImage")
+  personPhotos      Person[]
+  companyLogos      CompanyProfile[]  @relation("CompanyLogo")
+  companyMarks      CompanyProfile[]  @relation("CompanyMark")
+  siteOgImages      CompanyProfile[]  @relation("CompanyOgImage")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([folderId])
+  @@index([kind])
+  @@index([createdAt])
+  @@map("media")
+}
+
+/// One built size of one photograph.
+///
+/// Rows rather than a convention, because the library has to answer "is the
+/// 1600 webp there yet" without a HEAD request per rendition per image, and
+/// because a source narrower than a rendition width has no row for it — which
+/// is how `srcset` avoids offering an upscale.
+model MediaRendition {
+  id      String @id @default(cuid())
+  mediaId String
+  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  width      Int
+  height     Int
+  format     String
+  storageKey String @unique
+  sizeBytes  Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([mediaId, width, format])
+  @@index([mediaId])
+  @@map("media_renditions")
+}
+
+// =============================================================================
+// THE CATALOGUE — journeys
+// =============================================================================
+
+/// A journey.
+///
+/// The SEO columns are repeated on this model and on every other addressable
+/// one rather than normalised into a shared `Seo` table. A join table would be
+/// one definition instead of eight, and it would also be an extra join on
+/// every page render, an orphan row on every delete, and a nullable relation
+/// every query has to remember to include. Eight copies of fourteen columns is
+/// the cheaper of the two, and Prisma's generated types let the admin panel
+/// share one SEO form across all of them anyway.
+model Trip {
+  id      String @id @default(cuid())
+  slug    String @unique
+  title   String
+  excerpt String
+  type    TripType
+
+  /// The line under the title: "A journey of eleven days".
+  journeyLabel String
+  durationDays Int
+  nights       Int
+  highPointMetres Int
+  difficulty   Difficulty
+  /// The *from* price. Never the price — group size and season move it, and a
+  /// single figure presented as final is contradicted by the first quote.
+  priceFromUsd Int
+  /// "Spring and autumn". Prose, because the honest answer is not a range.
+  seasonLabel  String
+  seasonKeys   SeasonKey[] @default([])
+  /// "Two rest days, and nothing scheduled before eight."
+  paceNote     String
+  groupSizeMin Int?
+  groupSizeMax Int?
+
+  /// The opening paragraphs, one row per paragraph in `overview`.
+  overview String[] @default([])
+
+  heroId String?
+  hero   Media?  @relation("TripHero", fields: [heroId], references: [id], onDelete: SetNull)
+
+  highlights   TripHighlight[]
+  inclusions   TripInclusion[]
+  itinerary    ItineraryDay[]
+  faqs         TripFaq[]
+  gallery      TripGalleryItem[]
+  destinations TripOnDestination[]
+  activities   ActivityOnTrip[]
+  departures   Departure[]
+  reflections  Reflection[]
+  enquiries    Enquiry[]
+  relatedFrom  TripRelated[]       @relation("RelatedSource")
+  relatedTo    TripRelated[]       @relation("RelatedTarget")
+  postLinks    PostOnTrip[]
+  pageLinks    PageOnTrip[]
+
+  featured  Boolean       @default(false)
+  status    ContentStatus @default(DRAFT)
+  publishedAt  DateTime?
+  scheduledFor DateTime?
+  sortOrder    Int        @default(0)
+
+  // --- SEO ---
+  metaTitle         String?
+  metaDescription   String?
+  canonicalUrl      String?
+  noIndex           Boolean  @default(false)
+  noFollow          Boolean  @default(false)
+  ogTitle           String?
+  ogDescription     String?
+  ogImageId         String?
+  ogImage           Media?   @relation("TripOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+  twitterCard       String   @default("summary_large_image")
+  keywords          String[] @default([])
+  focusKeyword      String?
+  schemaJson        Json?
+  sitemapPriority   Float    @default(0.8)
+  sitemapChangeFreq String   @default("weekly")
+  /// Every slug this journey has ever had.
+  ///
+  /// Renaming one is the single most expensive thing an editor can do to the
+  /// site's search position, and it is also a thing they must be able to do.
+  /// The site reads this to emit a 301 rather than a 404, automatically, so
+  /// nobody has to remember to write a redirect by hand.
+  slugHistory       String[] @default([])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, sortOrder])
+  @@index([type])
+  @@index([slug])
+  @@map("trips")
+}
+
+model TripHighlight {
+  id        String @id @default(cuid())
+  tripId    String
+  trip      Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  text      String
+  sortOrder Int    @default(0)
+
+  @@index([tripId, sortOrder])
+  @@map("trip_highlights")
+}
+
+/// What is and is not in the price.
+///
+/// One table with a flag rather than two, because the two lists sit side by
+/// side in the design and an editor moving a line from one to the other should
+/// be changing a value, not deleting a row and creating another.
+model TripInclusion {
+  id         String  @id @default(cuid())
+  tripId     String
+  trip       Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  text       String
+  isIncluded Boolean @default(true)
+  sortOrder  Int     @default(0)
+
+  @@index([tripId, isIncluded, sortOrder])
+  @@map("trip_inclusions")
+}
+
+/// One day.
+///
+/// The day *number* is not here. It is computed from position, skipping rest
+/// days, whenever the itinerary is read — because an itinerary with an arrival
+/// day inserted at the front is an itinerary where every stored number is now
+/// wrong, and no office should have to renumber fourteen rows to add one.
+model ItineraryDay {
+  id     String @id @default(cuid())
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  /// A rest day carries no number and reads "Rest day" in the design.
+  isRest Boolean @default(false)
+  title  String
+  /// "Paro · 2,280 m · 4 h drive". One line, built by the editor, because the
+  /// parts vary: a trekking day has an ascent, a drive day has hours.
+  meta   String?
+  body   String?
+
+  images    ItineraryImage[]
+  sortOrder Int              @default(0)
+
+  @@index([tripId, sortOrder])
+  @@map("itinerary_days")
+}
+
+model ItineraryImage {
+  id        String       @id @default(cuid())
+  dayId     String
+  day       ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media        @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  sortOrder Int          @default(0)
+
+  @@unique([dayId, mediaId])
+  @@index([dayId, sortOrder])
+  @@map("itinerary_images")
+}
+
+model TripFaq {
+  id        String @id @default(cuid())
+  tripId    String
+  trip      Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String
+  sortOrder Int    @default(0)
+
+  @@index([tripId, sortOrder])
+  @@map("trip_faqs")
+}
+
+model TripGalleryItem {
+  id      String @id @default(cuid())
+  tripId  String
+  trip    Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  mediaId String
+  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  /// CSS aspect ratio for this cell, e.g. `3/4`. Null takes the photograph's
+  /// own, snapped to the design's vocabulary.
+  ratio     String?
+  /// Grid span hint the strip layout reads, e.g. `2`.
+  width     String?
+  sortOrder Int     @default(0)
+
+  @@unique([tripId, mediaId])
+  @@index([tripId, sortOrder])
+  @@map("trip_gallery_items")
+}
+
+/// Which journeys to offer at the foot of this one.
+///
+/// A join rather than an array of slugs: a foreign key cannot point at a
+/// journey that has been deleted, which is the failure these rows actually
+/// have.
+model TripRelated {
+  sourceId  String
+  source    Trip   @relation("RelatedSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetId  String
+  target    Trip   @relation("RelatedTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  sortOrder Int    @default(0)
+
+  @@id([sourceId, targetId])
+  @@index([targetId])
+  @@map("trip_related")
+}
+
+/// A dated departure.
+///
+/// Not in the design, which sells journeys rather than dates — but the office
+/// runs them on dates, the enquiries ask about dates, and a journey page with
+/// "Spring and autumn" and nothing else forces every enquiry to start by
+/// asking when. Published departures render as a small table; none published
+/// renders nothing, so the design is unchanged until the office chooses.
+model Departure {
+  id     String @id @default(cuid())
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  startDate DateTime
+  endDate   DateTime
+  priceUsd  Int
+  placesTotal Int?
+  placesLeft  Int?
+  status      DepartureStatus @default(OPEN)
+  note        String?
+
+  isPublished Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tripId, startDate])
+  @@index([startDate])
+  @@map("departures")
+}
+
+// =============================================================================
+// THE CATALOGUE — places, activities, seasons, culture
+// =============================================================================
+
+model Destination {
+  id     String @id @default(cuid())
+  slug   String @unique
+  name   String
+  icon   SiteIcon @default(DZONG)
+  /// One line, on the card.
+  blurb  String
+  /// A paragraph, on the index.
+  detail String
+
+  imageId String?
+  image   Media?  @relation("DestinationImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  altitudeMetres Int?
+  latitude       Float?
+  longitude      Float?
+
+  trips     TripOnDestination[]
+  sortOrder Int                 @default(0)
+  status    ContentStatus       @default(PUBLISHED)
+  publishedAt DateTime?
+
+  metaTitle         String?
+  metaDescription   String?
+  canonicalUrl      String?
+  noIndex           Boolean  @default(false)
+  noFollow          Boolean  @default(false)
+  ogTitle           String?
+  ogDescription     String?
+  ogImageId         String?
+  ogImage           Media?   @relation("DestinationOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+  twitterCard       String   @default("summary_large_image")
+  keywords          String[] @default([])
+  focusKeyword      String?
+  schemaJson        Json?
+  sitemapPriority   Float    @default(0.6)
+  sitemapChangeFreq String   @default("monthly")
+  slugHistory       String[] @default([])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, sortOrder])
+  @@map("destinations")
+}
+
+/// Which journeys go where, in the order they should be offered.
+///
+/// `sortOrder` is on this table and not derived from the journey's own order,
+/// because the region line on a journey card reads "Paro · Bumthang · Trongsa"
+/// and that is the order of the route, not of the catalogue.
+model TripOnDestination {
+  tripId        String
+  trip          Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  sortOrder     Int         @default(0)
+
+  @@id([tripId, destinationId])
+  @@index([destinationId])
+  @@map("trip_on_destinations")
+}
+
+model Activity {
+  id    String   @id @default(cuid())
+  slug  String   @unique
+  name  String
+  blurb String
+  icon  SiteIcon @default(PAVILION)
+
+  imageId String?
+  image   Media?  @relation("ActivityImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  /// What the day actually consists of — three to five lines.
+  examples String[] @default([])
+
+  trips     ActivityOnTrip[]
+  sortOrder Int              @default(0)
+  status    ContentStatus    @default(PUBLISHED)
+  publishedAt DateTime?
+
+  metaTitle         String?
+  metaDescription   String?
+  canonicalUrl      String?
+  noIndex           Boolean  @default(false)
+  noFollow          Boolean  @default(false)
+  ogTitle           String?
+  ogDescription     String?
+  ogImageId         String?
+  ogImage           Media?   @relation("ActivityOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+  twitterCard       String   @default("summary_large_image")
+  keywords          String[] @default([])
+  focusKeyword      String?
+  schemaJson        Json?
+  sitemapPriority   Float    @default(0.5)
+  sitemapChangeFreq String   @default("monthly")
+  slugHistory       String[] @default([])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, sortOrder])
+  @@map("activities")
+}
+
+model ActivityOnTrip {
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  tripId     String
+  trip       Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  sortOrder  Int      @default(0)
+
+  @@id([activityId, tripId])
+  @@index([tripId])
+  @@map("activity_on_trips")
+}
+
+/// One of the four seasons, as the home page's band draws them.
+///
+/// Keyed by the enum and not by a slug: there are four, there will always be
+/// four, and the design's band has four panels.
+model Season {
+  id          String    @id @default(cuid())
+  key         SeasonKey @unique
+  name        String
+  monthsLabel String
+  headline    String
+  summary     String
+  detail      String
+
+  imageId String?
+  image   Media?  @relation(fields: [imageId], references: [id], onDelete: SetNull)
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("seasons")
+}
+
+model CultureArticle {
+  id    String   @id @default(cuid())
+  slug  String   @unique
+  title String
+  body  String
+  icon  SiteIcon @default(CHORTEN)
+
+  imageId String?
+  image   Media?  @relation("CultureImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  sortOrder Int           @default(0)
+  status    ContentStatus @default(PUBLISHED)
+  publishedAt DateTime?
+
+  metaTitle         String?
+  metaDescription   String?
+  canonicalUrl      String?
+  noIndex           Boolean  @default(false)
+  noFollow          Boolean  @default(false)
+  ogTitle           String?
+  ogDescription     String?
+  ogImageId         String?
+  ogImage           Media?   @relation("CultureOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+  twitterCard       String   @default("summary_large_image")
+  keywords          String[] @default([])
+  focusKeyword      String?
+  schemaJson        Json?
+  sitemapPriority   Float    @default(0.5)
+  sitemapChangeFreq String   @default("monthly")
+  slugHistory       String[] @default([])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, sortOrder])
+  @@map("culture_articles")
+}
+
+model GalleryImage {
+  id      String @id @default(cuid())
+  mediaId String
+  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  /// The caption the gallery prints. Distinct from the media row's `alt`: one
+  /// describes the photograph for somebody who cannot see it, the other is
+  /// editorial. "Cham, Paro Tshechu" is a caption, not alt text.
+  caption String
+  /// The masonry cell's aspect ratio. Null takes the photograph's own.
+  ratio   String?
+
+  sortOrder   Int           @default(0)
+  status      ContentStatus @default(PUBLISHED)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, sortOrder])
+  @@map("gallery_images")
+}
+
+/// A traveller's words.
+///
+/// Called a Reflection and not a Testimonial or a Review because that is what
+/// the component is called and what the design does with it: a quote and a
+/// quiet attribution. There is no rating column and there will not be one —
+/// the design's rules forbid stars, and a column nobody may render is a column
+/// somebody eventually will.
+model Reflection {
+  id     String  @id @default(cuid())
+  quote  String
+  name   String
+  /// "Bumthang, 2026". Where and when, not a job title.
+  detail String?
+
+  tripId String?
+  trip   Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+
+  featured    Boolean       @default(false)
+  sortOrder   Int           @default(0)
+  status      ContentStatus @default(PUBLISHED)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, featured, sortOrder])
+  @@map("reflections")
+}
+
+/// A guide, or whoever the About page shows.
+model Person {
+  id   String @id @default(cuid())
+  name String
+  role String
+  bio  String
+
+  photoId String?
+  photo   Media?  @relation(fields: [photoId], references: [id], onDelete: SetNull)
+
+  languages String[] @default([])
+  /// `[{ platform, label, handle, url }]`. A Json column rather than rows:
+  /// a guide has one or two, they are never queried across people, and a
+  /// table would be a join to render eight avatars.
+  socials   Json?
+
+  sortOrder   Int           @default(0)
+  status      ContentStatus @default(PUBLISHED)
+  publishedAt DateTime?
+
+  pageLinks PageOnPerson[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, sortOrder])
+  @@map("people")
+}
+
+// =============================================================================
+// JOURNAL
+// =============================================================================
+
+/// A journal entry.
+///
+/// `body` is an ordered array of typed blocks — text, heading, list, quote,
+/// image, facts — and not a column of rich-text HTML. The design renders a
+/// `facts` block as a bordered definition list in the site's own type scale
+/// and a `quote` as a Reflection; HTML from a toolbar renders as whatever the
+/// toolbar emitted, and the first pasted `<h1 style="color:red">` is a
+/// design-system breach nobody sees until it is live.
+///
+/// The same Zod schema validates it on write here and on read in the website,
+/// so a block shape that changes is a failure at the boundary rather than an
+/// `undefined` in a component.
+model Post {
+  id         String @id @default(cuid())
+  slug       String @unique
+  title      String
+  /// The standfirst. Also the default meta description, and the sentence
+  /// marked `speakable` in the structured data.
+  standfirst String
+  /// Where it is about. "Bumthang", "Paro".
+  region     String
+  body       Json   @default("[]")
+  /// Computed on save so both apps print the same number.
+  readingMinutes Int @default(1)
+
+  heroId String?
+  hero   Media?  @relation("PostHero", fields: [heroId], references: [id], onDelete: SetNull)
+
+  authorId String?
+  author   User?   @relation("PostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  tags      String[]     @default([])
+  tripLinks PostOnTrip[]
+
+  status       ContentStatus @default(DRAFT)
+  publishedAt  DateTime?
+  scheduledFor DateTime?
+  sortOrder    Int           @default(0)
+  featured     Boolean       @default(false)
+
+  metaTitle         String?
+  metaDescription   String?
+  canonicalUrl      String?
+  noIndex           Boolean  @default(false)
+  noFollow          Boolean  @default(false)
+  ogTitle           String?
+  ogDescription     String?
+  ogImageId         String?
+  ogImage           Media?   @relation("PostOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+  twitterCard       String   @default("summary_large_image")
+  keywords          String[] @default([])
+  focusKeyword      String?
+  schemaJson        Json?
+  sitemapPriority   Float    @default(0.6)
+  sitemapChangeFreq String   @default("monthly")
+  slugHistory       String[] @default([])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, publishedAt])
+  @@index([slug])
+  @@map("posts")
+}
+
+model PostOnTrip {
+  postId    String
+  post      Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tripId    String
+  trip      Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  sortOrder Int    @default(0)
+
+  @@id([postId, tripId])
+  @@index([tripId])
+  @@map("post_on_trips")
+}
+
+// =============================================================================
+// PAGES AND NAVIGATION
+// =============================================================================
+
+/// An editorial page: About, Contact, Terms, Travellers' information, and the
+/// home page's bands.
+///
+/// `sections` is a Json array of a closed union — prose, points, facts, faq,
+/// figure, gallery, reflections, trips, cta, people. A closed union and not a
+/// free block builder, because the design composes these pages from a fixed
+/// vocabulary and an editor who can invent an eleventh section is an editor
+/// who can build a page the design has no styles for.
+model Page {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  /// The whole URL, e.g. `/travellers-information`. Its own column because the
+  /// site looks a page up by path on every request.
+  path    String  @unique
+  title   String
+  eyebrow String?
+  lead    String?
+
+  sections Json @default("[]")
+
+  heroId String?
+  hero   Media?  @relation("PageHero", fields: [heroId], references: [id], onDelete: SetNull)
+
+  trips  PageOnTrip[]
+  people PageOnPerson[]
+
+  /// Home and Contact must not be deletable from the UI.
+  isSystem      Boolean       @default(false)
+  showInSitemap Boolean       @default(true)
+  status        ContentStatus @default(DRAFT)
+  publishedAt   DateTime?
+  scheduledFor  DateTime?
+  sortOrder     Int           @default(0)
+
+  metaTitle         String?
+  metaDescription   String?
+  canonicalUrl      String?
+  noIndex           Boolean  @default(false)
+  noFollow          Boolean  @default(false)
+  ogTitle           String?
+  ogDescription     String?
+  ogImageId         String?
+  ogImage           Media?   @relation("PageOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+  twitterCard       String   @default("summary_large_image")
+  keywords          String[] @default([])
+  focusKeyword      String?
+  schemaJson        Json?
+  sitemapPriority   Float    @default(0.5)
+  sitemapChangeFreq String   @default("monthly")
+  slugHistory       String[] @default([])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status])
+  @@index([path])
+  @@map("pages")
+}
+
+model PageOnTrip {
+  pageId    String
+  page      Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  tripId    String
+  trip      Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  sortOrder Int    @default(0)
+
+  @@id([pageId, tripId])
+  @@index([tripId])
+  @@map("page_on_trips")
+}
+
+model PageOnPerson {
+  pageId    String
+  page      Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  personId  String
+  person    Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  sortOrder Int    @default(0)
+
+  @@id([pageId, personId])
+  @@index([personId])
+  @@map("page_on_people")
+}
+
+model Menu {
+  id       String       @id @default(cuid())
+  name     String
+  location MenuLocation @unique
+  items    MenuItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("menus")
+}
+
+/// One link in a menu.
+///
+/// `href` is a string and not a foreign key to a page, because a menu holds
+/// anchors (`/#seasons`), journey pages, index routes and the occasional
+/// external link, and modelling all four as relations is four nullable columns
+/// and a CHECK constraint to express one string. The editor validates it
+/// against the published routes on save, which catches the real failure —
+/// a typo — without pretending the target is always a row.
+model MenuItem {
+  id       String    @id @default(cuid())
+  menuId   String
+  menu     Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parentId String?
+  parent   MenuItem? @relation("MenuTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children MenuItem[] @relation("MenuTree")
+
+  label      String
+  href       String
+  isExternal Boolean @default(false)
+  /// The header's one filled button. At most one per menu; the design allows
+  /// a single saffron CTA and the editor enforces it.
+  isCta      Boolean @default(false)
+  sortOrder  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([menuId, sortOrder])
+  @@map("menu_items")
+}
+
+// =============================================================================
+// THE COMPANY — one source of truth
+// =============================================================================
+
+/// The company, once.
+///
+/// Everything the footer, the contact page, the enquiry email, the JSON-LD
+/// `Organization` and the WhatsApp link would otherwise each hold a copy of.
+/// A single row, enforced by `isSingleton`, because two rows here is two
+/// companies and the bug it produces — a phone number changed in one place —
+/// is invisible until a customer rings the old one.
+model CompanyProfile {
+  id           String @id @default(cuid())
+  /// Always true, and unique. The cheapest singleton Postgres has.
+  isSingleton  Boolean @unique @default(true)
+
+  legalName    String
+  name         String
+  tagline      String
+  description  String
+  foundedYear  Int?
+  licenceNumber      String?
+  registrationNumber String?
+
+  logoId String?
+  logo   Media?  @relation("CompanyLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  /// Square, for the JSON-LD `logo` and the favicons.
+  markId String?
+  mark   Media?  @relation("CompanyMark", fields: [markId], references: [id], onDelete: SetNull)
+
+  // --- Site chrome the whole site reads ---
+  strapline      String  @default("")
+  footerNote     String  @default("")
+  footerCopyright String @default("© {year} {name}")
+  replyPromise   String  @default("")
+
+  pledgePercent     Int?
+  pledgeBeneficiary String?
+  pledgeNote        String?
+  sdfPerNightUsd    Int    @default(100)
+
+  // --- Default SEO ---
+  siteUrl           String  @default("https://lotuspeak.org")
+  seoTitleTemplate  String  @default("%s · Lotus Peak")
+  seoDefaultTitle   String  @default("Lotus Peak")
+  seoDescription    String  @default("")
+  ogImageId         String?
+  ogImage           Media?  @relation("CompanyOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@map("company_profile")
+}
+
+/// Where the office is.
+///
+/// In parts, because two audiences read them differently. `line1` is what the
+/// footer prints — "Norzin Lam, Thimphu" — and `locality` is what
+/// `addressLocality` in the structured data needs. A search engine told the
+/// locality is "Norzin Lam" places the company in a street.
+model Address {
+  id          String  @id @default(cuid())
+  label       String  @default("Office")
+  line1       String
+  line2       String?
+  locality    String
+  region      String?
+  postalCode  String?
+  country     String  @default("Bhutan")
+  countryCode String  @default("BT")
+  latitude    Float?
+  longitude   Float?
+  mapUrl      String?
+  isPrimary   Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("addresses")
+}
+
+/// One way to reach the company.
+///
+/// `value` is the machine form — `+97517984485` — and `display` is what a
+/// human reads, `+975 17984485`. Both are stored because `tel:` needs the
+/// first and the footer needs the second, and deriving one from the other
+/// means a formatter that knows Bhutanese numbering.
+model ContactChannel {
+  id        String      @id @default(cuid())
+  kind      ContactKind
+  label     String
+  value     String
+  display   String
+  isPrimary Boolean     @default(false)
+  /// WhatsApp only: what the deep link pre-fills.
+  prefillMessage String?
+  sortOrder Int         @default(0)
+  isPublic  Boolean     @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([kind, sortOrder])
+  @@map("contact_channels")
+}
+
+model SocialLink {
+  id        String         @id @default(cuid())
+  platform  SocialPlatform
+  /// Shown where a name is wanted, and used as the `OTHER` platform's label.
+  label     String
+  handle    String?
+  url       String
+  isActive  Boolean        @default(true)
+  sortOrder Int            @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("social_links")
+}
+
+/// When somebody may expect an answer.
+///
+/// `dayFrom`/`dayTo` are ISO-8601 weekday numbers, 1 = Monday, which is what
+/// `openingHoursSpecification` wants and avoids a translation on the way out.
+model OfficeHours {
+  id      String  @id @default(cuid())
+  dayFrom Int
+  dayTo   Int
+  opens   String?
+  closes  String?
+  closed  Boolean @default(false)
+  note    String?
+  sortOrder Int   @default(0)
+
+  @@map("office_hours")
+}
+
+/// A bar across the top of the site, or nothing.
+model Announcement {
+  id        String    @id @default(cuid())
+  message   String
+  href      String?
+  linkLabel String?
+  isActive  Boolean   @default(false)
+  startsAt  DateTime?
+  endsAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("announcements")
+}
+
+/// Everything else, as (group, key) → Json.
+///
+/// For options that are genuinely settings — analytics ids, feature switches,
+/// integration keys — where adding one should not be a migration. The
+/// company's own details are *not* here: they are columns above, because they
+/// are read on every page and a typo in a key name is a silently empty footer.
+model Setting {
+  id       String  @id @default(cuid())
+  group    String
+  key      String
+  value    Json
+  /// Redacted for anyone below owner.
+  isSecret Boolean @default(false)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([group, key])
+  @@index([group])
+  @@map("settings")
+}
+
+// =============================================================================
+// SEO OPERATIONS
+// =============================================================================
+
+model Redirect {
+  id        String       @id @default(cuid())
+  source    String       @unique
+  target    String
+  type      RedirectType @default(MOVED_301)
+  isActive  Boolean      @default(true)
+  hitCount  Int          @default(0)
+  lastHitAt DateTime?
+  note      String?
+  /// Written by a slug change rather than by hand. Shown differently in the
+  /// list, and not offered for deletion, because deleting it re-breaks the
+  /// link it was created to keep.
+  isAutomatic Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([source])
+  @@map("redirects")
+}
+
+/// What the website's 404 handler saw.
+///
+/// So real broken inbound links become redirects instead of guesses. The
+/// referrer is the useful column: a 404 with a referrer from another site is
+/// an inbound link worth keeping, and one with no referrer is usually a bot.
+model NotFoundLog {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  userAgent String?
+  hitCount  Int      @default(1)
+  lastHitAt DateTime @default(now())
+  resolved  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@unique([path])
+  @@index([resolved, hitCount])
+  @@map("not_found_logs")
+}
+
+// =============================================================================
+// CRM
+// =============================================================================
+
+model Customer {
+  id      String  @id @default(cuid())
+  name    String
+  email   String  @unique
+  phone   String?
+  country String?
+  notes   String?
+
+  enquiries Enquiry[]
+  noteRows  Note[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([email])
+  @@map("customers")
+}
+
+/// The only thing the website writes.
+///
+/// `reference` is a short human code — `LP-7QK4` — because the first thing an
+/// office says on the telephone is a number somebody can read out, and a cuid
+/// is not that.
+model Enquiry {
+  id        String @id @default(cuid())
+  reference String @unique
+
+  name    String
+  email   String
+  phone   String?
+  country String?
+
+  tripId String?
+  trip   Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+
+  travellers     String?
+  adults         Int?
+  children       Int?
+  preferredDates String?
+  message        String?
+  restDays       Boolean @default(false)
+
+  source   EnquirySource   @default(CONTACT)
+  status   EnquiryStatus   @default(NEW)
+  priority EnquiryPriority @default(NORMAL)
+
+  assigneeId String?
+  assignee   User?   @relation("EnquiryAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  /// Where it was made, and what brought them. Stored because "which page
+  /// produces enquiries" is the one analytics question this office actually
+  /// asks, and it is unanswerable afterwards.
+  pagePath  String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  ipAddress   String?
+  userAgent   String?
+
+  notes    Note[]
+  tasks    Task[]
+  messages EmailMessage[]
+
+  respondedAt DateTime?
+  closedAt    DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([assigneeId])
+  @@index([tripId])
+  @@map("enquiries")
+}
+
+model Note {
+  id     String @id @default(cuid())
+  body   String
+
+  enquiryId  String?
+  enquiry    Enquiry?  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enquiryId])
+  @@index([customerId])
+  @@map("notes")
+}
+
+model Task {
+  id     String     @id @default(cuid())
+  title  String
+  detail String?
+  status TaskStatus @default(OPEN)
+  dueAt  DateTime?
+
+  enquiryId String?
+  enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+
+  ownerId String?
+  owner   User?   @relation("TaskOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, dueAt])
+  @@index([ownerId])
+  @@map("tasks")
+}
+
+model NewsletterSubscriber {
+  id      String           @id @default(cuid())
+  email   String           @unique
+  name    String?
+  status  SubscriberStatus @default(PENDING)
+  source  String?
+  /// Double opt-in. The row exists before the address is proved.
+  confirmTokenHash String?
+  confirmedAt      DateTime?
+  unsubscribedAt   DateTime?
+  /// Signed into every unsubscribe link, so one click works without a login.
+  unsubscribeToken String  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@map("newsletter_subscribers")
+}
+
+// =============================================================================
+// EMAIL
+// =============================================================================
+
+/// The words one kind of message is made of, editable.
+///
+/// "Thank you for writing to us" is copy, and copy belongs to the office.
+/// Every field may carry `{{tokens}}`; the token list is fixed per kind and
+/// validated on save, so an editor can rewrite a whole message without a
+/// deploy and cannot reference a variable that does not exist.
+model EmailTemplate {
+  id       String    @id @default(cuid())
+  kind     EmailKind @unique
+  name     String
+  isActive Boolean   @default(true)
+
+  subject      String
+  preheader    String @default("")
+  eyebrow      String @default("")
+  heading      String
+  intro        String @default("")
+  closing      String @default("")
+  summaryLabel String @default("")
+  notesLabel   String @default("")
+  buttonLabel  String @default("")
+  buttonUrl    String @default("")
+  signOff      String @default("")
+  footNote     String @default("")
+
+  messages EmailMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_templates")
+}
+
+model EmailMessage {
+  id   String    @id @default(cuid())
+  kind EmailKind
+
+  templateId String?
+  template   EmailTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  toEmail   String
+  toName    String?
+  fromEmail String
+  subject   String
+  /// What was actually sent, kept verbatim. A template edited afterwards must
+  /// not change the record of what somebody received.
+  html      String
+  text      String
+
+  enquiryId String?
+  enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+
+  status      EmailStatus @default(QUEUED)
+  providerId  String?
+  error       String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+
+  events EmailEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([enquiryId])
+  @@map("email_messages")
+}
+
+model EmailEvent {
+  id        String       @id @default(cuid())
+  messageId String
+  message   EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  status    EmailStatus
+  payload   Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([messageId])
+  @@map("email_events")
+}
