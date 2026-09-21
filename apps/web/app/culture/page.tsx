@@ -7,11 +7,29 @@ import { Parallax, Reveal, ScrollCue } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
 import { heroOffset } from '@/sections/shared/Section'
 
-export const metadata: Metadata = {
+/**
+ * The title and description come from this route's `Page` row.
+ *
+ * `generateMetadata` rather than a constant, because a constant cannot read
+ * the database — which is how the contact page ended up publishing a
+ * telephone number the office had already changed. What the row does not
+ * override falls back to what this page shipped with.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getContent().pages.byPath('/culture')
+  const shipped: Metadata = {
   title: 'Culture',
   description:
     'Tshechu, dzongs, textiles, Jomzo and the thirteen arts, Gross National Happiness, kira and gho, archery, and what is on the table — what you will see on a journey with us, and a little of what it means.',
   openGraph: { images: ogImage(IMG.tshechu) },
+  }
+
+  return {
+    ...shipped,
+    title: page?.seo.title ?? page?.title ?? shipped.title,
+    description: page?.seo.description ?? page?.lead ?? shipped.description,
+    robots: { index: !page?.seo.noIndex, follow: true },
+  }
 }
 
 export default async function CulturePage() {

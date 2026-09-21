@@ -1,6 +1,6 @@
 import { Button, Divider, Eyebrow, Reflection, SiteIcon, TrekCard } from '@/design-system'
 import { getContent } from '@/content'
-import { HOME_PURPOSES as PURPOSES } from '@/content/data/pages'
+import { pointsFrom } from '@/content/page-copy'
 import { fmt } from '@/content/types'
 import { IMG, altFor } from '@/lib/assets'
 import { Reveal, Split, Strip } from '@/motion'
@@ -13,13 +13,18 @@ import { graphForPage } from '@/seo/graph'
 
 export default async function HomePage() {
   const content = getContent()
-  const [trips, destinations, seasons, reflections, settings] = await Promise.all([
+  const [trips, destinations, seasons, reflections, settings, page] = await Promise.all([
     content.trips.list({ limit: 4 }),
     content.destinations.list(),
     content.seasons.list(),
     content.reflections.list({ featured: true, limit: 2 }),
     content.settings.get(),
+    content.pages.byPath('/'),
   ])
+
+  /* The three purposes, from the home page's row. The band that renders them
+     is the design's own; only the words moved. */
+  const PURPOSES: [string, string][] = pointsFrom(page).map((point) => [point.title, point.body])
 
   return (
     <main>
@@ -246,7 +251,7 @@ export default async function HomePage() {
         height="70vh"
         eyebrow="Begin"
         title="Write to us"
-        body={`Tell us what you are hoping for. A festival, a long walk, some days of silence. ${settings.contact.replyPromise}. Or call us at ${settings.contact.phone}.`}
+        body={`Tell us what you are hoping for. A festival, a long walk, some days of silence. We reply ${settings.contact.replyPromise.toLowerCase()}. Or call us at ${settings.contact.phone}.`}
       />
     </main>
   )

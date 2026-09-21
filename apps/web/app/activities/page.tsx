@@ -8,11 +8,29 @@ import { ogImage } from '@/lib/seo'
 import { Parallax, Reveal } from '@/motion'
 import { BandInquiry } from '@/sections/shared/BandCta'
 
-export const metadata: Metadata = {
+/**
+ * The title and description come from this route's `Page` row.
+ *
+ * `generateMetadata` rather than a constant, because a constant cannot read
+ * the database — which is how the contact page ended up publishing a
+ * telephone number the office had already changed. What the row does not
+ * override falls back to what this page shipped with.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getContent().pages.byPath('/activities')
+  const shipped: Metadata = {
   title: 'What you can do',
   description:
     'Cultural and historical, mindfulness and retreat, nature and walking — the three kinds of day our journeys are built from, and which journeys carry them.',
   openGraph: { images: ogImage(IMG.meditation) },
+  }
+
+  return {
+    ...shipped,
+    title: page?.seo.title ?? page?.title ?? shipped.title,
+    description: page?.seo.description ?? page?.lead ?? shipped.description,
+    robots: { index: !page?.seo.noIndex, follow: true },
+  }
 }
 
 export default async function ActivitiesPage() {

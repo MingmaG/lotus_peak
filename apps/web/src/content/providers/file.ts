@@ -3,12 +3,29 @@ import 'server-only'
 import { buildLlmsFullTxt, buildLlmsTxt } from '@lotuspeak/seo'
 import type { ApiImage, ApiSite } from '@lotuspeak/api-contracts'
 
-import { altFor } from '@/lib/assets'
+import { IMG, altFor } from '@/lib/assets'
+import {
+  ABOUT_PURPOSES,
+  COMMITMENTS,
+  TERMS_SECTIONS,
+  TRAVELLER_SECTIONS,
+  type InfoSection,
+} from '../data/pages'
 import { ACTIVITIES, CULTURE, DESTINATIONS, GALLERY, REFLECTIONS, SEASONS, SETTINGS } from '../data/site'
 import { POSTS } from '../data/posts'
 import { TRIPS } from '../data/trips'
 import type { ContentRepository, EnquiryInput } from '../repository'
-import type { Activity, CultureArticle, Destination, GalleryImage, Post, Season, Trip } from '../types'
+import type {
+  Activity,
+  CultureArticle,
+  Destination,
+  GalleryImage,
+  PageBand,
+  Post,
+  Season,
+  SitePage,
+  Trip,
+} from '../types'
 
 const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order
 
@@ -332,6 +349,93 @@ function fileLlmsFullInput() {
   }
 }
 
+
+/* -------------------------------------------------------------------------- */
+/*  Editorial pages                                                            */
+/* -------------------------------------------------------------------------- */
+
+/** An `InfoSection` becomes one prose band, exactly as the export script does. */
+function fromInfoSection(section: InfoSection): PageBand {
+  const body = section.body
+    .map((block) =>
+      typeof block === 'string'
+        ? `<p>${escapeHtml(block)}</p>`
+        : `<ul>${block.list.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`,
+    )
+    .join('\n')
+  return { kind: 'prose', eyebrow: null, title: section.title, body, anchor: section.id }
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+const FILE_SEO_META = { title: null, description: null, noIndex: false }
+
+const FILE_PAGES_CONTENT: Record<string, SitePage> = {
+  '/about': {
+    slug: 'about',
+    path: '/about',
+    title: 'About Lotus Peak',
+    eyebrow: 'About',
+    lead: 'A small Bhutanese company, sharing the practice of awareness in the country where it still shapes daily life.',
+    heroImage: IMG.courtyard,
+    heroAlt: altFor(IMG.courtyard),
+    bands: [
+      ...ABOUT_PURPOSES.flatMap<PageBand>(([title, body, image]) => [
+        {
+          kind: 'figure' as const,
+          src: image,
+          alt: altFor(image),
+          caption: null,
+          width: 'inset' as const,
+        },
+        { kind: 'prose' as const, eyebrow: null, title, body: `<p>${escapeHtml(body)}</p>`, anchor: null },
+      ]),
+      {
+        kind: 'points',
+        eyebrow: 'What we hold to',
+        title: 'Our commitments',
+        lead: null,
+        points: COMMITMENTS.map(([title, body]) => ({ title, body, icon: null })),
+      },
+      {
+        kind: 'cta',
+        title: 'Come and see',
+        lead: 'Tell us what you are hoping for and we will write back personally.',
+        label: 'Make an enquiry',
+        href: '/contact',
+        band: true,
+      },
+    ],
+    seo: FILE_SEO_META,
+  },
+
+  '/terms': {
+    slug: 'terms',
+    path: '/terms',
+    title: 'Terms & conditions',
+    eyebrow: 'Terms',
+    lead: 'The terms on which we sell and operate our journeys. The figures particular to your booking — deposit, balance date and the cancellation scale — are in the written confirmation we send you.',
+    heroImage: null,
+    heroAlt: undefined,
+    bands: TERMS_SECTIONS.map(fromInfoSection),
+    seo: FILE_SEO_META,
+  },
+
+  '/travellers-information': {
+    slug: 'travellers-information',
+    path: '/travellers-information',
+    title: 'What to know before you come',
+    eyebrow: 'Travellers',
+    lead: 'Not a complete list — the things travellers ask us most. Anything specific to your journey is in the notes we send when it is booked.',
+    heroImage: null,
+    heroAlt: undefined,
+    bands: TRAVELLER_SECTIONS.map(fromInfoSection),
+    seo: FILE_SEO_META,
+  },
+}
+
 export function createFileProvider(): ContentRepository {
   return {
     name: 'file',
@@ -459,6 +563,33 @@ export function createFileProvider(): ContentRepository {
 
       async llmsFullTxt() {
         return buildLlmsFullTxt(fileLlmsFullInput())
+      },
+    },
+
+    /**
+     * The editorial pages, composed from `src/content/data/pages.ts`.
+     *
+     * The staging post that copy moved into on its way out of the React
+     * components. This provider is the last thing reading it; when it goes, so
+     * does the file.
+     */
+    pages: {
+      async byPath(path) {
+        return FILE_PAGES_CONTENT[path] ?? null
+      },
+      async list() {
+        return Object.values(FILE_PAGES_CONTENT).map((page) => ({
+          path: page.path,
+          title: page.title,
+          lead: page.lead,
+        }))
+      },
+    },
+
+    /* No people in the file provider's data. An empty list is the truth. */
+    people: {
+      async list() {
+        return []
       },
     },
 

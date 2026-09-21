@@ -10,7 +10,8 @@ prerendered before the change and after it, and the two sets were compared —
 `scripts/compare-html.mjs` for the markup, and a rendered-text diff for what a
 visitor actually reads.
 
-**Result: 21 of 21 pages render identical text.**
+**Result: 19 of 21 pages render identical text**, and the two that differ are
+a copy correction and a false positive — see "The second pass" below.
 
 ---
 
@@ -66,6 +67,46 @@ there. That is an editorial choice, so `offerOrder` is nullable and null means
 
 ---
 
+## The second pass: the editorial pages
+
+The pages themselves moved next — About, Terms, Travellers' information, and
+the words around each index route, all of which were TypeScript literals inside
+React components. The diff caught three more things.
+
+### 5. The whole site stopped being prerendered
+
+Redirects and 404 logging went into `not-found.tsx`, which looked like the
+cheap place: only requests that were going to fail would pay for the lookup.
+Reading the request there meant `force-dynamic`, and **the root `not-found.tsx`
+is part of every route's shell** — so that one directive turned eleven
+prerendered pages into server-rendered ones. The build output said so, in a
+column nobody reads until the pages are slow.
+
+Redirects are in `middleware.ts` now, with the table cached in module scope for
+a minute, and the 404 is recorded by a client beacon. The 404 page is static
+and has to stay that way.
+
+### 6. Every anchor on the two reference pages moved
+
+`/travellers-information#money` became `#money-and-banking`, because the
+fragment was derived from the heading rather than stored. A fragment is a URL
+somebody has bookmarked, and it is the one kind of URL a redirect cannot save —
+it never reaches the server. `prose` bands carry an explicit `anchor` now,
+seeded with the ids the pages have always used, and the editor exposes it with
+a note about why.
+
+### 7. Two differences that remain, both deliberate
+
+`_not-found.html` said "The four journeys are, and so are we." There are five.
+
+`travellers-information.html` renders its list bullets from
+`li::before { content: '·' }` rather than a `<span aria-hidden="true">·</span>`
+in the markup. The page looks identical and reads better to a screen reader —
+the text extractor used for this comparison sees CSS-generated content as
+missing, which is a limitation of the check rather than a change to the page.
+
+---
+
 ## What is different on purpose
 
 ### Photographs are served from the media library
@@ -102,6 +143,11 @@ is twenty-eight photographs.
   with `CONTENT_SOURCE=file` and no admin panel.
 - All five region lines — including "Paro · Jomolhari", which is why
   `Trip.regions` is a column beside the destination join.
+- Every page is still prerendered. `next build` marks eleven routes `○` and two
+  `●`; anything marked `ƒ` on this site is a regression.
+- The About page and the index routes kept their own layouts. Only their copy
+  moved: rendering a `WindowFrame` and an alternating figure rhythm through a
+  generic band switch would be redrawing an approved design as a worse one.
 
 ---
 

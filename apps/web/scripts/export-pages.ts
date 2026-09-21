@@ -47,7 +47,13 @@ const OUT = path.resolve(process.cwd(), '../admin/prisma/seed-data');
    package, so this script stays runnable from inside the website with no
    workspace resolution. It is checked against the real one by the seed. */
 type Section =
-  | { kind: 'prose'; eyebrow: string | null; title: string | null; body: string }
+  | {
+      kind: 'prose';
+      eyebrow: string | null;
+      title: string | null;
+      body: string;
+      anchor: string | null;
+    }
   | {
       kind: 'points';
       eyebrow: string | null;
@@ -92,7 +98,16 @@ interface PageSeed {
  */
 function fromInfoSection(section: InfoSection): Section {
   const html = section.body.map(blockToHtml).join('\n');
-  return { kind: 'prose', eyebrow: null, title: section.title, body: html };
+  return {
+    kind: 'prose',
+    eyebrow: null,
+    title: section.title,
+    body: html,
+    /* The id the page has always used, carried across. `#money` is a URL
+       somebody has bookmarked, and deriving it from the title would change it
+       the first time a heading is reworded. */
+    anchor: section.id,
+  };
 }
 
 function blockToHtml(block: InfoBlock): string {
@@ -147,7 +162,7 @@ const PAGES: PageSeed[] = [
     sections: [
       ...ABOUT_PURPOSES.flatMap<Section>(([title, body, image]: [string, string, string]) => [
         { kind: 'figure', imageSrc: image, caption: null, width: 'inset' },
-        { kind: 'prose', eyebrow: null, title, body: `<p>${escape(body)}</p>` },
+        { kind: 'prose', eyebrow: null, title, body: `<p>${escape(body)}</p>`, anchor: null },
       ]),
       {
         kind: 'points',

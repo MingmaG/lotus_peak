@@ -86,6 +86,19 @@ export const storedPageSectionSchema = z.discriminatedUnion('kind', [
     eyebrow: z.string().max(80).nullable().default(null),
     title: z.string().max(200).nullable().default(null),
     body: richText,
+    /**
+     * The fragment this band answers to: `#money`.
+     *
+     * Its own field rather than derived from the title, because a fragment is
+     * a URL. Somebody has bookmarked `/travellers-information#money` and
+     * somebody else has linked to it from an email; deriving it from the title
+     * means renaming "Money" to "Money and banking" silently breaks both, with
+     * no redirect possible — a fragment never reaches the server.
+     *
+     * Null falls back to a slug of the title, which is right for a new band
+     * nobody has linked to yet.
+     */
+    anchor: z.string().max(80).nullable().default(null),
   }),
   z.object({
     kind: z.literal('points'),

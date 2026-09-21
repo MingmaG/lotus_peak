@@ -30,6 +30,8 @@ import {
   toCultureArticle,
   toDestination,
   toGalleryImage,
+  toPage,
+  toPerson,
   toPost,
   toPostSummary,
   toReflection,
@@ -206,6 +208,30 @@ export function createApiProvider(): ContentRepository {
         if (tripSlug) rows = rows.filter((row) => row.tripSlug === tripSlug)
         const mapped = rows.map((row, index) => toReflection(row, index))
         return limit ? mapped.slice(0, limit) : mapped
+      },
+    },
+
+    pages: {
+      async byPath(path) {
+        const page = await fetchContentOrNull<ApiPage>('/api/public/site/pages', {
+          tags: [REVALIDATE_TAGS.pages],
+          query: { path },
+        })
+        return page ? toPage(page) : null
+      },
+
+      async list() {
+        return fetchContent<{ path: string; title: string; lead: string | null }[]>(
+          '/api/public/site/pages',
+          { tags: [REVALIDATE_TAGS.pages] },
+        )
+      },
+    },
+
+    people: {
+      async list() {
+        const { people } = await getCatalogue()
+        return people.map(toPerson)
       },
     },
 

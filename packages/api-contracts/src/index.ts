@@ -552,7 +552,14 @@ export interface ApiPostSummary {
  * page the design has no styles for.
  */
 export type ApiPageSection =
-  | { kind: 'prose'; eyebrow: string | null; title: string | null; body: string }
+  | {
+      kind: 'prose';
+      eyebrow: string | null;
+      title: string | null;
+      body: string;
+      /** The fragment this band answers to. Null means "from the title". */
+      anchor: string | null;
+    }
   | {
       kind: 'points';
       eyebrow: string | null;

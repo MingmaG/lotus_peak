@@ -11,11 +11,29 @@ import { TYPE_OF, toFilterLabel, type FilterLabel } from '@/sections/trips/filte
 import { JsonLd } from '@/seo/JsonLd'
 import { graphForTripIndex } from '@/seo/graph'
 
-export const metadata: Metadata = {
+/**
+ * The title and description come from this route's `Page` row.
+ *
+ * `generateMetadata` rather than a constant, because a constant cannot read
+ * the database — which is how the contact page ended up publishing a
+ * telephone number the office had already changed. What the row does not
+ * override falls back to what this page shipped with.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getContent().pages.byPath('/trips')
+  const shipped: Metadata = {
   title: 'Our trips',
   description:
     'Five journeys through Bhutan: mindfulness, meditation, two around a festival, and the Jomolhari trek. Prices include all permits, meals, accommodation, the Sustainable Development Fee and a guide throughout.',
   openGraph: { images: ogImage(IMG.hike) },
+  }
+
+  return {
+    ...shipped,
+    title: page?.seo.title ?? page?.title ?? shipped.title,
+    description: page?.seo.description ?? page?.lead ?? shipped.description,
+    robots: { index: !page?.seo.noIndex, follow: true },
+  }
 }
 
 export default async function TripsPage({

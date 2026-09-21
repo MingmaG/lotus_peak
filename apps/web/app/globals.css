@@ -61,3 +61,76 @@
   .lp-form-row { grid-template-columns: minmax(0, 1fr) !important }
   .lp-footer-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important }
 }
+
+/* ---------------------------------------------------------------------------
+   Prose from the editor
+   --------------------------------------------------------------------------- */
+
+/**
+ * The body of a `prose` band.
+ *
+ * These pages used to map over an array of paragraphs and `{ list }` objects,
+ * with the spacing and the gold middot written as inline styles on each one.
+ * The content is one HTML string now — which is what an editor typing into a
+ * box produces — so the same treatment is expressed here as rules, and the
+ * rendered result is unchanged.
+ */
+.lp-info-prose > * {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: var(--leading-body);
+}
+
+.lp-info-prose > * + * {
+  margin-top: 18px;
+}
+
+.lp-info-prose ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.lp-info-prose li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 14px;
+}
+
+.lp-info-prose li::before {
+  content: '·';
+  color: var(--gold);
+}
+
+.lp-info-prose a {
+  color: inherit;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 4px;
+}
+
+/**
+ * The same, for a `prose` band on a page rendered through `PageBands` — which
+ * has no sticky contents column and sets its own measure.
+ */
+.lp-prose > * {
+  margin: 0;
+  line-height: var(--leading-body);
+}
+
+.lp-prose > * + * {
+  margin-top: 18px;
+}
+
+.lp-prose ul,
+.lp-prose ol {
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.lp-prose a {
+  color: inherit;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 4px;
+}

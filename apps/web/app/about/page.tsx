@@ -2,27 +2,56 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Button, Divider, Eyebrow, Reflection, WindowFrame } from '@/design-system'
 import { getContent } from '@/content'
-import { ABOUT_PURPOSES as PURPOSES, COMMITMENTS } from '@/content/data/pages'
+import { figurePairsFrom, plainText, pointsFrom } from '@/content/page-copy'
 import { ogImage } from '@/lib/seo'
 import { IMG, altFor } from '@/lib/assets'
 import { Reveal } from '@/motion'
 import { KeraRule, Section } from '@/sections/shared/Section'
 import { InquiryButton } from '@/sections/shared/InquiryButton'
 
-export const metadata: Metadata = {
-  title: 'About',
-  description:
-    'Lotus Peak is a Bhutanese tour company running small-group journeys built around meditation, pilgrimage, the living arts and time with local teachers. Thirty percent of our income supports a monastery in the hills above Paro.',
-  openGraph: { images: ogImage(IMG.taktshang) },
+/**
+ * This page keeps its own layout and takes only its words from the row.
+ *
+ * The alternating figure-and-copy rhythm, the `WindowFrame`, the gold dividers
+ * between the commitments — those are the design, and rendering them through
+ * the generic `PageBands` switch would be redrawing an approved page as a
+ * worse one. What moved into the database is the copy, which is what the
+ * office needed to be able to change.
+ */
+export const revalidate = 3600
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getContent().pages.byPath('/about')
+  return {
+    title: page?.seo.title ?? 'About',
+    description:
+      page?.seo.description ??
+      page?.lead ??
+      'Lotus Peak is a Bhutanese tour company running small-group journeys built around meditation, pilgrimage, the living arts and time with local teachers.',
+    openGraph: { images: ogImage(IMG.taktshang) },
+    robots: { index: !page?.seo.noIndex, follow: true },
+  }
 }
 
 export default async function AboutPage() {
   const content = getContent()
-  const [settings, reflections] = await Promise.all([
+  const [settings, reflections, page] = await Promise.all([
     content.settings.get(),
     content.reflections.list({ featured: false, limit: 1 }),
+    content.pages.byPath('/about'),
   ])
   const reflection = reflections[0]
+
+  /* The words, from the row. The layout below is unchanged. */
+  const COMMITMENTS: [string, string][] = pointsFrom(page).map((point) => [
+    point.title,
+    point.body,
+  ])
+  const PURPOSES: [string, string, string][] = figurePairsFrom(page).map((pair) => [
+    pair.title,
+    plainText(pair.body),
+    pair.src,
+  ])
 
   return (
     <main>

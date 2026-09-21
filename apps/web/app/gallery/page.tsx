@@ -6,11 +6,29 @@ import { IMG, altFor } from '@/lib/assets'
 import { ogImage } from '@/lib/seo'
 import { Reveal } from '@/motion'
 
-export const metadata: Metadata = {
+/**
+ * The title and description come from this route's `Page` row.
+ *
+ * `generateMetadata` rather than a constant, because a constant cannot read
+ * the database — which is how the contact page ended up publishing a
+ * telephone number the office had already changed. What the row does not
+ * override falls back to what this page shipped with.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getContent().pages.byPath('/gallery')
+  const shipped: Metadata = {
   title: 'Gallery',
   description:
     'Photographs from our journeys: tshechu in the dzong courtyards, the valleys, the monasteries, and the ordinary afternoons in between.',
   openGraph: { images: ogImage(IMG.chamMaskedDance) },
+  }
+
+  return {
+    ...shipped,
+    title: page?.seo.title ?? page?.title ?? shipped.title,
+    description: page?.seo.description ?? page?.lead ?? shipped.description,
+    robots: { index: !page?.seo.noIndex, follow: true },
+  }
 }
 
 export default async function GalleryPage() {

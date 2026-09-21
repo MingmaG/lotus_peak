@@ -134,7 +134,7 @@ export const NAVIGATION: NavGroup[] = [
         href: '/pages',
         icon: FileText,
         permission: 'pages.read',
-        hint: 'About, Contact, Terms, and the home page bands',
+        hint: 'About, Contact, Terms, and the words around each index route',
       },
       {
         label: 'Culture',

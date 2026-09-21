@@ -205,3 +205,83 @@ const MONTHS = [
   'November',
   'December',
 ]
+
+/* ---------------------------------------------------------------------------
+   Editorial pages
+   --------------------------------------------------------------------------- */
+
+/**
+ * One band of an editorial page.
+ *
+ * A closed union, matching the admin panel's vocabulary exactly. The renderer
+ * switches on `kind` and the compiler checks the switch is total — which is
+ * what makes adding a band type a change the compiler insists on finishing.
+ *
+ * Three of them reference other content rather than carrying their own, and
+ * all three treat an empty list as "whatever is published, in its own order".
+ * That is what the pages did before they moved into the database, and it is
+ * what most of them want.
+ */
+export type PageBand =
+  | {
+      kind: 'prose'
+      eyebrow: string | null
+      title: string | null
+      body: string
+      /** The fragment this band answers to. Null derives one from the title. */
+      anchor: string | null
+    }
+  | {
+      kind: 'points'
+      eyebrow: string | null
+      title: string | null
+      lead: string | null
+      points: { title: string; body: string; icon: SiteIconName | null }[]
+    }
+  | { kind: 'facts'; title: string | null; rows: [label: string, value: string][] }
+  | { kind: 'faq'; title: string | null; items: { question: string; answer: string }[] }
+  | {
+      kind: 'figure'
+      src: string
+      alt: ImageAlt
+      caption: string | null
+      width: 'full' | 'inset'
+    }
+  | {
+      kind: 'gallery'
+      title: string | null
+      items: [src: string, ratio?: string, width?: string, alt?: string][]
+    }
+  | { kind: 'reflections'; title: string | null; reflectionIds: string[] }
+  | { kind: 'trips'; title: string | null; lead: string | null; tripSlugs: string[] }
+  | {
+      kind: 'cta'
+      title: string
+      lead: string | null
+      label: string
+      href: string
+      band: boolean
+    }
+  | { kind: 'people'; title: string | null; lead: string | null; personIds: string[] }
+
+export type SitePage = {
+  slug: string
+  path: string
+  title: string
+  eyebrow: string | null
+  lead: string | null
+  heroImage: string | null
+  heroAlt: ImageAlt
+  bands: PageBand[]
+  seo: { title: string | null; description: string | null; noIndex: boolean }
+}
+
+export type Person = {
+  id: string
+  name: string
+  role: string
+  bio: string
+  photo: string | null
+  photoAlt: ImageAlt
+  languages: string[]
+}

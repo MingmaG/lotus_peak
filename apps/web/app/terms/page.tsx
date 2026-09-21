@@ -1,45 +1,45 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { getContent } from '@/content'
 import { IMG } from '@/lib/assets'
 import { ogImage } from '@/lib/seo'
-import { TERMS_SECTIONS as SECTIONS } from '@/content/data/pages'
 import { InfoPage } from '@/sections/shared/InfoPage'
 
-export const metadata: Metadata = {
-  title: 'Terms & conditions',
-  description:
-    'The terms on which Lotus Peak Tours & Travel sells and operates its journeys: booking, payment, cancellation, insurance, changes to an itinerary and liability.',
-  openGraph: { images: ogImage(IMG.dzong) },
-  robots: { index: true, follow: true },
+/**
+ * The terms.
+ *
+ * Rendered from the `Page` row at `/terms`, which is where its fourteen
+ * clauses live now. It keeps the `InfoPage` layout — a sticky contents column
+ * and one measure of prose — because that layout is what makes a long
+ * reference page navigable, and because the design has it and this page is
+ * one of the two it was built for.
+ *
+ * The clauses that are still waiting on Lotus Peak — the deposit percentage,
+ * the balance deadline, the cancellation scale — are now editable by the
+ * office rather than by a developer, which is the whole point of the move.
+ */
+export const revalidate = 3600
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getContent().pages.byPath('/terms')
+  return {
+    title: page?.seo.title ?? page?.title ?? 'Terms & conditions',
+    description: page?.seo.description ?? page?.lead ?? undefined,
+    openGraph: { images: ogImage(IMG.dzong) },
+    robots: { index: !page?.seo.noIndex, follow: true },
+  }
 }
 
-/**
- * Ported from lotuspeak.org/terms-and-conditions.
- *
- * The original is a part-filled template: the company is called "Lotus Peek"
- * throughout, the contact address is a personal Gmail account, and the
- * commercial figures are still square-bracketed placeholders — the deposit
- * percentage, the balance deadline, the three cancellation tiers and the refund
- * processing time. Placeholders must not ship, and a refund policy is not
- * something to invent, so those clauses say here that the figures are the ones
- * in your written booking confirmation.
- *
- * NEEDED FROM LOTUS PEAK, then written into §3 and §5 below:
- *   - deposit: percentage or amount, and whether it is non-refundable
- *   - balance: how many days before departure it falls due
- *   - cancellation: the refund at >30 days, 15–30 days and <15 days
- *   - refunds: how long processing takes
- *
- * This page is a description of Lotus Peak's terms, not legal advice. It should
- * be read by whoever advises the company before launch.
- */
+export default async function TermsPage() {
+  const page = await getContent().pages.byPath('/terms')
+  if (!page) notFound()
 
-export default function TermsPage() {
   return (
     <InfoPage
-      eyebrow="Terms"
-      title="Terms & conditions"
-      lead="The terms on which we sell and operate our journeys. The figures particular to your booking — deposit, balance date and the cancellation scale — are in the written confirmation we send you."
-      sections={SECTIONS}
+      eyebrow={page.eyebrow ?? 'Terms'}
+      title={page.title}
+      lead={page.lead ?? ''}
+      bands={page.bands}
       note="Lotus Peak Tours & Travel · Thimphu, Bhutan · Last revised for the 2026 season."
     />
   )

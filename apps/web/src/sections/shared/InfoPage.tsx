@@ -1,10 +1,28 @@
-import type { InfoBlock, InfoSection } from '@/content/data/pages'
 import { Eyebrow } from '@/design-system'
+import type { PageBand } from '@/content/types'
 import { Reveal } from '@/motion'
 
-/* The shape is defined beside the content it describes, so the component and
-   the export script cannot disagree about what a section is. */
-export type { InfoBlock, InfoSection } from '@/content/data/pages'
+/**
+ * The bands this layout can draw.
+ *
+ * Only `prose`, which is what a reference page is. A band of another kind
+ * would need a layout this page does not have — a photograph strip in a
+ * sticky-contents column reads as a mistake — so anything else is skipped, and
+ * the Pages screen's other nine bands belong on a page that renders through
+ * `PageBands`.
+ */
+type ProseBand = Extract<PageBand, { kind: 'prose' }>
+
+/** "1. Who we are" → "who-we-are", for the contents links. */
+function anchorFor(title: string, index: number): string {
+  const slug = title
+    .toLowerCase()
+    .replace(/^\d+[.)]?\s*/, '')
+    .replace(/[^\w\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+  return slug || `section-${index + 1}`
+}
 
 /**
  * The layout the two long reference pages share: travellers' information and
@@ -18,15 +36,25 @@ export function InfoPage({
   eyebrow,
   title,
   lead,
-  sections,
+  bands,
   note,
 }: {
   eyebrow: string
   title: string
   lead: string
-  sections: InfoSection[]
+  bands: PageBand[]
   note?: string
 }) {
+  const sections = bands
+    .filter((band): band is ProseBand => band.kind === 'prose')
+    .map((band, index) => ({
+      /* The stored fragment where there is one; a slug of the heading where
+         there is not. See `anchor` on the prose band. */
+      id: band.anchor ?? anchorFor(band.title ?? '', index),
+      title: band.title ?? '',
+      body: band.body,
+    }))
+
   return (
     <main
       style={{
@@ -99,44 +127,21 @@ export function InfoPage({
               >
                 {section.title}
               </h2>
-              <div style={{ display: 'grid', gap: 18, marginTop: 18 }}>
-                {section.body.map((block, j) =>
-                  typeof block === 'string' ? (
-                    <p
-                      key={j}
-                      style={{
-                        margin: 0,
-                        color: 'var(--text-muted)',
-                        lineHeight: 'var(--leading-body)',
-                        maxWidth: 'var(--measure)',
-                      }}
-                    >
-                      {block}
-                    </p>
-                  ) : (
-                    <ul
-                      key={j}
-                      style={{
-                        listStyle: 'none',
-                        margin: 0,
-                        padding: 0,
-                        display: 'grid',
-                        gap: 10,
-                        maxWidth: 'var(--measure)',
-                      }}
-                    >
-                      {block.list.map((item) => (
-                        <li key={item} style={{ display: 'grid', gridTemplateColumns: '18px 1fr', gap: 14 }}>
-                          <span aria-hidden="true" style={{ color: 'var(--gold)' }}>
-                            ·
-                          </span>
-                          <span style={{ color: 'var(--text-muted)' }}>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ),
-                )}
-              </div>
+              {/**
+                * The body, as HTML from the restricted editor.
+                *
+                * It used to be an array of paragraphs and `{ list }` objects
+                * mapped over here. One string is what a `prose` band holds —
+                * and what an editor typing into a box produces — and the
+                * `lp-info-prose` rule below gives its `<p>` and `<ul>` exactly
+                * the treatment the mapped version had, including the gold
+                * middot before each list item.
+                */}
+              <div
+                className="lp-info-prose"
+                style={{ marginTop: 18, maxWidth: 'var(--measure)' }}
+                dangerouslySetInnerHTML={{ __html: section.body }}
+              />
             </Reveal>
           ))}
 

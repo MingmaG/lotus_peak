@@ -1,5 +1,8 @@
 import type {
   ApiActivity,
+  ApiPage,
+  ApiPageSection,
+  ApiPerson,
   ApiCultureArticle,
   ApiDestination,
   ApiGalleryImage,
@@ -21,8 +24,11 @@ import type {
   CultureArticle,
   Destination,
   GalleryImage,
+  PageBand,
+  Person,
   Post,
   PostBlock,
+  SitePage,
   Reflection,
   Season,
   SeasonKey,
@@ -357,5 +363,131 @@ export function toSettings(site: ApiSite): SiteSettings {
       title: site.defaultSeo.defaultTitle,
       description: site.defaultSeo.description,
     },
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/*  Pages                                                                      */
+/* -------------------------------------------------------------------------- */
+
+export function toPage(row: ApiPage): SitePage {
+  return {
+    slug: row.slug,
+    path: row.path,
+    title: row.title,
+    eyebrow: row.eyebrow,
+    lead: row.lead,
+    heroImage: row.heroImage ? imagePath(row.heroImage) : null,
+    heroAlt: row.heroImage?.alt,
+    bands: row.sections.map(toBand).filter((band): band is PageBand => band !== null),
+    seo: {
+      title: row.seo.metaTitle,
+      description: row.seo.metaDescription,
+      noIndex: row.seo.noIndex,
+    },
+  }
+}
+
+/**
+ * One band.
+ *
+ * A `figure` whose photograph has been deleted is dropped rather than rendered
+ * as a gap — the same rule the journal body follows, and for the same reason:
+ * a nullable image inside a band is a null every renderer downstream has to
+ * handle, introduced by a deletion that happened once.
+ */
+function toBand(section: ApiPageSection): PageBand | null {
+  switch (section.kind) {
+    case 'prose':
+      return {
+        kind: 'prose',
+        eyebrow: section.eyebrow,
+        title: section.title,
+        body: section.body,
+        anchor: section.anchor,
+      }
+
+    case 'points':
+      return {
+        kind: 'points',
+        eyebrow: section.eyebrow,
+        title: section.title,
+        lead: section.lead,
+        points: section.points.map((point) => ({
+          title: point.title,
+          body: point.body,
+          icon: point.icon,
+        })),
+      }
+
+    case 'facts':
+      return { kind: 'facts', title: section.title, rows: section.rows }
+
+    case 'faq':
+      return { kind: 'faq', title: section.title, items: section.items }
+
+    case 'figure':
+      return {
+        kind: 'figure',
+        src: imagePath(section.image),
+        alt: section.image.alt,
+        caption: section.caption,
+        width: section.width,
+      }
+
+    case 'gallery':
+      return {
+        kind: 'gallery',
+        title: section.title,
+        items: section.items.map((item) => {
+          const cell: [string, string?, string?, string?] = [imagePath(item.image)]
+          if (item.ratio) cell[1] = item.ratio
+          if (item.width) cell[2] = item.width
+          cell[3] = item.image.alt
+          return cell
+        }),
+      }
+
+    case 'reflections':
+      return { kind: 'reflections', title: section.title, reflectionIds: section.reflectionIds }
+
+    case 'trips':
+      return {
+        kind: 'trips',
+        title: section.title,
+        lead: section.lead,
+        tripSlugs: section.tripSlugs,
+      }
+
+    case 'cta':
+      return {
+        kind: 'cta',
+        title: section.title,
+        lead: section.lead,
+        label: section.label,
+        href: section.href,
+        band: section.band,
+      }
+
+    case 'people':
+      return {
+        kind: 'people',
+        title: section.title,
+        lead: section.lead,
+        personIds: section.personIds,
+      }
+  }
+}
+
+export function toPerson(row: ApiPerson): Person {
+  return {
+    id: row.id,
+    name: row.name,
+    role: row.role,
+    bio: row.bio,
+    photo: row.photo ? imagePath(row.photo) : null,
+    photoAlt: row.photo?.alt,
+    languages: row.languages,
   }
 }

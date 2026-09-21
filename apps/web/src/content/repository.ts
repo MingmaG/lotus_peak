@@ -5,7 +5,9 @@ import type {
   GalleryImage,
   Post,
   Reflection,
+  Person,
   Season,
+  SitePage,
   SiteSettings,
   Trip,
   TripType,
@@ -78,6 +80,21 @@ export interface ContentRepository {
   reflections: {
     list(opts?: { tripSlug?: string; featured?: boolean; limit?: number }): Promise<Reflection[]>
   }
+  /**
+   * The editorial pages: About, Contact, Terms, Travellers' information, and
+   * the words around each index route.
+   *
+   * `byPath` rather than `bySlug` because a page's identity *is* its URL — the
+   * home page's is `/`, which no slug can express without a special case at
+   * both ends of the wire.
+   */
+  pages: {
+    byPath(path: string): Promise<SitePage | null>
+    list(): Promise<Pick<SitePage, 'path' | 'title' | 'lead'>[]>
+  }
+
+  people: { list(): Promise<Person[]> }
+
   settings: { get(): Promise<SiteSettings> }
 
   /**
