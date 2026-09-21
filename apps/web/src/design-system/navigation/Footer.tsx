@@ -20,7 +20,16 @@ export function Footer({
   logoSrc = asset('logo.webp'),
   line = 'Small-group journeys in Bhutan.',
   columns,
-  note = 'Lotus Peak Tours & Travel · Thimphu, Bhutan · +975 17984485',
+  /**
+   * No default.
+   *
+   * There was one, and it held a telephone number. Nothing rendered it —
+   * `SiteChrome` always passes the note from the company record — which is
+   * exactly what made it dangerous: a defaulted literal that is invisible
+   * until the day somebody renders the component without the prop, and then
+   * publishes a number that has been wrong for a year.
+   */
+  note,
 }: FooterProps) {
   return (
     <footer

@@ -45,30 +45,33 @@ import {
  * ## The catalogue is one request
  *
  * Destinations, activities, seasons, culture, the gallery, the reflections and
- * the people arrive together from `/catalogue` and are memoised per render.
- * The home page alone asks for four of the seven; the alternative is four
- * round trips and four cache entries that can disagree about which publish
- * they came from.
+ * the people arrive together from `/catalogue`. The home page alone asks for
+ * four of the seven; the alternative is four round trips and four cache
+ * entries that can disagree about which publish they came from.
  *
  * The journeys and the journal are *not* in it, because those two grow without
  * bound and are the two that are filtered and limited.
  */
 export function createApiProvider(): ContentRepository {
   /**
-   * One catalogue fetch per render pass.
+   * Nothing is memoised on the provider, deliberately.
    *
-   * `React.cache` would be the idiomatic tool and is not used here: this
-   * module is also imported by `sitemap.ts` and `robots.ts`, which run outside
-   * a React render, where `cache()` has no request to scope to. A promise held
-   * on the provider instance is memoised for exactly as long as the instance
-   * is, and the instance is a module singleton in `getContent()` — which,
-   * combined with Next's own fetch deduplication and cache tags underneath, is
-   * the same behaviour without the render-context requirement.
+   * The obvious optimisation is to hold the catalogue and the site payload in
+   * a promise on this closure, so the home page's four reads become one
+   * request. It is also a bug, and an expensive one: `getContent()` caches the
+   * provider in a module variable, so the closure outlives the request — it
+   * lives as long as the process. Publishing would drop Next's cache entry,
+   * the page would re-render, and the provider would hand it the same promise
+   * it resolved when the server started. The site would show yesterday's
+   * content until somebody restarted it, with every layer in between
+   * reporting success.
+   *
+   * Next's own fetch cache does the job properly: identical requests inside
+   * one render are deduplicated, entries are shared across requests, and
+   * `revalidateTag` actually drops them.
    */
-  let catalogue: Promise<Catalogue> | null = null
-
-  const getCatalogue = (): Promise<Catalogue> => {
-    catalogue ??= fetchContent<Catalogue>('/api/public/site/catalogue', {
+  const getCatalogue = (): Promise<Catalogue> =>
+    fetchContent<Catalogue>('/api/public/site/catalogue', {
       tags: [
         REVALIDATE_TAGS.destinations,
         REVALIDATE_TAGS.activities,
@@ -78,14 +81,9 @@ export function createApiProvider(): ContentRepository {
         REVALIDATE_TAGS.reflections,
       ],
     })
-    return catalogue
-  }
 
-  let site: Promise<ApiSite> | null = null
-  const getSite = (): Promise<ApiSite> => {
-    site ??= fetchContent<ApiSite>('/api/public/site', { tags: [REVALIDATE_TAGS.site] })
-    return site
-  }
+  const getSite = (): Promise<ApiSite> =>
+    fetchContent<ApiSite>('/api/public/site', { tags: [REVALIDATE_TAGS.site] })
 
   return {
     name: 'api',

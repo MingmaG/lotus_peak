@@ -11,11 +11,12 @@ import { Section } from '@/sections/shared/Section'
 
 export default async function HomePage() {
   const content = getContent()
-  const [trips, destinations, seasons, reflections] = await Promise.all([
+  const [trips, destinations, seasons, reflections, settings] = await Promise.all([
     content.trips.list({ limit: 4 }),
     content.destinations.list(),
     content.seasons.list(),
     content.reflections.list({ featured: true, limit: 2 }),
+    content.settings.get(),
   ])
 
   return (
@@ -226,12 +227,16 @@ export default async function HomePage() {
         </div>
       </Section>
 
+      {/* The number and the reply promise come from the company record, not
+          from this sentence. They used to be typed here, and the first time
+          the office changed the telephone number the home page kept the old
+          one for three weeks. */}
       <BandInquiry
         src={IMG.bridge}
         height="70vh"
         eyebrow="Begin"
         title="Write to us"
-        body="Tell us what you are hoping for. A festival, a long walk, some days of silence. We reply personally, within two days. Or call us at +975 17984485."
+        body={`Tell us what you are hoping for. A festival, a long walk, some days of silence. ${settings.contact.replyPromise}. Or call us at ${settings.contact.phone}.`}
       />
     </main>
   )

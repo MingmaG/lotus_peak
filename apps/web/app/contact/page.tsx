@@ -7,11 +7,23 @@ import { IMG } from '@/lib/assets'
 import { Reveal } from '@/motion'
 import { EnquiryForm } from '@/sections/shared/EnquiryForm'
 
-export const metadata: Metadata = {
-  title: 'Contact',
-  description:
-    'Tell us what you are hoping for. A festival, a long walk, some days of silence. Write to info@lotuspeak.org, call +975 17984485, or use the form — we reply personally, within two days.',
-  openGraph: { images: ogImage(IMG.dzong) },
+/**
+ * `generateMetadata` rather than a `metadata` constant.
+ *
+ * The description names the email address and the telephone number, and those
+ * are the company record. A constant cannot read it, which is how this page
+ * ended up publishing a number the office had already changed.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getContent().settings.get()
+  return {
+    title: 'Contact',
+    description:
+      'Tell us what you are hoping for. A festival, a long walk, some days of silence. ' +
+      `Write to ${settings.contact.email}, call ${settings.contact.phone}, or use the form — ` +
+      `we reply ${settings.contact.replyPromise.toLowerCase()}.`,
+    openGraph: { images: ogImage(IMG.dzong) },
+  }
 }
 
 const LINK: CSSProperties = { color: 'inherit', textDecorationColor: 'var(--gold)', textUnderlineOffset: 4 }
@@ -25,8 +37,8 @@ export default async function ContactPage() {
     { label: 'Not sure yet', value: 'unsure' },
   ]
 
-  /* The real contact details, from lotuspeak.org. The email and phone are
-     links — on a phone the second one dials. */
+  /* From the company record. The email and phone are links — on a phone the
+     second one dials. */
   const aside: [string, ReactNode][] = [
     [
       'Call',
