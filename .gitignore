@@ -2,16 +2,20 @@ node_modules/
 .next/
 out/
 build/
+dist/
 .env
 .env.local
+.env*.local
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
-/public/assets/**/PLACEHOLDER
+.turbo/
+storage/
+apps/web/public/assets/**/PLACEHOLDER
 
 # The WordPress export from lotuspeak.org. The text is kept as the provenance
 # for the imported content; the 24 MB of media is not — every photograph that
-# is actually used now lives in public/assets/imagery, and the rest was theme
-# furniture (shape*.webp, backgrounds, logos).
-/lotuspeak_export/images/
-/lotuspeak_export/content/**/*.html
+# is actually used now lives in apps/web/public/assets/imagery, and the rest
+# was theme furniture (shape*.webp, backgrounds, logos).
+/content-import/wordpress/images/
+/content-import/wordpress/content/**/*.html

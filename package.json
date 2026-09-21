@@ -1,32 +1,38 @@
 {
-  "name": "lotuspeak",
-  "version": "0.1.0",
+  "name": "lotus-peak",
+  "version": "1.0.0",
   "private": true,
+  "description": "Lotus Peak Tours & Travel — the marketing site and the admin panel that feeds it.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "assets:build": "npm run images:build && npm run fonts:build",
-    "images:build": "node scripts/build-images.mjs",
-    "fonts:build": "node scripts/build-fonts.mjs",
-    "assets:check": "node scripts/check-assets.mjs"
-  },
-  "dependencies": {
-    "next": "15.5.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "dev": "npm run db:up && concurrently -n admin,web -c magenta,cyan \"npm:dev:admin\" \"npm:dev:web\"",
+    "dev:admin": "npm run dev --workspace=@lotuspeak/admin",
+    "dev:web": "npm run dev --workspace=@lotuspeak/web",
+    "build": "npm run build --workspace=@lotuspeak/admin && npm run build --workspace=@lotuspeak/web",
+    "build:admin": "npm run build --workspace=@lotuspeak/admin",
+    "build:web": "npm run build --workspace=@lotuspeak/web",
+    "start": "concurrently -n admin,web -c magenta,cyan \"npm:start:admin\" \"npm:start:web\"",
+    "start:admin": "npm run start --workspace=@lotuspeak/admin",
+    "start:web": "npm run start --workspace=@lotuspeak/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:up": "bash scripts/ensure-db.sh",
+    "db:down": "docker compose -f docker/docker-compose.yml down",
+    "db:reset": "docker compose -f docker/docker-compose.yml down -v && npm run db:up && npm run db:deploy && npm run db:seed",
+    "db:generate": "npm run db:generate --workspace=@lotuspeak/admin",
+    "db:migrate": "npm run db:migrate --workspace=@lotuspeak/admin",
+    "db:deploy": "npm run db:deploy --workspace=@lotuspeak/admin",
+    "db:push": "npm run db:push --workspace=@lotuspeak/admin",
+    "db:seed": "npm run db:seed --workspace=@lotuspeak/admin",
+    "db:studio": "npm run db:studio --workspace=@lotuspeak/admin"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.7",
-    "@types/node": "^22.10.5",
-    "@types/react": "^19.0.7",
-    "@types/react-dom": "^19.0.3",
-    "eslint": "^9.18.0",
-    "eslint-config-next": "15.5.4",
-    "sharp": "^0.35.4",
-    "subset-font": "^2.7.0",
-    "typescript": "^5.7.3"
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
