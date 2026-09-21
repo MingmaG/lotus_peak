@@ -1,3 +1,6 @@
+import { VideoEmbed } from '@/components/site/VideoEmbed'
+import Image from 'next/image'
+import { Prose } from '@/components/site/Prose'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Badge, Button, Divider, Eyebrow, Reflection, SiteIcon, Tooltip } from '@/design-system'
@@ -63,6 +66,17 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
     [`${fmt.altitude(trip)} high point`, 'neutral'],
     [trip.seasonLabel, 'saffron'],
     [trip.paceNote, 'gold'],
+    /**
+     * Whatever else the office added, after the five the design fixes.
+     *
+     * Appended rather than mixed in, so the row always opens with the same
+     * five in the same order — somebody comparing two journeys is reading
+     * position as much as label. All neutral: the four colours already mean
+     * something here, and a sixth badge borrowing one would be claiming it.
+     */
+    ...trip.stats.map(
+      (stat): [string, 'neutral'] => [`${stat.value} ${stat.label.toLowerCase()}`, 'neutral'],
+    ),
   ]
 
   return (
@@ -163,16 +177,96 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
               }}
             >
               <SiteIcon name="dzong" size={48} color="var(--maroon)" />
-              <p style={{ fontSize: 'var(--text-small)', color: 'var(--text-muted)' }}>
-                From{' '}
-                <strong style={{ color: 'var(--ink)', fontWeight: 500 }}>{fmt.price(trip)}</strong> per adult,
-                including the{' '}
-                <Tooltip label={`Sustainable Development Fee, US$${settings.sdfPerNightUsd} per night`}>
-                  <span style={{ borderBottom: '1px dotted var(--border-strong)' }}>SDF</span>
-                </Tooltip>
-                .
-              </p>
+              <div style={{ fontSize: 'var(--text-small)', color: 'var(--text-muted)' }}>
+                <p style={{ margin: 0 }}>
+                  From{' '}
+                  <strong style={{ color: 'var(--ink)', fontWeight: 500 }}>{fmt.price(trip)}</strong> per
+                  adult, including the{' '}
+                  <Tooltip label={`Sustainable Development Fee, US$${settings.sdfPerNightUsd} per night`}>
+                    <span style={{ borderBottom: '1px dotted var(--border-strong)' }}>SDF</span>
+                  </Tooltip>
+                  .
+                </p>
+
+                {/* What the office wrote about the price, where they wrote
+                    anything. Rich text, because "what it includes" is a
+                    sentence with a link in it. */}
+                {trip.priceNote && (
+                  <Prose html={trip.priceNote} compact style={{ marginTop: 10 }} />
+                )}
+              </div>
             </div>
+
+            {/**
+             * The price by party size.
+             *
+             * Bhutan's tariff falls as a group grows, so the "from" figure
+             * above is the largest group's price and is the wrong number for
+             * two people travelling together — which is most of them. Shown
+             * only where the office has filled the tiers in; a journey with one
+             * price keeps the single line it always had.
+             */}
+            {trip.pricingTiers.length > 0 && (
+              <Reveal>
+                <table
+                  className="lp-price-table"
+                  style={{ marginTop: 24, width: '100%', borderCollapse: 'collapse' }}
+                >
+                  <caption
+                    style={{
+                      captionSide: 'top',
+                      textAlign: 'left',
+                      paddingBottom: 10,
+                      fontSize: 'var(--text-label)',
+                      letterSpacing: 'var(--tracking-label)',
+                      textTransform: 'uppercase',
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    Per adult, by party size
+                  </caption>
+                  <tbody>
+                    {trip.pricingTiers.map((tier) => (
+                      <tr
+                        key={tier.label}
+                        style={{ borderBottom: '1px solid var(--border-hairline)' }}
+                      >
+                        <th
+                          scope="row"
+                          style={{
+                            textAlign: 'left',
+                            fontWeight: 400,
+                            padding: '10px 0',
+                            verticalAlign: 'top',
+                          }}
+                        >
+                          {tier.label}
+                          {tier.note && (
+                            <span
+                              style={{
+                                display: 'block',
+                                fontSize: 'var(--text-small)',
+                                color: 'var(--text-faint)',
+                              }}
+                            >
+                              {tier.note}
+                            </span>
+                          )}
+                        </th>
+                        <td style={{ textAlign: 'right', padding: '10px 0', whiteSpace: 'nowrap' }}>
+                          {tier.wasPriceUsd !== null && (
+                            <s style={{ color: 'var(--text-faint)', marginRight: 8 }}>
+                              US$ {tier.wasPriceUsd.toLocaleString('en-GB')}
+                            </s>
+                          )}
+                          US$ {tier.priceUsd.toLocaleString('en-GB')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Reveal>
+            )}
           </div>
 
           <div>
@@ -262,6 +356,87 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
           <Centered eyebrow="Itinerary" title="Your days, one by one" />
         </Reveal>
         <TripItinerary days={trip.itinerary} />
+
+        {/**
+         * The route, as the office's own drawing.
+         *
+         * Under the itinerary rather than beside it: on a phone a map beside
+         * eleven days of copy is a map nobody scrolls back up to, and this is
+         * the point at which somebody has just read where they are going.
+         */}
+        {trip.routeMap && (
+          <Reveal>
+            <figure style={{ margin: 'var(--space-9) auto 0', maxWidth: 900 }}>
+              <Image
+                src={trip.routeMap}
+                alt={trip.routeMapAlt ?? `The route of ${trip.title}, drawn on a map`}
+                width={1600}
+                height={1000}
+                sizes="(max-width: 900px) 100vw, 900px"
+                style={{ width: '100%', height: 'auto', borderRadius: 'var(--radius-sm)' }}
+              />
+            </figure>
+          </Reveal>
+        )}
+
+        {/**
+         * The walking profile.
+         *
+         * Drawn as a definition list rather than a chart: it is eight to twelve
+         * numbers, a chart of that many points is a picture of a table, and a
+         * table is something a screen reader can read out.
+         */}
+        {trip.elevationProfile.length > 0 && (
+          <Reveal>
+            <div style={{ margin: 'var(--space-9) auto 0', maxWidth: 820 }}>
+              <h3
+                style={{
+                  fontSize: 'var(--text-label)',
+                  letterSpacing: 'var(--tracking-label)',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-muted)',
+                  marginBottom: 16,
+                }}
+              >
+                Where you sleep, and how high
+              </h3>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <tbody>
+                  {trip.elevationProfile.map((point) => (
+                    <tr
+                      key={`${point.day}-${point.label}`}
+                      style={{ borderBottom: '1px solid var(--border-hairline)' }}
+                    >
+                      <th
+                        scope="row"
+                        style={{
+                          textAlign: 'left',
+                          fontWeight: 400,
+                          padding: '10px 0',
+                          width: '5em',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        Day {point.day}
+                      </th>
+                      <td style={{ padding: '10px 0' }}>{point.label}</td>
+                      <td
+                        style={{
+                          padding: '10px 0',
+                          textAlign: 'right',
+                          whiteSpace: 'nowrap',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {point.metres.toLocaleString('en-GB')} m
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Reveal>
+        )}
       </Section>
 
       <KeraRule />
@@ -287,6 +462,23 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         </div>
       </Section>
 
+      {/**
+       * The film, where there is one.
+       *
+       * After the gallery: somebody who has read the itinerary and looked at
+       * the photographs is the person who will watch it, and a film above the
+       * fold is a film that loads for everybody who does not.
+       */}
+      {trip.videoUrl && (
+        <Section>
+          <Reveal>
+            <div style={{ maxWidth: 900, margin: '0 auto' }} className="lp-prose">
+              <VideoEmbed url={trip.videoUrl} title={`${trip.title} — a film`} />
+            </div>
+          </Reveal>
+        </Section>
+      )}
+
       <Strip images={trip.gallery} />
 
       <Section id="essential" style={{ paddingTop: 0 }}>
@@ -295,7 +487,7 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         </Reveal>
         <Reveal delay={300}>
           <div style={{ marginTop: 'var(--space-8)' }}>
-            <TripFaq items={trip.faq} />
+            <TripFaq items={trip.faq} groups={trip.faqGroups} />
           </div>
         </Reveal>
       </Section>

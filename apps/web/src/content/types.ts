@@ -43,6 +43,12 @@ export type Trip = {
   highPointMetres: number
   difficulty: Difficulty
   priceFromUsd: number
+  /** ISO 4217, for the price and for the JSON-LD offer. */
+  priceCurrency: string
+  /** Rich text. What the price includes, under the figure. */
+  priceNote: string | null
+  /** Empty where one price covers every party size. */
+  pricingTiers: PricingTier[]
   seasonLabel: string
   paceNote: string
   journeyLabel: string
@@ -53,8 +59,37 @@ export type Trip = {
   itinerary: ItineraryDayData[]
   included: string[]
   excluded: string[]
+  /** The questions with no heading. They render first, above the groups. */
   faq: { question: string; answer: string }[]
+  faqGroups: FaqGroup[]
   gallery: [src: string, ratio?: string, width?: string, alt?: string][]
+  /** The route drawn on a map. Empty where the office has not made one. */
+  routeMap: string | null
+  routeMapAlt?: ImageAlt
+  /** A film. Rendered as a façade — see `VideoEmbed`. */
+  videoUrl: string | null
+  /** Beyond the fixed five under the title. Usually empty. */
+  stats: { label: string; value: string; note: string | null }[]
+  /** The walking profile. Empty for everything but the trekking journeys. */
+  elevationProfile: { day: number; label: string; metres: number }[]
+}
+
+/** What a journey costs at a party size. `maxPeople` null is "and above". */
+export type PricingTier = {
+  label: string
+  minPeople: number
+  maxPeople: number | null
+  priceUsd: number
+  wasPriceUsd: number | null
+  note: string | null
+}
+
+/** A heading over some of a journey's questions. */
+export type FaqGroup = {
+  title: string
+  /** Rich text. */
+  blurb: string | null
+  items: { question: string; answer: string }[]
 }
 
 export type Destination = {

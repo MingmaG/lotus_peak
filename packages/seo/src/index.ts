@@ -327,9 +327,22 @@ export function tripNode(
      */
     offers: clean({
       '@type': 'AggregateOffer',
-      priceCurrency: 'USD',
+      priceCurrency: trip.priceCurrency || 'USD',
       lowPrice: trip.priceFromUsd,
-      offerCount: Math.max(1, trip.departures.length),
+      /**
+       * A high price only where the tiers give a real one.
+       *
+       * The tiers *are* the range — the largest party pays least and the
+       * smallest pays most — so publishing both ends is more honest than
+       * publishing a floor alone. Without them there is nothing to claim, and
+       * a `highPrice` guessed from anything else would be a number this
+       * company has not quoted.
+       */
+      highPrice:
+        trip.pricingTiers.length > 0
+          ? Math.max(...trip.pricingTiers.map((tier) => tier.priceUsd))
+          : undefined,
+      offerCount: Math.max(trip.pricingTiers.length, trip.departures.length, 1),
       availability: trip.departures.some((d) => d.status !== 'CLOSED')
         ? 'https://schema.org/InStock'
         : 'https://schema.org/PreOrder',

@@ -205,7 +205,7 @@ function videoFacade(attrs: Map<string, string>): string | null {
       : "") +
     `<span class="video-facade-scrim"></span>` +
     `<span class="video-facade-play" aria-hidden="true"></span>` +
-    `<span class="srOnly">${escapeText(title)}</span>` +
+    `<span class="lp-sr-only">${escapeText(title)}</span>` +
     `</a></div>`
   );
 }

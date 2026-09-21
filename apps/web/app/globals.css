@@ -361,3 +361,17 @@
 [data-trip-filter="trekking"]    > [data-trip-type]:not([data-trip-type="trekking"]) {
   display: none;
 }
+
+/* Visually hidden, still announced. Used by the film façade's link, whose
+   visible content is a picture and a triangle. */
+.lp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

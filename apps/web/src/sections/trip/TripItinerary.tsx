@@ -1,5 +1,6 @@
 'use client'
 
+import type { FaqGroup } from '@/content/types'
 import { Prose } from '@/components/site/Prose'
 import { useState } from 'react'
 import { Button, Disclosure, Itinerary } from '@/design-system'
@@ -27,23 +28,76 @@ export function TripItinerary({ days }: { days: ItineraryDayData[] }) {
 }
 
 /** FAQ over the shared Disclosure — the design project's version pops open with no transition and no ARIA pairing (audit B12). */
-export function TripFaq({ items }: { items: { question: string; answer: string }[] }) {
+/**
+ * The questions, with headings where the office made any.
+ *
+ * `items` is the ungrouped ones and they render first, above every heading —
+ * which is what lets a journey have six questions and no headings at all, and
+ * lets somebody add a seventh without inventing a heading to put it under.
+ *
+ * One `open` index across the whole thing, not one per group. Two answers open
+ * at once on a page this long is two places to have lost your position.
+ */
+export function TripFaq({
+  items,
+  groups = [],
+}: {
+  items: { question: string; answer: string }[]
+  groups?: FaqGroup[]
+}) {
   const [open, setOpen] = useState(0)
+
+  /* A flat index over every question, so the one-open rule holds across
+     headings. Built here rather than threaded through as offsets, which is the
+     same arithmetic done in more places. */
+  let index = 0
+
+  const question = (item: { question: string; answer: string }) => {
+    const at = index
+    index += 1
+    return (
+      <div key={item.question} style={{ borderBottom: '1px solid var(--border-hairline)' }}>
+        <Disclosure
+          open={open === at}
+          onToggle={() => setOpen(open === at ? -1 : at)}
+          summary={item.question}
+        >
+          <Prose
+            html={item.answer}
+            compact
+            style={{ margin: '0 0 24px', color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}
+          />
+        </Disclosure>
+      </div>
+    )
+  }
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto' }}>
-      {items.map((item, i) => (
-        <div key={item.question} style={{ borderBottom: '1px solid var(--border-hairline)' }}>
-          <Disclosure
-            open={open === i}
-            onToggle={() => setOpen(open === i ? -1 : i)}
-            summary={item.question}
+      {items.map(question)}
+
+      {groups.map((group) => (
+        <section key={group.title} style={{ marginTop: 40 }}>
+          <h3
+            style={{
+              fontSize: 'var(--text-label)',
+              letterSpacing: 'var(--tracking-label)',
+              textTransform: 'uppercase',
+              color: 'var(--text-muted)',
+              marginBottom: group.blurb ? 8 : 16,
+            }}
           >
-            <p style={{ margin: '0 0 24px', color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}>
-              <Prose html={item.answer} compact />
-            </p>
-          </Disclosure>
-        </div>
+            {group.title}
+          </h3>
+          {group.blurb && (
+            <Prose
+              html={group.blurb}
+              compact
+              style={{ marginBottom: 16, color: 'var(--text-muted)' }}
+            />
+          )}
+          {group.items.map(question)}
+        </section>
       ))}
     </div>
   )

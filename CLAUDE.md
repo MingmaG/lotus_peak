@@ -130,3 +130,8 @@ What actually catches things:
 - Do not add a dependency for something a thirty-line module does.
 - Restart the dev servers after a build: `next build` clears `.next` underneath them and
   they start 404ing their own chunks.
+- **Clear `apps/web/.next/cache` after changing the API's shape.** Next keeps fetch
+  responses on disk across builds, keyed by URL, for `CONTENT_REVALIDATE_SECONDS` — an
+  hour. A build after a contract change otherwise reuses yesterday's payload and either
+  renders without the new field or dies on `Cannot read properties of undefined`. It
+  looks exactly like a bug in the mapper, and it is not.
