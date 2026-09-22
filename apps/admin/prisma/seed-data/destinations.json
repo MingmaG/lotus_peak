@@ -3,408 +3,277 @@
     "slug": "paro",
     "name": "Paro",
     "icon": "dzong",
-    "blurb": "Taktsang, Kichu and Dungtse Lhakhang",
-    "standfirst": "The valley you arrive in, and the only one with an airport.",
+    "blurb": "Taktsang, Kyichu and Dungtse Lhakhang",
+    "standfirst": "The valley you land in, and the only one with an international airport: a dzong over the river, two of the oldest temples in the country, and Taktsang on the cliff at its head.",
     "body": [
       {
         "kind": "text",
-        "body": "Rinpung Dzong stands over the town with the old watchtower above it, now the National Museum. Kyichu Lhakhang is one of the oldest temples in the country. Taktsang is a morning’s walk up the cliff at the head of the valley."
+        "body": "Almost everyone who comes to Bhutan by air comes in here. The runway lies along the floor of the Paro Chhu valley at 2,235 m, with ridges climbing steeply on both sides, and the last minutes of the approach follow the curve of the valley rather than a straight line. Flights land and leave in daylight and in clear conditions only, and only a small number of pilots are certified to fly them."
+      },
+      {
+        "kind": "text",
+        "body": "The terminal is built in the traditional style, and Rinpung Dzong is on the slope above it before you have left the aircraft. The town is a few minutes away: one main street of painted timber shopfronts, a football ground and archery range, and fields running right up to the edge of it. The valley is known for its red rice and its apples."
+      },
+      {
+        "kind": "heading",
+        "text": "Arriving"
+      },
+      {
+        "kind": "text",
+        "body": "Every visitor except Indian nationals pays the Sustainable Development Fee, which is US$ 100 per person per night as of 2026 and is set at that rate until 31 August 2027. It goes towards free healthcare and education, conservation and the upkeep of the country’s heritage. We arrange it with your visa, and it is included in what you pay for a journey."
+      },
+      {
+        "kind": "text",
+        "body": "Paro sits at about 2,200 m. Most people notice the altitude on the first stairs they climb and not much after that, which is why our journeys start slowly here: a short walk, one temple, and an early night."
+      },
+      {
+        "kind": "heading",
+        "text": "The dzong and the museum"
+      },
+      {
+        "kind": "text",
+        "body": "Rinpung Dzong has held the valley since the Zhabdrung built it in the 1640s, and it is still the seat of the district administration and the district monk body. You cross to it on foot over a roofed cantilever bridge. Above it on the ridge is Ta Dzong, the round watchtower that now houses the National Museum. Both have their own pages, and both are usually a morning on the day we drive to Thimphu."
+      },
+      {
+        "kind": "heading",
+        "text": "Kyichu and Dungtse Lhakhang"
+      },
+      {
+        "kind": "text",
+        "body": "Kyichu Lhakhang stands among fields a few kilometres north of the town. Tradition dates it to the seventh century, to the Tibetan king Songtsen Gampo, who is said to have raised 108 temples across the Himalaya in a single day to pin down a demoness lying over the land. Kyichu is held to be one of the two built in Bhutan, pinning her left foot; the other is Jambay Lhakhang in Bumthang. Inside the older temple is a statue of Jowo Jampa, the Buddha of the future. It is a working temple, busy with butter lamps and the sound of prayer wheels, and most of our journeys visit it on the first afternoon."
+      },
+      {
+        "kind": "text",
+        "body": "Dungtse Lhakhang is on the other side of the river near the town. Thangtong Gyalpo, the Tibetan saint remembered for his iron bridges, built it in the early fifteenth century in the form of a chorten, which is rare in Bhutan. Inside, steep ladders lead up through three floors, and the paintings on each floor are among the finest in the country. It is dim, and a torch helps."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/foggy-valley.jpg",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Up the valley"
+      },
+      {
+        "kind": "text",
+        "body": "The road north follows the river past farmhouses to Drukgyel Dzong, built in 1649 to mark victory over an invasion from Tibet. Fire destroyed most of it in the early 1950s, and for decades it stood as a shell of stone and rammed earth above the fields. In 2016 the government announced it would be rebuilt, to mark the birth of the Gyalsey, the Crown Prince. The trail to Jomolhari begins below it, and on a clear day the mountain itself shows at the head of the valley."
+      },
+      {
+        "kind": "text",
+        "body": "The farmhouses along this road are the valley’s own architecture: two or three storeys of rammed earth and timber, the ground floor for animals and storage, the family above, and an open loft under the roof for drying chillies and hay. Some families welcome visitors for tea or a meal, and several offer a dotsho, the hot stone bath, in which river stones are heated in a fire and dropped into a wooden tub of water scented with herbs."
+      },
+      {
+        "kind": "text",
+        "body": "To the south-west, a road climbs through forest to the Chele La, one of the highest road passes in the country, and over it into the Haa valley. On a clear morning the pass looks north to Jomolhari and Jichu Drake. It is a long day out, and we include it where a journey has the time."
+      },
+      {
+        "kind": "heading",
+        "text": "Paro Tshechu"
+      },
+      {
+        "kind": "text",
+        "body": "For five days each spring, from the eleventh to the fifteenth day of the second lunar month, the valley gathers at Rinpung Dzong for the tshechu. Masked cham are danced in the courtyard and on the ground below the walls, and before dawn on the last day a great thongdrel of Guru Rinpoche is unrolled and shown until the sun reaches it. In 2026 the festival ran from 29 March to 2 April. Our festival journey is timed to it; the culture pages say more about what a tshechu is."
+      },
+      {
+        "kind": "heading",
+        "text": "How our journeys use Paro"
+      },
+      {
+        "kind": "text",
+        "body": "Paro is where most of our journeys begin and end. The first day is kept gentle, usually Kyichu Lhakhang and a first sitting before dinner. The walk to Taktsang, which has its own page, is kept for the last full day, when you are acclimatised and the climb comes as a close rather than a test. On the Jomolhari trek it comes first, as the acclimatisation walk before the route begins at Drukgyel."
+      },
+      {
+        "kind": "facts",
+        "title": "Paro at a glance",
+        "rows": [
+          [
+            "Altitude",
+            "About 2,200 m in the town; the airport at 2,235 m"
+          ],
+          [
+            "Getting there",
+            "By air from Bangkok, Delhi, Kathmandu and other cities in the region; about 1 h 30 by road from Thimphu"
+          ],
+          [
+            "Time needed",
+            "Two days, plus a day for Taktsang"
+          ],
+          [
+            "Kyichu Lhakhang",
+            "Nu 500 adults, half for ages 6 to 18, free for 5 and under"
+          ],
+          [
+            "Rinpung Dzong",
+            "No entry fee"
+          ]
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
       }
     ],
-    "image": "/assets/imagery/paro-dzong.jpg",
+    "image": "/assets/imagery/paro-airport-view.webp",
     "tripSlugs": [
       "tshechu",
       "valleys",
       "meditation",
       "jomolhari"
     ],
-    "order": 1
+    "order": 1,
+    "altitudeMetres": 2200,
+    "latitude": 27.4333,
+    "longitude": 89.4167
   },
   {
     "slug": "thimphu",
     "name": "Thimphu",
     "icon": "buddha",
-    "blurb": "Buddha Dordenma and Tashichho Dzong",
-    "standfirst": "The capital, at 2,320 m along the Wang Chhu.",
+    "blurb": "Tashichho Dzong, Buddha Dordenma and the weekend market",
+    "standfirst": "The capital, strung along the Wang Chhu at about 2,320 m: seat of government and summer home of the monk body, and a city still directed by hand at its busiest junction.",
     "body": [
       {
         "kind": "text",
-        "body": "Tashichho Dzong is still the seat of government. Buddha Dordenma sits gilded on the ridge to the south, the Memorial Chorten is circled from dawn to dusk, and Simtokha, the oldest dzong in the country, is five kilometres down the road."
-      },
-      {
-        "kind": "text",
-        "body": "Thimphu sits along the Wang Chhu at about 2,320 m, with something near 120,000 people in it. It became the capital in the 1960s, under the third King, when it was still largely a village. It has grown quickly since, and it has done so with the traditional window and roof forms intact, which is a policy rather than an accident."
-      },
-      {
-        "kind": "text",
-        "body": "Tashichho Dzong stands at the north end of the city. It holds the throne room, the secretariat and the offices of the ministries, and the central monastic body moves into it for the summer. It is lit at night and visitors can go in after office hours."
+        "body": "Thimphu fills the floor and lower slopes of the Wang Chhu valley, from about 2,250 m by the river to over 2,600 m on the ridges. Around 115,000 people live here, which makes it by far the largest town in the country and still a small capital by any other measure. It has grown fast, and it has grown with the sloping roofs and painted window frames the building code requires."
       },
       {
         "kind": "heading",
-        "text": "Buddha Dordenma"
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/buddha-dordenma.webp",
-        "ratio": "16/6"
+        "text": "How it became the capital"
       },
       {
         "kind": "text",
-        "body": "The statue on the ridge at Kuenselphodrang is 51 m of bronze, gilded, seated above the southern approach to the valley. It was finished in 2015 for the sixtieth birthday of the fourth King, and it fulfils a prophecy eight centuries old. Inside are 125,000 smaller Buddhas — a hundred thousand of them eight inches high, twenty-five thousand of them twelve."
+        "body": "Until the middle of the twentieth century Bhutan had no fixed capital. The court moved with the seasons, and Punakha was the winter seat of government. The third King, Jigme Dorji Wangchuck, chose Thimphu, then a scatter of farms around its dzong, and it was formally declared the capital in 1961. Through the 1960s Tashichho Dzong was rebuilt and enlarged to hold the government, and the town grew up around it."
       },
       {
-        "kind": "facts",
-        "title": "Buddha Dordenma, 2026",
-        "rows": [
-          [
-            "Entry",
-            "US$ 15 adults, US$ 8 under 18"
-          ],
-          [
-            "Open",
-            "9:00 – 17:00 daily"
-          ],
-          [
-            "Also",
-            "Forest trails run from the car park; one goes down to Changangkha"
-          ]
-        ]
+        "kind": "text",
+        "body": "One detail everyone notices: there are no traffic lights. A set was tried at the main junction on Norzin Lam in the 1990s and taken out again after a few days because people disliked them. A police officer in white gloves still directs the traffic from a small painted pavilion in the middle of the crossroads."
       },
       {
         "kind": "heading",
-        "text": "Dochula"
+        "text": "The market and the river"
       },
       {
         "kind": "text",
-        "body": "The pass on the road to Punakha, at 3,100 m. A hundred and eight chortens stand on the rise, built in 2004 at the request of the eldest Queen Mother for the soldiers who died in the operation of 2003. They are arranged in three tiers around a central shrine."
+        "body": "The Centenary Farmers’ Market sits on the west bank of the Wang Chhu below the town. Stallholders arrive from the surrounding valleys towards the end of the week, and it is at its fullest from Friday to Sunday: red rice, datshi cheese, dried yak cheese on strings, ferns and mushrooms in season, and more kinds of chilli than seems reasonable. Across the Kundeling footbridge are stalls selling textiles, prayer wheels and masks. Ask before you buy anything that looks old; the export of antiques is prohibited."
+      },
+      {
+        "kind": "heading",
+        "text": "Museums and the thirteen arts"
+      },
+      {
+        "kind": "text",
+        "body": "The Folk Heritage Museum occupies a restored nineteenth-century farmhouse and shows how a rural household lived and worked: the kitchen, the grain store, the altar room, the tools. It opened in 2001. Nearby, the Royal Textile Academy holds the national textile museum, with galleries of kira, gho and royal garments and a weaving room where you can watch work on the loom. The culture pages cover weaving itself."
+      },
+      {
+        "kind": "text",
+        "body": "At the National Institute for Zorig Chusum, founded in 1971, young Bhutanese train for four to six years in the traditional arts: painting, sculpture, woodcarving, embroidery and the rest of the thirteen. Visitors can walk through the classrooms during term and watch students at work. It is the place where the people who will restore the next dzong are learning how."
+      },
+      {
+        "kind": "text",
+        "body": "The General Post Office houses the Bhutan Postal Museum, opened in 2015. Bhutan’s stamps were famous among collectors long before its landscapes were: in the 1960s and 1970s it issued three-dimensional stamps and stamps that were small playable records. The museum can usually print your own photograph as a valid stamp."
+      },
+      {
+        "kind": "heading",
+        "text": "Temples"
+      },
+      {
+        "kind": "text",
+        "body": "Changangkha Lhakhang sits on a spur above the town. It is one of the oldest temples in the valley, founded in the lineage of Phajo Drugom Zhigpo, who brought the Drukpa Kagyu to Bhutan in the thirteenth century; sources differ on whether he or a descendant built it. Its main image is Chenrezig, the bodhisattva of compassion, and Thimphu families bring their newborn children here to be blessed and named. The view down over the city from its courtyard is the best in town."
       },
       {
         "kind": "image",
-        "src": "/assets/imagery/dochula-pass.webp",
+        "src": "/assets/imagery/thimphu-dzong.webp",
         "ratio": "3/2"
       },
       {
         "kind": "text",
-        "body": "On a clear morning the whole eastern Himalaya stands up behind them, Gangkhar Puensum among them at 7,158 m — the highest mountain in the world that nobody has climbed. October to February gives the clearest air. Bring a coat: it is always colder here than in Thimphu, and usually windy. There is a cafeteria, and the tea is hot."
+        "body": "The places most visitors come for have their own pages: Tashichho Dzong at the north end of the city; Buddha Dordenma on the ridge to the south; the Memorial Chorten, circled from dawn to dusk; Simtokha Dzong, the Zhabdrung’s first, at the southern entrance to the valley; the takin at Motithang; and Dochula, the pass on the road east to Punakha. Most of our journeys see three or four of them in a stay."
       },
       {
         "kind": "heading",
-        "text": "The Memorial Chorten"
+        "text": "Thimphu Tshechu"
       },
       {
         "kind": "text",
-        "body": "Built in 1974 for the third King, and dedicated to world peace. It is the most visible religious building in the city, and the most used. From first light until dusk there are people walking round it clockwise, turning the big red wheels, most of them elderly, most of them there every day. The interior is Nyingma, three storeys of mandalas and wrathful deities. No photographs inside."
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/memorial-chorten.webp",
-        "ratio": "16/9"
+        "body": "The capital’s tshechu is held each autumn at Tashichho Dzong and on the festival ground in front of it, over three days in the eighth lunar month. It is one of the largest in the country, and the city comes in its finest dress. In 2026 it fell on 21 to 23 September, with the thongdrel shown at dawn on the last day."
       },
       {
         "kind": "heading",
-        "text": "Simtokha"
+        "text": "How our journeys use Thimphu"
       },
       {
         "kind": "text",
-        "body": "Five kilometres south, on the ridge where the roads to Paro, Punakha and Thimphu meet, stands the oldest dzong in Bhutan still standing in its original form. Zhabdrung Ngawang Namgyal built it in 1629. It was the first to put the monastic body and the administration under one roof, and every dzong built afterwards follows it."
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/simtokha-dzong.webp",
-        "ratio": "3/2"
-      },
-      {
-        "kind": "list",
-        "items": [
-          "Over three hundred slate carvings from the seventeenth century are set into the outer wall of the utse",
-          "The assembly hall holds some of the oldest murals in the country, and a cosmic mandala on the ceiling",
-          "The inner sanctum has a large Sakyamuni flanked by eight bodhisattvas",
-          "The goenkhang keeps old weapons, and tiger tails hanging from the pillars"
-        ]
-      },
-      {
-        "kind": "text",
-        "body": "The name comes from sinmo, a demoness, and do, a stone. The dzong is said to be built over the rock she was pinned beneath."
-      },
-      {
-        "kind": "heading",
-        "text": "The takin preserve"
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/takin-preserve.webp",
-        "ratio": "2/1"
-      },
-      {
-        "kind": "text",
-        "body": "Motithang is a fenced stretch of forest above the town rather than a zoo, and the takin — the national animal — move through it more or less as they please. Science files them with the muskox. The country prefers the account in which the Divine Madman, Drukpa Kunley, ate a cow and a goat for lunch, set the goat’s head on the cow’s bones and told the result to walk."
-      },
-      {
-        "kind": "text",
-        "body": "Go early. They come to the fence in the morning and spend the afternoon in the shade. Sambar and barking deer are in there too. Several hiking trails start at the gate, and the short climb to Sangaygang gives the best view over the valley."
+        "body": "Thimphu is an hour and a half by road from Paro, and most of our journeys spend one or two nights here. We keep the city unhurried: the dzong in the evening, Buddha Dordenma in the late light, a morning at the market or the institute, and a sitting in between. On the Jomolhari trek it is where the walking ends."
       },
       {
         "kind": "facts",
-        "title": "Entry fees, 2026",
+        "title": "Thimphu at a glance",
         "rows": [
           [
-            "Memorial Chorten",
-            "US$ 15 adults, US$ 8 under 18 · 6:00 – 18:00"
+            "Altitude",
+            "About 2,320 m in the centre"
           ],
           [
-            "Simtokha Dzong",
-            "Nu 500 adults, half for 6–17, free under 5 · 9:00 – 17:00"
+            "From Paro",
+            "About 1 h 30 by road"
           ],
           [
-            "Takin preserve",
-            "Nu 500"
+            "Time needed",
+            "Two days"
+          ],
+          [
+            "Weekend market",
+            "Fullest from Friday to Sunday"
+          ],
+          [
+            "Entry fees",
+            "Nu 500 at Tashichho Dzong, the Memorial Chorten and Changangkha Lhakhang, half for ages 6 to 18; free at Buddha Dordenma and Simtokha Dzong"
           ]
         ]
+      },
+      {
+        "kind": "text",
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
       }
     ],
-    "image": "/assets/imagery/thimphu-dzong.webp",
+    "image": "/assets/imagery/thimphu-valley.jpg",
     "tripSlugs": [
       "tshechu",
       "meditation",
       "festival"
     ],
-    "order": 2
+    "order": 2,
+    "altitudeMetres": 2320,
+    "latitude": 27.4722,
+    "longitude": 89.6361
   },
   {
     "slug": "punakha",
     "name": "Punakha",
     "icon": "dzong-long",
-    "blurb": "The dzong between two rivers",
-    "standfirst": "Warm, low and green, an hour beyond Dochula.",
+    "blurb": "The old capital, warm and low, where two rivers meet",
+    "standfirst": "The warm, low valley below Dochula where the Pho Chhu and Mo Chhu meet: the capital of Bhutan until 1955, and still where the monk body comes for the winter.",
     "body": [
       {
         "kind": "text",
-        "body": "The dzong stands where the Pho Chhu and Mo Chhu meet and is reached by a roofed cantilever bridge. Every king of Bhutan has been crowned in it, and the monk body moves down here for the winter."
-      }
-    ],
-    "image": "/assets/imagery/punakha-foggy-dzong.webp",
-    "tripSlugs": [
-      "valleys",
-      "meditation",
-      "festival",
-      "tshechu"
-    ],
-    "order": 3
-  },
-  {
-    "slug": "bumthang",
-    "name": "Bumthang",
-    "icon": "monastery",
-    "blurb": "Jakar, Kurjey, Tamshing, Könchogsum",
-    "standfirst": "Four high valleys in the centre of the country and the spiritual heartland of it.",
-    "body": [
-      {
-        "kind": "text",
-        "body": "Jakar Dzong above the main valley, Kurjey over Guru Rinpoche’s cave, Pema Lingpa’s unrestored murals at Tamshing, the burning lake in the Tang Chhu, and Tharpaling at 3,600 m."
+        "body": "The road from Thimphu climbs to Dochula at 3,100 m and then drops for the better part of two thousand metres. By the time it reaches the valley floor the blue pine has given way to banana and cactus, and the air is noticeably softer. Punakha lies at about 1,200 m, one of the lowest valleys most visitors see, and it is warm for most of the year."
       },
       {
         "kind": "text",
-        "body": "Bumthang is the spiritual heartland of the country and four valleys at once: Choekhor, Tang, Chumey and Ura. Jakar Dzong, the Castle of the White Bird, sits above the main one. Everything below is within a morning of it."
+        "body": "Two rivers come down from the north and join below the dzong. The Pho Chhu, the male river, is fed by glaciers in Lunana. The Mo Chhu, the female river, comes down from the northwest through Gasa. Below the confluence they run on together as the Puna Tsang Chhu, south towards Wangdue and eventually India."
       },
       {
         "kind": "heading",
-        "text": "Kurjey Lhakhang"
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/kurjey-lhakhang.webp",
-        "ratio": "4/3"
+        "text": "The old capital"
       },
       {
         "kind": "text",
-        "body": "Three temples in a row in the Choekhor valley. The oldest is built over the rock where Guru Rinpoche meditated in the eighth century and left the print of his body. That print is the reason for the rest of it. A short drive or a good walk from Jakar town."
-      },
-      {
-        "kind": "heading",
-        "text": "Tamshing Lhakhang"
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/tamshing-lhakhang.webp",
-        "ratio": "16/9"
+        "body": "Zhabdrung Ngawang Namgyal built Punakha Dzong in 1637 and 1638, and for the next three centuries this was where the country was governed from. The first King, Ugyen Wangchuck, was crowned in the dzong in 1907. The seat of government moved to Thimphu in 1955, under the third King, but Punakha kept its ceremonial weight: the fifth King received the sacred scarf here in 2008 before his coronation in Thimphu, and he married Jetsun Pema here in October 2011."
       },
       {
         "kind": "text",
-        "body": "Across the river from Kurjey. Pema Lingpa, the great treasure revealer, founded it in 1501 and painted the murals himself. They have never been restored, which is rare, and they are sixteenth-century work you can stand in front of."
-      },
-      {
-        "kind": "text",
-        "body": "He also forged the iron chain-mail vest that hangs inside. Pilgrims carry it on their shoulders three times round the inner sanctuary; the tradition holds that it clears what you have done wrong. It is heavy. People do it anyway."
-      },
-      {
-        "kind": "heading",
-        "text": "Könchogsum Lhakhang"
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/konchogsum-lhakhang.webp",
-        "ratio": "16/9"
-      },
-      {
-        "kind": "text",
-        "body": "A short walk below Tamshing. Originally eighth or ninth century, rebuilt after the fire of 2010. Inside are three statues, the Buddhas of past, present and future, which are said to have flown here from the east. The cracked bell in the courtyard was said to be audible in Tibet."
-      },
-      {
-        "kind": "heading",
-        "text": "Membartsho"
-      },
-      {
-        "kind": "text",
-        "body": "The burning lake: a deep green pool in the Tang Chhu rather than a lake, reached by a half-hour drive from Chamkhar and a five-minute walk down from the road. Pema Lingpa is said to have gone into it holding a lit butter lamp and come out with the terma in his hands and the lamp still burning."
-      },
-      {
-        "kind": "heading",
-        "text": "Tharpaling"
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/tharpaling.webp",
-        "ratio": "3/2"
-      },
-      {
-        "kind": "text",
-        "body": "The Place of Liberation, at 3,600 m. Longchen Rabjam founded it in the fourteenth century and it is still what it was then: a retreat centre, with people in long retreat above it on the hillside. The drive up from Gaytsa is about 22 km of dirt road and takes the better part of an hour. Tharpaling Tshechu falls on 3 March 2026."
-      },
-      {
-        "kind": "heading",
-        "text": "Kharchu Dratshang"
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/reciting-gelongs.webp",
-        "ratio": "16/9"
-      },
-      {
-        "kind": "text",
-        "body": "On the hill above Jakar town, founded in the 1970s and now a Nyingma seat with more than four hundred monks in it. It keeps the teachings of Namkhai Nyingpo Rinpoche. Evening prayers are worth arranging to be there for, and the view back down over Jakar Dzong is the best in the valley."
-      },
-      {
-        "kind": "facts",
-        "title": "Practical, 2026",
-        "rows": [
-          [
-            "Getting there",
-            "A 35-minute flight from Paro, or a full day’s drive from Thimphu"
-          ],
-          [
-            "Entry",
-            "Nu 500 adults, Nu 250 for 6–17, at most temples"
-          ]
-        ]
-      }
-    ],
-    "image": "/assets/imagery/kurjey-lhakhang.webp",
-    "tripSlugs": [
-      "valleys",
-      "meditation"
-    ],
-    "order": 4
-  },
-  {
-    "slug": "trongsa",
-    "name": "Trongsa",
-    "icon": "chorten",
-    "blurb": "The gateway dzong to the centre",
-    "standfirst": "The largest dzong in the country, strung along a ridge above the Mangde Chhu, and the ancestral seat of the Wangchuck dynasty.",
-    "body": [
-      {
-        "kind": "text",
-        "body": "For centuries every journey between east and west passed beneath it."
-      }
-    ],
-    "image": "/assets/imagery/trongsa-dzong.webp",
-    "tripSlugs": [
-      "valleys",
-      "meditation"
-    ],
-    "order": 5
-  },
-  {
-    "slug": "phobjikha",
-    "name": "Phobjikha",
-    "icon": "pavilion",
-    "blurb": "Gangtey and the black-necked cranes",
-    "standfirst": "A wide glacial valley at about 2,900 m, with no trees on its floor and very little on it at all.",
-    "body": [
-      {
-        "kind": "text",
-        "body": "Gangtey Goenpa sits above the village at the head of it. The black-necked cranes winter here, from late October to February."
-      }
-    ],
-    "image": "/assets/imagery/phobjikha-valley.webp",
-    "tripSlugs": [
-      "tshechu",
-      "valleys"
-    ],
-    "order": 6
-  },
-  {
-    "slug": "taktsang",
-    "name": "Taktsang",
-    "parent": "paro",
-    "icon": "monastery",
-    "blurb": "The temple on the cliff above the Paro valley",
-    "standfirst": "The temple on the cliff above Paro, how it came to be there, and what the walk up is actually like.",
-    "body": [
-      {
-        "kind": "text",
-        "body": "Taktsang stands on the granite face above the Paro valley, nine hundred metres above the floor of it. Most people know it as the Tiger’s Nest. It is the most photographed building in Bhutan and, for Bhutanese, one of the places you go at least once."
-      },
-      {
-        "kind": "text",
-        "body": "The story begins in the eighth century. Guru Padmasambhava, who brought Vajrayana Buddhism to Bhutan, is said to have flown to this cliff on the back of a tigress, subdued the spirits that held the valley, and meditated in a cave here for three months. The cave is still there, inside the temple. That is what the building is for: everything else is built around it."
-      },
-      {
-        "kind": "heading",
-        "text": "Fire, and rebuilding"
-      },
-      {
-        "kind": "text",
-        "body": "Taktsang has burned more than once. The fire of 1998 took most of the main structures. Rebuilding it was treated as a national undertaking rather than a restoration project, and the craftsmen worked to the original detail. What you walk into now is twenty-odd years old and eight hundred years faithful."
-      },
-      {
-        "kind": "quote",
-        "text": "The path climbs through pine forest hung with prayer flags. There is a teahouse at the viewpoint, and it is the first place the monastery comes into sight properly, across the gorge, apparently unsupported."
-      },
-      {
-        "kind": "text",
-        "body": "From the viewpoint the path drops to a waterfall and climbs again by stone steps. Allow four to five hours for the round trip and take it slowly; the altitude does more than the distance. Ponies go as far as the teahouse and no further."
-      },
-      {
-        "kind": "image",
-        "src": "/assets/imagery/uphill.jpg",
-        "ratio": "3/2"
-      },
-      {
-        "kind": "text",
-        "body": "It is a working monastery and a pilgrimage site before it is a viewpoint. Photography is not allowed inside, bags are left at the entrance, and the dress code is the same as at any temple: arms and legs covered, hats off."
-      }
-    ],
-    "image": "/assets/imagery/taktshang.webp",
-    "tripSlugs": [],
-    "order": 0,
-    "publishedAt": "2025-07-22"
-  },
-  {
-    "slug": "punakha-dzong",
-    "name": "Punakha Dzong",
-    "parent": "punakha",
-    "icon": "dzong-long",
-    "blurb": "The Palace of Great Happiness, between two rivers",
-    "standfirst": "The Palace of Great Happiness, between two rivers: where the kings are crowned and the monk body spends the winter.",
-    "body": [
-      {
-        "kind": "text",
-        "body": "Pungthang Dewa Chhenbi Phodrang, the Palace of Great Happiness. It stands on the spit where the Pho Chhu and the Mo Chhu meet — the male river and the female river — and it is the second oldest and second largest dzong in the country."
-      },
-      {
-        "kind": "text",
-        "body": "Zhabdrung Ngawang Namgyal built it in 1637. It was the capital and the seat of government until 1955, the first King was crowned here in 1907, and every king since has been crowned here too."
+        "body": "The dzong has a page of its own. It is the reason most people come, and it deserves an unhurried morning."
       },
       {
         "kind": "image",
@@ -413,16 +282,35 @@
       },
       {
         "kind": "heading",
-        "text": "What it holds"
+        "text": "Fields, rice and the valley floor"
       },
       {
-        "kind": "list",
-        "items": [
-          "The winter residence of the Je Khenpo and the central monastic body, who come down from Thimphu each year when the cold arrives",
-          "The preserved remains of the Zhabdrung",
-          "The Rangjung Kharsapani, a self-created image of Avalokiteshvara",
-          "Three courtyards rather than the usual two"
-        ]
+        "kind": "text",
+        "body": "Because it is warm and well watered, Punakha is one of the rice bowls of the country. Terraces climb the lower slopes on both sides, green through the summer and gold before the harvest in autumn. Much of the valley is still farmed by families who have worked the same fields for generations, and the walk to Chimi Lhakhang, the temple of Drukpa Kunley near Sopsokha, goes straight through them."
+      },
+      {
+        "kind": "text",
+        "body": "On a ridge above the Mo Chhu, north of the dzong, stands Khamsum Yulley Namgyal Chorten. It was built at the command of Queen Mother Ashi Tshering Yangdon Wangchuck, and it is a temple rather than a monument: three storeys of Nyingma iconography, and a roof terrace looking back down the valley. The path climbs through rice terraces from a footbridge over the river, and most people reach the top in under an hour."
+      },
+      {
+        "kind": "heading",
+        "text": "The suspension bridge and the rivers"
+      },
+      {
+        "kind": "text",
+        "body": "A little upstream of the dzong, a long suspension bridge hung with prayer flags crosses the Pho Chhu. It is one of the longest in the country, it moves as you walk, and it links the villages on the far bank with the town. Crossing it is part of daily life here rather than an attraction, and it is a good place to stand for a few minutes and watch the water."
+      },
+      {
+        "kind": "text",
+        "body": "The rivers themselves are the other reason to linger. A level path follows the bank below the dzong, and a river walk at dusk is written into some of our journeys. Both rivers are rafted, usually from March to May and from September to early November: the Mo Chhu is the gentler of the two, the Pho Chhu faster and more demanding. We can arrange a half day on the water with a licensed operator if you ask in advance."
+      },
+      {
+        "kind": "heading",
+        "text": "The monk body’s winter home"
+      },
+      {
+        "kind": "text",
+        "body": "Punakha is where the central monk body, the Zhung Dratshang, spends the winter. Each year, when the cold arrives in Thimphu, the Je Khenpo leads the monks down from Tashichho Dzong in a procession that villagers line the road to see. They stay until spring, and return to Thimphu at the start of the fourth month of the Bhutanese calendar. The custom goes back to the Zhabdrung himself."
       },
       {
         "kind": "image",
@@ -431,7 +319,1402 @@
       },
       {
         "kind": "text",
-        "body": "You cross to it on the Bazam, a roofed cantilever bridge over the Mo Chhu. In spring the jacaranda comes out lilac against the whitewash, which is the picture everyone has seen."
+        "body": "While the monks are in residence, the dzong is fully alive: chanting in the halls, novices crossing the courtyards, and shorter visiting hours for everyone else. It is a good time to be here, and one of the reasons the valley suits our meditation journeys in the cooler months."
+      },
+      {
+        "kind": "heading",
+        "text": "Drubchen and Tshechu"
+      },
+      {
+        "kind": "text",
+        "body": "Late in the first month of the lunar year, usually in February or March, the dzong holds two festivals back to back. The Punakha Drubchen re-enacts the defeat of a Tibetan army in 1639: local men dressed as pazaps, the militia of the time, act out the battle in the courtyard and on the riverbank, and some are descendants of the families who fought. The Punakha Tshechu, added in 2005, follows with three days of masked cham dances in the courtyard."
+      },
+      {
+        "kind": "text",
+        "body": "In 2026 the Drubchen was held from 24 to 26 February and the Tshechu from 27 February to 1 March. Dates move each year with the lunar calendar."
+      },
+      {
+        "kind": "facts",
+        "title": "Punakha at a glance",
+        "rows": [
+          [
+            "Altitude",
+            "About 1,200 m on the valley floor"
+          ],
+          [
+            "From Thimphu",
+            "About three hours by road, over Dochula"
+          ],
+          [
+            "Climate",
+            "Warm to hot in summer, mild in winter"
+          ],
+          [
+            "Best time",
+            "March to May, and October to November"
+          ],
+          [
+            "Festivals",
+            "Punakha Drubchen and Tshechu, February or March. Checked each season and confirmed in your journey notes."
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/season-summer.jpg",
+    "tripSlugs": [
+      "valleys",
+      "meditation",
+      "festival",
+      "tshechu"
+    ],
+    "order": 3,
+    "altitudeMetres": 1200,
+    "latitude": 27.5833,
+    "longitude": 89.8583
+  },
+  {
+    "slug": "bumthang",
+    "name": "Bumthang",
+    "icon": "monastery",
+    "blurb": "Four high valleys, and the oldest temples in the country",
+    "standfirst": "Four high valleys in the centre of the country, Chhoekhor, Tang, Chhume and Ura, holding some of Bhutan’s oldest temples and the places where Guru Rinpoche and Pema Lingpa left their mark.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Bumthang is not one valley but four: Chhoekhor, Tang, Chhume and Ura, each a broad glacial valley at between about 2,600 and 3,100 m, divided by forested ridges. The name is usually explained as the field shaped like a bumpa, the vessel used in ritual. Chhoekhor, the largest and the one most people mean when they say Bumthang, has the town of Jakar at its centre."
+      },
+      {
+        "kind": "text",
+        "body": "It is often called the spiritual heartland of the country, and the description is earned. Guru Rinpoche came here in the eighth century. Jambay Lhakhang, one of the two oldest temples in Bhutan, is here, and so is the birthplace of Pema Lingpa, the treasure revealer whose teachings shaped much of Bhutanese Buddhism. There are more old temples within a morning’s walk of Jakar than in most whole districts."
+      },
+      {
+        "kind": "heading",
+        "text": "Jakar Dzong"
+      },
+      {
+        "kind": "text",
+        "body": "Jakar Dzong stands on a ridge above the town, its long whitewashed walls running along the slope. Tradition says that when the lama Ngagi Wangchuk was looking for a site in 1549, a large white bird rose and settled on this spur, and he took it as a sign; the name is explained as the castle of the white bird. The dzong that stands now dates from 1667, built under Chhogyal Minjur Tempa, and it was damaged in the earthquake of 1897 and rebuilt."
+      },
+      {
+        "kind": "text",
+        "body": "It is one of the largest dzongs in the country, with walls more than 1,500 m around, and it still houses the district administration and monks. The view from the gate over the valley is the best introduction to Chhoekhor you could ask for."
+      },
+      {
+        "kind": "heading",
+        "text": "Jambay Lhakhang"
+      },
+      {
+        "kind": "text",
+        "body": "A few kilometres north of Jakar, Jambay Lhakhang is by tradition one of 108 temples built in a single day in 659 by the Tibetan king Songtsen Gampo, to pin down a giant ogress who lay across the Himalaya. Jambay holds down her left knee; Kyichu Lhakhang in Paro holds her left foot. It is dedicated to Jampa, the Buddha of the future, and Guru Rinpoche is said to have visited it."
+      },
+      {
+        "kind": "text",
+        "body": "Its festival, the Jambay Lhakhang Drup, falls in the ninth lunar month, usually in October or November. It includes the Mewang, a fire blessing in which people run under a burning arch to be cleansed, and draws the whole of the valley."
+      },
+      {
+        "kind": "heading",
+        "text": "Kurjey, Tamshing and Könchogsum"
+      },
+      {
+        "kind": "text",
+        "body": "Further up the Chhoekhor valley stand three sites with pages of their own: Kurjey Lhakhang, built around the rock that holds the imprint of Guru Rinpoche’s body; Tamshing Lhakhang, founded by Pema Lingpa in 1501, across the river; and Könchogsum Lhakhang, just beyond it, rebuilt after a fire in 2010. Most people walk between them in a morning, crossing the river by a footbridge."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/kurjey-lhakhang.webp",
+        "ratio": "4/3"
+      },
+      {
+        "kind": "text",
+        "body": "On the hill above Jakar, Kharchu Dratshang is a large Nyingma monastery, and our journeys often join its evening prayers."
+      },
+      {
+        "kind": "heading",
+        "text": "Mebar Tsho, the Burning Lake"
+      },
+      {
+        "kind": "text",
+        "body": "In the Tang valley, a short walk down from the road, the Tang Chhu narrows into a deep pool between rocks. This is Mebar Tsho, the Burning Lake. In 1475, the story goes, Pema Lingpa was sent here by a vision to recover treasures that Guru Rinpoche had hidden. Doubted by the crowd, he dived into the pool holding a lit butter lamp, and came up with the treasure in his hands and the lamp still burning. People leave butter lamps and prayer flags on the rocks, and the place is quiet and cool. Keep well back from the edge; the rock is slippery and the water deep."
+      },
+      {
+        "kind": "heading",
+        "text": "Yathra, buckwheat, cheese and apples"
+      },
+      {
+        "kind": "text",
+        "body": "Bumthang is cold, and much of what it makes reflects that. In Chhume, the village of Zungney is known for yathra, a thick woollen cloth woven in bright geometric patterns on frame looms, traditionally used for jackets, blankets and saddle cloths. You can watch the weavers at work and buy directly from them."
+      },
+      {
+        "kind": "text",
+        "body": "The high valleys grow buckwheat, which turns up as puta noodles and khuli pancakes, along with potatoes, barley and apples. The dairy tradition is strong, and Jakar has long made Swiss-style cheese, along with honey and a local beer. It is a good valley to eat in."
+      },
+      {
+        "kind": "heading",
+        "text": "Getting there"
+      },
+      {
+        "kind": "text",
+        "body": "Most of our journeys either fly or drive. Bathpalathang airport, a few kilometres from Jakar, opened in 2011, and the flight from Paro takes around half an hour when the weather allows. By road Bumthang is a full day or more from Thimphu, broken in Punakha and Trongsa; from Trongsa it is three to four hours over Yotong La."
+      },
+      {
+        "kind": "facts",
+        "title": "Bumthang at a glance",
+        "rows": [
+          [
+            "Altitude",
+            "About 2,600 m at Jakar; the four valleys run from about 2,600 to 3,100 m"
+          ],
+          [
+            "Getting there",
+            "A short flight from Paro to Bathpalathang, or by road through Trongsa"
+          ],
+          [
+            "Time needed",
+            "At least two full days"
+          ],
+          [
+            "Best time",
+            "March to May, and September to November; winters are cold"
+          ],
+          [
+            "Entry",
+            "Fees at temples and dzongs vary and are revised from time to time. Checked each season and confirmed in your journey notes."
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/jakar-dzong.webp",
+    "tripSlugs": [
+      "valleys",
+      "meditation"
+    ],
+    "order": 4,
+    "altitudeMetres": 2600,
+    "latitude": 27.55,
+    "longitude": 90.7333
+  },
+  {
+    "slug": "trongsa",
+    "name": "Trongsa",
+    "icon": "chorten",
+    "blurb": "The centre of the country, and the seat of its kings",
+    "standfirst": "The geographic centre of Bhutan, high above the Mangde Chhu: the road between east and west once ran through its dzong, and the Wangchuck kings governed from here before they reigned.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Trongsa sits almost exactly in the middle of the country. The town, a single main street at a little over 2,100 m, clings to a hillside above the gorge of the Mangde Chhu, and the dzong runs down the spur below it. Trongsa means new village, after the temple a lama built here in 1543, and the name stuck to everything that grew around it."
+      },
+      {
+        "kind": "text",
+        "body": "For centuries the only road between western and eastern Bhutan was a mule track, and it passed straight through the dzong. Whoever held Trongsa could see anyone coming for a day before they arrived, and could close the country in two. That is the reason the place matters, and the reason the family that governed it came to rule Bhutan."
+      },
+      {
+        "kind": "heading",
+        "text": "The road from Pele La"
+      },
+      {
+        "kind": "text",
+        "body": "From the west, the road climbs out of Wangdue to Pele La, at 3,420 m, the pass over the Black Mountains that divides western Bhutan from the centre. On a clear day there are views back to the high peaks of the north. On the far side the road drops through dwarf bamboo, fir and rhododendron, and then follows the side of the Mangde Chhu valley for a long way, past farmland and villages that seem to hang on the slope."
+      },
+      {
+        "kind": "text",
+        "body": "Near the end of the descent there is a bend where the dzong comes into view across the gorge, laid out along its ridge. It is still some distance off by road, and everyone stops."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/trongsa-dzong.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Chendebji Chorten"
+      },
+      {
+        "kind": "text",
+        "body": "About halfway between Pele La and Trongsa, the road passes Chendebji Chorten, a large white stupa beside a river with eyes painted on all four sides of its spire. It was built in the eighteenth century by Lama Shida, also known as Lam Oensey Tshering Wangchuk, to subdue a harmful spirit said to live in the valley, and it is modelled on the Boudhanath stupa in Kathmandu. It is one of very few stupas of that Nepali form in Bhutan, and a natural place to stretch your legs on the long drive."
+      },
+      {
+        "kind": "heading",
+        "text": "The penlop and the Wangchuck kings"
+      },
+      {
+        "kind": "text",
+        "body": "In 1647 the Zhabdrung appointed Chhogyal Minjur Tempa as the first Trongsa Penlop, the governor of the centre and east. The post became one of the most powerful in the country. In the nineteenth century it passed to Jigme Namgyal, who rose to control much of Bhutan, and then to his son Ugyen Wangchuck. In 1907 the lamas, officials and people chose Ugyen Wangchuck as the first hereditary King."
+      },
+      {
+        "kind": "text",
+        "body": "The link has held. By tradition the heir to the throne is invested as Trongsa Penlop before becoming King, and the present King received the title in 2004. The dzong itself has its own page."
+      },
+      {
+        "kind": "heading",
+        "text": "The Tower of Trongsa"
+      },
+      {
+        "kind": "text",
+        "body": "On the hill directly above the dzong stands its watchtower, the Ta Dzong, built in 1652 by Chhogyal Minjur Tempa to guard the approaches. With Austrian support it was restored between 2005 and 2008 and opened as a museum, the Tower of Trongsa, in the year of the fifth King’s coronation and the centenary of the monarchy."
+      },
+      {
+        "kind": "text",
+        "body": "The museum tells the story of the Wangchuck dynasty and of Buddhism in Bhutan across several floors of the tower. There are royal belongings, religious statues and thangkas, and old household and ritual objects. It is well laid out, calm, and the best single introduction to the history the rest of the journey will keep referring to. Allow an hour, and look out of the upper windows: the whole dzong lies below you."
+      },
+      {
+        "kind": "heading",
+        "text": "Staying and moving on"
+      },
+      {
+        "kind": "text",
+        "body": "The town itself is small and unhurried: a row of shops with painted wooden fronts, a few family-run hotels, and a view down onto the roofs of the dzong from much of the main street. Evenings are quiet. Early morning, when mist often lies in the gorge below, is the best time to walk out along the road for the view back."
+      },
+      {
+        "kind": "text",
+        "body": "Trongsa is a small place. Most visitors come for the dzong and the museum and spend one night, which is what our journeys do. From here the road east climbs over Yotong La into Bumthang, about three to four hours away. Punakha is about five hours back to the west."
+      },
+      {
+        "kind": "facts",
+        "title": "Trongsa at a glance",
+        "rows": [
+          [
+            "Altitude",
+            "A little over 2,100 m in the town"
+          ],
+          [
+            "From Punakha",
+            "About five hours, over Pele La at 3,420 m"
+          ],
+          [
+            "To Bumthang",
+            "Three to four hours, over Yotong La"
+          ],
+          [
+            "Tower of Trongsa",
+            "A fee is charged; opening hours and fees checked each season and confirmed in your journey notes."
+          ],
+          [
+            "Best time",
+            "March to May, and September to November"
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/season-autumn.jpg",
+    "tripSlugs": [
+      "valleys",
+      "meditation"
+    ],
+    "order": 5,
+    "latitude": 27.5167,
+    "longitude": 90.5
+  },
+  {
+    "slug": "phobjikha",
+    "name": "Phobjikha",
+    "icon": "pavilion",
+    "blurb": "A wide glacial valley, and the cranes that winter in it",
+    "standfirst": "A broad glacial valley at about 2,900 m on the western slope of the Black Mountains, where the black-necked cranes spend the winter and the power lines run underground.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "The road turns off the main east-west highway below Pele La and climbs through forest of fir, hemlock and rhododendron. Then the trees stop, and the valley opens out below: a wide, shallow bowl of grassland and marsh, with farmhouses scattered around its edges and forested ridges on every side. After the steep, narrow valleys of the west, it can feel like a different country."
+      },
+      {
+        "kind": "text",
+        "body": "Phobjikha is a U-shaped valley carved by ice, and its floor lies at about 2,900 to 3,000 m. Two small streams, the Nake Chhu and the Phag Chhu, wind across it through wetland. The valley is known after the goenpa on the spur above it, and people use Gangtey and Phobjikha more or less interchangeably."
+      },
+      {
+        "kind": "heading",
+        "text": "The cranes"
+      },
+      {
+        "kind": "text",
+        "body": "Each autumn black-necked cranes fly in over the Himalaya from the Tibetan Plateau to spend the winter here. The first arrive in the last week of October and most have left by the end of February or early March. In recent winters the Royal Society for Protection of Nature (RSPN) has counted more than 600 in the valley, which makes Phobjikha the most important wintering ground for the species in Bhutan. They feed on the valley floor by day and roost in the marsh at night, and you can watch them from the RSPN crane centre above the valley without disturbing them."
+      },
+      {
+        "kind": "text",
+        "body": "The valley has changed to keep them. There are no overhead power lines: the electricity arrives by underground cable, because cranes coming in low to roost are killed by wires. A core area of the wetland is protected as a Ramsar site. And every year on 11 November the valley marks the cranes' return with a festival in the courtyard of Gangtey Goenpa, where schoolchildren dance in crane costume. Our journal story on the cranes tells all of this more fully."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/gangtey-goenpa.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Potatoes, farmhouses and cold"
+      },
+      {
+        "kind": "text",
+        "body": "Life in Phobjikha is built around potatoes. The high, cool valley grows seed potatoes of good quality, and they are the main cash crop, much of the harvest sold to India. Families also keep cattle, and the farmhouses are large, two or three storeys of rammed earth and timber, with the family living above and storage below."
+      },
+      {
+        "kind": "text",
+        "body": "Several of those farmhouses take guests, and a night in one, with a wood stove, a hot stone bath and dinner in the family kitchen, is one of the better ways to understand the valley. It is also the warmest way. Phobjikha is cold: winter nights are well below freezing, frost lies on the fields most mornings, and even in spring and autumn the evenings need a down jacket."
+      },
+      {
+        "kind": "heading",
+        "text": "The Gangtey Nature Trail"
+      },
+      {
+        "kind": "text",
+        "body": "The easiest way to see the valley is on foot. The Gangtey Nature Trail starts near a mani wall below the goenpa and runs gently downhill across meadows and through pine forest to Khewang Lhakhang on the valley floor. It takes about an hour and a half to two hours at an easy pace, with no real climbing. The valleys journey keeps a whole rest day here for walking it, and for walking the other paths that cross the valley floor."
+      },
+      {
+        "kind": "text",
+        "body": "Gangtey Goenpa, the Nyingma monastery on the spur above the village, has its own page. Most visits combine the two: the monastery in the morning, the trail after it."
+      },
+      {
+        "kind": "facts",
+        "title": "Phobjikha at a glance",
+        "rows": [
+          [
+            "Altitude",
+            "About 2,900 to 3,000 m on the valley floor"
+          ],
+          [
+            "From Punakha",
+            "About three hours by road"
+          ],
+          [
+            "Cranes",
+            "Late October to February or early March"
+          ],
+          [
+            "Crane Festival",
+            "11 November, at Gangtey Goenpa. Checked each season and confirmed in your journey notes."
+          ],
+          [
+            "Bring",
+            "Warm layers in every season, and a hat for the evenings"
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/phobjikha-valley.webp",
+    "tripSlugs": [
+      "tshechu",
+      "valleys"
+    ],
+    "order": 6,
+    "altitudeMetres": 2900,
+    "latitude": 27.4583,
+    "longitude": 90.1806
+  },
+  {
+    "slug": "kurjey-lhakhang",
+    "name": "Kurjey Lhakhang",
+    "icon": "monastery",
+    "blurb": "Guru Rinpoche’s body imprint, and three temples around it",
+    "standfirst": "Three temples in the Chhoekhor valley built around the rock where Guru Rinpoche meditated and left the imprint of his body, and the resting place of the first three kings.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Kurjey stands at the foot of a forested slope in the upper Chhoekhor valley, a few kilometres north of Jakar. Kur means body and jey means imprint. The three temples in a row, the long wall of chortens around them and the old cypress behind them are all here because of one rock, and the story of how it came to be marked."
+      },
+      {
+        "kind": "heading",
+        "text": "The story"
+      },
+      {
+        "kind": "text",
+        "body": "In the eighth century, the account goes, Bumthang was ruled by an Indian king, Sindhu Raja, from an iron castle called Chakhar. At war with a rival king, and grieving a son killed in the fighting, he neglected the local deity, Shelging Karpo. The deity took his life force and the king fell gravely ill. His ministers invited Guru Rinpoche."
+      },
+      {
+        "kind": "text",
+        "body": "Guru Rinpoche meditated in a cave here and left the imprint of his body on the rock. To draw the deity out, he danced in his eight manifestations in the meadow, and when Shelging Karpo came out in the form of a white lion, Guru Rinpoche became a garuda and subdued him, making him return the king’s life force and swear to protect the teachings. Sindhu Raja recovered and became a Buddhist, and this is remembered as the first flourishing of Buddhism in Bumthang. The walking stick that Guru Rinpoche planted in the ground is said to have grown into the great cypress behind the oldest temple."
+      },
+      {
+        "kind": "heading",
+        "text": "The three temples"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Guru Lhakhang, the oldest, is built against the rock with the body imprint. Tradition credits its first form to Sindhu Raja; Chhogyal Minjur Tempa rebuilt it in 1652, while he was Trongsa Penlop, and it was extended in 2008.",
+          "Sampa Lhundrup Lhakhang, the middle temple, was built in 1900 by Ugyen Wangchuck, then Trongsa Penlop and later the first King. Its main image is a statue of Guru Rinpoche about ten metres high.",
+          "Ka Goen Phur Sum Lhakhang, the newest, was built by Queen Mother Ashi Kesang Choeden Wangchuck and consecrated in June 1990 by Dilgo Khyentse Rinpoche, dedicated to the past kings and the well-being of the country."
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Around them runs a wall set with 108 small chortens, and within the precinct a small spring whose water is taken by pilgrims as a blessing."
+      },
+      {
+        "kind": "heading",
+        "text": "The royal connection"
+      },
+      {
+        "kind": "text",
+        "body": "Kurjey is closely bound to the monarchy. Two of its three temples were built by the royal family or their forebears as Trongsa Penlops, and the remains of the first three kings rest here. For Bhutanese that gives the site a weight beyond its age, and you will often see families making offerings and circling the wall."
+      },
+      {
+        "kind": "heading",
+        "text": "The Kurjey Tshechu"
+      },
+      {
+        "kind": "text",
+        "body": "Once a year, on the tenth day of the fifth lunar month, usually in June, Kurjey holds its tshechu in the meadow in front of the temples. In the early morning a great thongdrel of Guru Rinpoche in his eight manifestations is unrolled on the temple wall, and monks perform the masked dances through the day, among them the dance of Guru Rinpoche’s eight forms. In 2026 it fell on 24 June."
+      },
+      {
+        "kind": "text",
+        "body": "It is smaller and more local than the big dzong festivals, and it happens in early summer, when few visitors are in the valley. If our dates fall near it we will tell you."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "Photography is not allowed inside the temples, and the cave itself is a place of practice rather than display. Dress as for any temple, remove your hat, and walk clockwise. From Kurjey a footpath crosses the Chamkhar Chhu by a suspension bridge to Tamshing on the far bank, which makes a good half-day walk with Könchogsum at the end of it."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Temples",
+            "1652, 1900 and 1990, around an older core"
+          ],
+          [
+            "From Jakar",
+            "A short drive, or an easy walk up the valley"
+          ],
+          [
+            "Time needed",
+            "About an hour"
+          ],
+          [
+            "Kurjey Tshechu",
+            "Tenth day of the fifth lunar month, usually June. Checked each season and confirmed in your journey notes."
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/kurjey-lhakhang.webp",
+    "tripSlugs": [],
+    "order": 0,
+    "parent": "bumthang",
+    "latitude": 27.5874,
+    "longitude": 90.7302
+  },
+  {
+    "slug": "tamshing-lhakhang",
+    "name": "Tamshing Lhakhang",
+    "icon": "monastery",
+    "blurb": "Pema Lingpa’s temple, with paintings five centuries old",
+    "standfirst": "The temple Pema Lingpa founded in 1501 on the east bank of the Chamkhar Chhu, with wall paintings among the oldest in Bhutan and a chain-mail coat pilgrims carry round the sanctuary.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Tamshing stands among village houses on the east bank of the Chamkhar Chhu, opposite Kurjey. From the outside it is modest: a square temple with a gold spire and a courtyard in front, where young monks are often at play between classes. Its full name is Tamshing Lhundrup Choling, and it is one of the most important Nyingma temples in the country."
+      },
+      {
+        "kind": "heading",
+        "text": "Pema Lingpa"
+      },
+      {
+        "kind": "text",
+        "body": "Pema Lingpa (1450 to 1521) was born in Bumthang, the son of a family of smiths, and grew up working metal. He became the greatest of Bhutan’s tertons, the treasure revealers who recover teachings and objects said to have been hidden by Guru Rinpoche. His revelations, his descendants and his reincarnations run through Bhutanese religious history, and the royal family traces its lineage to him."
+      },
+      {
+        "kind": "text",
+        "body": "He founded Tamshing in 1501 and completed it in 1505. It remains the seat of his line in Bumthang. The present spiritual head, Lhalung Sungtrul Rinpoche, is regarded as his eleventh speech incarnation. Pema Lingpa is also credited with composing several of the cham dances still performed at tshechus across the country."
+      },
+      {
+        "kind": "heading",
+        "text": "The paintings"
+      },
+      {
+        "kind": "text",
+        "body": "What makes Tamshing rare is its walls. The original paintings from the early sixteenth century survive in much of the temple, in something close to their first state, and they are among the oldest in Bhutan. Some are attributed to Pema Lingpa himself. They include a portrait of him, the thousand Buddhas of this age, and figures of the Buddhist pantheon painted in a style that belongs to this region and this period."
+      },
+      {
+        "kind": "text",
+        "body": "They have darkened with five centuries of butter-lamp smoke, and some areas have been repainted over time. Still, standing in front of them you are looking at the work of people who knew Pema Lingpa. The temple has been on UNESCO’s tentative World Heritage list since 2012."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/reciting-gelongs.webp",
+        "ratio": "16/9"
+      },
+      {
+        "kind": "heading",
+        "text": "The chain-mail coat"
+      },
+      {
+        "kind": "text",
+        "body": "Near the entrance to the ground-floor sanctuary hangs a coat of iron chain mail, said to have been made by Pema Lingpa with his own hands. Pilgrims lift it onto their shoulders and walk three times around the inner sanctuary wearing it, and tradition holds that doing so clears away some of the harm one has done. It is very heavy. Visitors may try it; ask your guide, and take it slowly."
+      },
+      {
+        "kind": "heading",
+        "text": "The low ceilings"
+      },
+      {
+        "kind": "text",
+        "body": "A narrow stair leads to the upper storey, where a gallery runs around the top of the main hall. The ceiling here is so low that most adults have to stoop, and some have to bend nearly double. The explanation usually given is that the temple was built to Pema Lingpa’s own height, and he was not a tall man. Mind your head."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "Tamshing is a working temple with a community of monks, many of them young novices. Photography is not allowed inside; the paintings are fragile, and the rule protects them as much as the sanctity of the place. Dress as for any temple, remove your hat, and walk clockwise. The corridors are dim, so give your eyes a minute to adjust before you look at the walls."
+      },
+      {
+        "kind": "text",
+        "body": "It is usually visited together with Kurjey, across the river by footbridge, and Könchogsum, a short walk to the south."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Founded",
+            "1501, by Pema Lingpa; completed 1505"
+          ],
+          [
+            "Tradition",
+            "Nyingma, the Pema Lingpa lineage"
+          ],
+          [
+            "Time needed",
+            "About an hour"
+          ],
+          [
+            "Watch for",
+            "The low ceilings upstairs, and the chain-mail coat by the sanctuary door"
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/tamshing-lhakhang.webp",
+    "tripSlugs": [],
+    "order": 1,
+    "parent": "bumthang",
+    "latitude": 27.5877,
+    "longitude": 90.7377
+  },
+  {
+    "slug": "konchogsum-lhakhang",
+    "name": "Könchogsum Lhakhang",
+    "icon": "monastery",
+    "blurb": "An ancient temple, a cracked bell, and a rebuilding",
+    "standfirst": "One of the oldest temple sites in Bumthang, just south of Tamshing: restored by Pema Lingpa, burned to the ground in 2010, and rebuilt and consecrated in 2014.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Könchogsum Lhakhang stands a few minutes’ walk south of Tamshing, on the east side of the Chamkhar Chhu. It is also known as Tsilung, or simply the Chhoekhor temple. The name means the Three Jewels, and it comes from the images at its heart."
+      },
+      {
+        "kind": "heading",
+        "text": "An old foundation"
+      },
+      {
+        "kind": "text",
+        "body": "By tradition the temple goes back to the time of Guru Rinpoche. The account kept by the Department of Culture says that Guru Rinpoche asked the Tibetan king Trisong Detsen to build a temple in Bumthang modelled on Samye, to bring peace to a land then thought to be full of demons, and that the king sent his minister Bamir Thrizer to build it in the early ninth century. Pema Lingpa himself declared the site to be of that age."
+      },
+      {
+        "kind": "text",
+        "body": "It was also a place of treasure. In 1039 a terton named Bonpo Dragtshel is said to have recovered texts here that Guru Rinpoche had hidden. Four centuries later the temple was in ruins after an earthquake, and Pema Lingpa restored it in 1479. Tradition says he found gold inside the statue of Vairocana, enough to pay for gilding the statues and painting the walls."
+      },
+      {
+        "kind": "heading",
+        "text": "The Three Jewels and the lake"
+      },
+      {
+        "kind": "text",
+        "body": "The main image is Vairocana, one of the five Buddha families. Alongside are statues of the Buddhas of the past, present and future, which are said to have flown here from Kurtoe in the east, and images of Guru Rinpoche and Avalokiteshvara. The walls hold paintings of Pema Lingpa and of Longchen Rabjam, the great Nyingma master who taught in Bumthang in the fourteenth century."
+      },
+      {
+        "kind": "text",
+        "body": "Beneath the temple, the story goes, lies a lake. Pema Lingpa is said to have found its entrance and sealed it with a stone, which is still in the courtyard."
+      },
+      {
+        "kind": "heading",
+        "text": "The bell"
+      },
+      {
+        "kind": "text",
+        "body": "Kept at the temple is a large bronze bell with a crack in it. Tradition says it was offered to Guru Rinpoche by a lake maiden when the foundations were laid, and that when it was rung its sound could be heard in Tibet. Tibetan soldiers, the story continues, came to carry it off, found it too heavy and dropped it, and it has been cracked ever since. Your guide will likely tell it with more detail; it is one of the valley’s favourite stories."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/tamshing-lhakhang.webp",
+        "ratio": "16/9"
+      },
+      {
+        "kind": "heading",
+        "text": "Fire and rebuilding"
+      },
+      {
+        "kind": "text",
+        "body": "In February 2010 a fire destroyed the temple. It was a heavy loss for the people of Chhoekhor, but the sacred images and relics were carried out safely. The eleventh incarnation of Pema Lingpa, Lhalung Sungtrul Rinpoche, took on the rebuilding, and the new temple was consecrated in November 2014. It is managed today under his seat."
+      },
+      {
+        "kind": "text",
+        "body": "What you see is therefore new work: fresh paintings in bright mineral colour and new carved woodwork around old relics. It is a useful counterpoint to Tamshing, a short walk away, where the paintings are five hundred years old. Seen one after the other, the two show how a tradition carries on by being made again, carefully, by people trained in the same craft."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "Photography is not allowed inside. Dress as for any temple, take your hat off, and walk clockwise around the sanctuary. The temple is quieter than Kurjey and usually less visited, and it is a good place to sit for a few minutes at the end of a morning in the valley."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Founded",
+            "By tradition the early ninth century; restored by Pema Lingpa in 1479"
+          ],
+          [
+            "Rebuilt",
+            "After the fire of February 2010; consecrated November 2014"
+          ],
+          [
+            "Location",
+            "A few minutes’ walk south of Tamshing"
+          ],
+          [
+            "Time needed",
+            "Half an hour to an hour"
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/konchogsum-lhakhang.webp",
+    "tripSlugs": [],
+    "order": 2,
+    "parent": "bumthang",
+    "latitude": 27.5853,
+    "longitude": 90.7392
+  },
+  {
+    "slug": "tharpaling",
+    "name": "Tharpaling",
+    "icon": "monastery",
+    "blurb": "Longchen Rabjam’s retreat, high above the Chhume valley",
+    "standfirst": "A monastery at about 3,600 m on the ridge above the Chhume valley, where Longchen Rabjam taught in the fourteenth century and where monks still study and practise today.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Tharpaling stands high on the forested ridge between the Chhume and Chhoekhor valleys, built tight against the slope with its gold finials catching the light. The name means the place of liberation. It is higher than anywhere else most visitors go in Bumthang, and on a clear day it looks south across the whole of Chhume."
+      },
+      {
+        "kind": "heading",
+        "text": "Longchen Rabjam"
+      },
+      {
+        "kind": "text",
+        "body": "A monastery of the Drukpa Kagyu school was first founded here in the thirteenth century by the Tibetan master Lorepa. In the middle of the fourteenth century Longchen Rabjam, known as Longchenpa, one of the greatest teachers of the Nyingma tradition, came to Bhutan in self-imposed exile from Tibet. He made Tharpaling his seat, taught here, and it became a Nyingma monastery, as it remains."
+      },
+      {
+        "kind": "text",
+        "body": "Longchenpa’s writings on Dzogchen are still studied across the Himalaya. Later teachers in his lineage came to Tharpaling to practise, and the first King supported its restoration in the early twentieth century. The name is said to come from the many who reached liberation listening to Longchenpa teach on this hillside."
+      },
+      {
+        "kind": "heading",
+        "text": "The monastery and the college"
+      },
+      {
+        "kind": "text",
+        "body": "The main building holds two temples, with statues and paintings of Longchenpa, Guru Rinpoche and the masters of the lineage. Above it stands a monastic college, founded in the 1980s, where young monks study philosophy, ritual and the Dzogchen texts. It is a place of study and practice first, and visitors come as guests into a working day."
+      },
+      {
+        "kind": "text",
+        "body": "Higher still, about an hour’s steep climb above the road end, is Choedrak, a small temple at about 3,800 m on a cliff where Guru Rinpoche is said to have meditated. Hermits have lived in retreat on this part of the ridge for centuries."
+      },
+      {
+        "kind": "heading",
+        "text": "Getting there"
+      },
+      {
+        "kind": "text",
+        "body": "Most visitors come by road. A rough unsealed road climbs from Gyetsa in the Chhume valley through pine and fir and ends near the monastery; allow around an hour each way, more after rain. For walkers, an old footpath climbs up to the ridge from the Chhume side, and a longer trail comes over from Lamey Goenpa in the Chhoekhor valley, a full and demanding day. We can arrange either with a guide in the right season."
+      },
+      {
+        "kind": "heading",
+        "text": "Altitude, and sitting here"
+      },
+      {
+        "kind": "text",
+        "body": "The monastery stands at about 3,600 m; one survey puts it a little higher, at close to 3,700 m. That is higher than Taktsang, and the air is thin enough to notice. Walk slowly, drink plenty of water, and do not rush up the stairs. Our journeys come here after several days in Bumthang, by which time most people have adjusted."
+      },
+      {
+        "kind": "text",
+        "body": "The reason to come is to sit. On our journeys the resident monks lead a session in the hall or on the terrace, and afterwards there is time to sit alone with the view: the long drop into Chhume, farmhouses small on the valley floor, and ridges running south into cloud. It is very quiet up here, and the quiet does most of the teaching."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/peace.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "Dress as for any temple, remove your hat, and walk clockwise. Photography is not allowed inside the temples. Bring warm layers in every season; the weather on the ridge changes quickly and it is much colder than the valley below."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Altitude",
+            "About 3,600 m; Choedrak above at about 3,800 m"
+          ],
+          [
+            "Founded",
+            "Thirteenth century; Longchen Rabjam’s seat from the mid fourteenth century"
+          ],
+          [
+            "Tradition",
+            "Nyingma"
+          ],
+          [
+            "Getting there",
+            "A rough road from Gyetsa in Chhume, around an hour each way"
+          ],
+          [
+            "Time needed",
+            "Half a day, including time to sit"
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/tharpaling.webp",
+    "tripSlugs": [],
+    "order": 3,
+    "parent": "bumthang",
+    "altitudeMetres": 3600,
+    "latitude": 27.5324,
+    "longitude": 90.6882
+  },
+  {
+    "slug": "taktsang",
+    "name": "Taktsang",
+    "icon": "monastery",
+    "blurb": "The temple on the cliff above the Paro valley",
+    "standfirst": "The Tiger’s Nest: a monastery on a granite cliff above the Paro valley, how it came to be there, and what the walk up to it is actually like.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Taktsang stands at 3,120 m on a sheer rock face in the upper Paro valley, about 900 m above the fields below. The name means the tiger’s lair. For Bhutanese it is one of the holiest places in the country and a pilgrimage many make more than once; for visitors it is usually the hardest walk and the clearest memory of the journey."
+      },
+      {
+        "kind": "heading",
+        "text": "Guru Rinpoche and the cave"
+      },
+      {
+        "kind": "text",
+        "body": "Tradition holds that in the eighth century Guru Rinpoche, who brought Vajrayana Buddhism to the Himalaya, flew to this cliff on the back of a tigress in his wrathful form, Dorje Drolo, and subdued the spirits of the valley. He then meditated in a cave here. The tigress, in most tellings, was his consort Yeshe Tsogyal in another form. The cave is the reason for everything else on the cliff."
+      },
+      {
+        "kind": "text",
+        "body": "For centuries the site was a place of retreat, with small shrines around the caves. The monastery as it now stands was begun in 1692 by Gyalse Tenzin Rabgye, the fourth Druk Desi, around the cave known as Taktsang Senge Samdrup. The buildings step up and along the rock on ledges, joined by stairways and short bridges, so that from across the gorge they look set into the cliff rather than built on it."
+      },
+      {
+        "kind": "heading",
+        "text": "The fire of 1998"
+      },
+      {
+        "kind": "text",
+        "body": "On 19 April 1998 a fire destroyed the main buildings, along with many of the paintings and statues inside them, and a monk caretaker died. Whether it began with an electrical fault or with butter lamps is not settled. The rebuilding was overseen by the government and the fourth King, using the traditional methods and the old records of the buildings, and it was completed in 2005 at a cost of about Nu 135 million. What you walk into is new timber and paint in the old forms."
+      },
+      {
+        "kind": "heading",
+        "text": "Inside"
+      },
+      {
+        "kind": "text",
+        "body": "The complex holds four main temples and a number of smaller shrines built into and around the caves. Your guide takes you through them in order, while the monks keep a steady routine of offerings, and shows you the cave most associated with Guru Rinpoche’s meditation and the shrines built around it. Sit for a while in one of the temples if you can. Very few people do, and it changes the visit."
+      },
+      {
+        "kind": "heading",
+        "text": "The walk"
+      },
+      {
+        "kind": "text",
+        "body": "The trailhead is at about 2,600 m, a short drive north of Paro town, where there are a car park, stalls and walking sticks for hire. The path climbs through pine forest hung with prayer flags, steadily and without much shade. Ponies can be hired for this first section, uphill only, as far as the cafeteria; walking down is safer on foot."
+      },
+      {
+        "kind": "text",
+        "body": "The cafeteria is roughly halfway, at about 2,940 m, and it is the first place the monastery comes properly into view, across the gorge and level with you. It serves tea and a simple lunch, and many people stop here on the way back down. Beyond it the path climbs again to a viewpoint opposite the monastery, then drops down a long flight of stone steps to a waterfall and a bridge in the cleft of the gorge, and climbs the last steps up to the gate."
+      },
+      {
+        "kind": "text",
+        "body": "Allow about 5 h for the round trip at a comfortable pace, including an hour or so inside, and more if you prefer to go slowly. The altitude does more than the distance. We start early, in part for the cooler air and in part because the temples are quieter before the day fills up."
+      },
+      {
+        "kind": "heading",
+        "text": "Rules and what to bring"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Dress as for any temple: long sleeves and long trousers or a long skirt, with no hats inside. Take a light layer to cover up at the gate if you walk in a T-shirt",
+          "Bags, cameras and phones are left in lockers at the entrance; photography is not allowed inside",
+          "Shoes come off at the door of each temple, so wear something easy to take off",
+          "Walk clockwise around the shrines and the chortens on the path",
+          "Bring water, a snack, sun protection and a warm layer; walking poles help on the descent",
+          "Taktsang closes to visitors on a few holy days each year; we plan around them"
+        ]
+      },
+      {
+        "kind": "facts",
+        "title": "Taktsang at a glance",
+        "rows": [
+          [
+            "Altitude",
+            "3,120 m; the trailhead is at about 2,600 m"
+          ],
+          [
+            "Time needed",
+            "About 5 h return"
+          ],
+          [
+            "Ponies",
+            "Uphill to the cafeteria only"
+          ],
+          [
+            "Entry",
+            "Nu 1,000 adults, half for ages 6 to 18, free for 5 and under"
+          ],
+          [
+            "Guide",
+            "Required, as at all monuments"
+          ]
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
+      }
+    ],
+    "image": "/assets/imagery/taktshang.webp",
+    "tripSlugs": [],
+    "order": 0,
+    "parent": "paro",
+    "altitudeMetres": 3120,
+    "latitude": 27.4919,
+    "longitude": 89.3635,
+    "publishedAt": "2025-07-22"
+  },
+  {
+    "slug": "rinpung-dzong",
+    "name": "Rinpung Dzong",
+    "icon": "dzong",
+    "blurb": "The fortress on a heap of jewels, above the Paro Chhu",
+    "standfirst": "The dzong that has held the Paro valley since the 1640s: district administration and monastery under one roof, reached by a roofed bridge, with the National Museum in the watchtower above.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Rinpung Dzong rises in tiers from the bank of the Paro Chhu to the ridge behind, its inward-sloping whitewashed walls and dark timber galleries facing the airport across the valley. Its full name is Rinchen Pung Dzong, usually given as the fortress on a heap of jewels. Most people in the valley simply call it Paro Dzong."
+      },
+      {
+        "kind": "heading",
+        "text": "History"
+      },
+      {
+        "kind": "text",
+        "body": "An earlier fortress stood here, built in the fifteenth century by the lords of Hungrel, whose descendants offered it to Zhabdrung Ngawang Namgyal, the lama who unified Bhutan. In 1644 the Zhabdrung had the old building taken down and laid the foundations of a new dzong, which was consecrated in 1646 and became the centre of government and religion for western Bhutan. It held the valley against Tibetan invasions in the years that followed."
+      },
+      {
+        "kind": "text",
+        "body": "The dzong came through the earthquake of 1897 but was badly damaged by fire in 1907, when many of its treasures were lost. It was rebuilt soon afterwards in the same form. It is on Bhutan’s tentative list for UNESCO World Heritage, as one of a group of dzongs."
+      },
+      {
+        "kind": "heading",
+        "text": "Two institutions under one roof"
+      },
+      {
+        "kind": "text",
+        "body": "Like every dzong built on the Zhabdrung’s model, Rinpung has two halves. One courtyard holds the offices of the Paro district administration; the other belongs to the district monk body, which lives, studies and prays here. Between them rises the utse, the central tower, and around the monastic courtyard are a dozen or more shrines and chapels. When you visit, you will see officials in gho and kabney crossing the same flagstones as young monks on their way to class."
+      },
+      {
+        "kind": "text",
+        "body": "The painted galleries and the carved timber around the courtyards repay a slow look. Not every chapel is open every day, and your guide will know which ones are."
+      },
+      {
+        "kind": "heading",
+        "text": "Nyamai Zam"
+      },
+      {
+        "kind": "text",
+        "body": "The traditional approach is on foot, over Nyamai Zam, a roofed cantilever bridge of timber on stone piers across the Paro Chhu. In the past the bridge could be taken down in wartime to cut the dzong off from attack. The present bridge replaced one that was washed away by flood in 1969. Walking across it and up the flagstone path to the gate is still the best way to arrive."
+      },
+      {
+        "kind": "heading",
+        "text": "The tshechu ground"
+      },
+      {
+        "kind": "text",
+        "body": "Paro Tshechu is held here each spring, from the eleventh to the fifteenth day of the second lunar month. The first day’s dances are in the dzong courtyard; the rest move to the festival ground outside, where the valley sits on the grass in its best kira and gho. Before dawn on the last day the thongdrel, a great appliqué image of Guru Rinpoche, is unrolled on the wall above the ground and taken down before the sun touches it. Seeing it is held to bring blessing, and the crowd arrives in the dark."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/cham-masked-dance.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Ta Dzong, the National Museum"
+      },
+      {
+        "kind": "text",
+        "body": "On the ridge above the dzong stands Ta Dzong, a round watchtower built from 1649 to guard Rinpung against attack. In 1968 the third King had it restored as the National Museum of Bhutan. It was badly damaged in the earthquake of 2011, and after years of careful restoration it has reopened with new galleries in the old tower."
+      },
+      {
+        "kind": "text",
+        "body": "The collection runs to more than 3,000 works: bronze statues, thangkas, masks, textiles, arms, and objects from daily life in the valleys. It is the best single introduction to what you will see in the temples, and we usually go there before the dzong rather than after. A path leads down from the museum to the dzong through the trees."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "facts",
+        "title": "Visiting, 2026",
+        "rows": [
+          [
+            "Rinpung Dzong",
+            "No entry fee; hours vary with the season and with events in the dzong"
+          ],
+          [
+            "National Museum",
+            "Nu 500 for international visitors; daily 9:00 to 17:00, last tickets at 16:00; closed on government holidays"
+          ],
+          [
+            "Time needed",
+            "About 1 h for the dzong, 1 h for the museum"
+          ],
+          [
+            "Paro Tshechu",
+            "Spring; in 2026 it ran from 29 March to 2 April"
+          ]
+        ]
+      },
+      {
+        "kind": "list",
+        "items": [
+          "A licensed guide is required, and visitors enter by the main gate",
+          "Long sleeves and long trousers or a long skirt; no hats, shorts or flip-flops",
+          "Photography is welcome in the courtyards and not allowed inside the chapels",
+          "Shoes come off at the door of a chapel; walk clockwise around the utse"
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
+      }
+    ],
+    "image": "/assets/imagery/paro-dzong.jpg",
+    "tripSlugs": [],
+    "order": 1,
+    "parent": "paro",
+    "latitude": 27.4267,
+    "longitude": 89.4233
+  },
+  {
+    "slug": "gangtey-goenpa",
+    "name": "Gangtey Goenpa",
+    "icon": "monastery",
+    "blurb": "Pema Lingpa’s lineage, on the spur above Phobjikha",
+    "standfirst": "The Nyingma monastery on the spur above the Phobjikha valley, founded in 1613 by Pema Lingpa’s grandson and the main seat of his tradition in western Bhutan.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Gangtey Goenpa stands on a wooded ridge at the western edge of the Phobjikha valley, with its village gathered around it. Its full name is Gangteng Sang-ngag Choeling, and the word gangteng means the top of the hill. From its courtyard the whole valley lies open below."
+      },
+      {
+        "kind": "heading",
+        "text": "Pema Lingpa’s line"
+      },
+      {
+        "kind": "text",
+        "body": "The monastery belongs to the tradition of Pema Lingpa (1450 to 1521), the treasure revealer from Bumthang whose teachings are among the most important in Bhutanese Buddhism. Pema Lingpa is said to have foretold that one of his descendants would build a monastery on this ridge. In 1613 his grandson, Gyalse Pema Thinley, did."
+      },
+      {
+        "kind": "text",
+        "body": "Gyalse Pema Thinley was the first Gangteng Tulku, and the monastery has been led by his line of reincarnations ever since. The present head, Kunzang Rigdzin Pema Namgyal, is the ninth. Gangtey is the main seat of the Pema Lingpa tradition and the largest Nyingma monastery in western Bhutan, in a region where most monasteries belong to the Drukpa Kagyu school."
+      },
+      {
+        "kind": "heading",
+        "text": "The building"
+      },
+      {
+        "kind": "text",
+        "body": "The goenpa is built in the manner of a small dzong: a central tower rising from a paved courtyard, with the monks’ quarters and smaller temples arranged around it. The main hall is carried on eight very large wooden pillars, often said to be the largest in the country. The woodwork on the galleries is carved and painted in detail, and the roofs are gold."
+      },
+      {
+        "kind": "text",
+        "body": "By the end of the twentieth century the old timbers had been badly weakened by beetle infestation, and the building was taken down and rebuilt through most of the 2000s. The work was done by Bhutanese craftsmen using traditional methods, keeping to the original design and reusing what could be saved, and the rebuilt monastery was consecrated on 10 October 2008 in the presence of the fourth King."
+      },
+      {
+        "kind": "heading",
+        "text": "The monastic community"
+      },
+      {
+        "kind": "text",
+        "body": "Gangtey is a working monastery, not a museum. A community of monks and novices lives and studies here, with a monastic college nearby, and the goenpa also looks after a wider network of temples across the country that follow the same tradition. The monks you pass in the courtyard are at their day’s work: study, ritual and the running of the place."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/reciting-gelongs.webp",
+        "ratio": "16/9"
+      },
+      {
+        "kind": "text",
+        "body": "If the timing allows, it is possible to sit quietly at the back of the hall while prayers are being chanted. Ask your guide first; the answer depends on what is taking place that day. The Gangtey Tshechu is held in the autumn, in the eighth month of the lunar calendar, and the Black-necked Crane Festival takes over the courtyard each year on 11 November."
+      },
+      {
+        "kind": "heading",
+        "text": "The view"
+      },
+      {
+        "kind": "text",
+        "body": "Walk to the edge of the courtyard wall and the valley floor is laid out below you: the marsh where the cranes roost, the potato fields, the farmhouses and the long, even ridges beyond. Early in the morning in winter it is often filled with mist that burns off slowly as the sun reaches it."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/phobjikha-valley.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "text",
+        "body": "From the goenpa the Gangtey Nature Trail leads down into the valley, which makes a natural way to continue once you have seen the monastery."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "Dress as for any temple: long sleeves, long trousers or a long skirt, and no hats. Photography is allowed in the courtyard and not inside the temples. Walk clockwise around the tower and keep your voice low when prayers are under way."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Founded",
+            "1613, by Gyalse Pema Thinley"
+          ],
+          [
+            "Tradition",
+            "Nyingma, main seat of the Pema Lingpa tradition"
+          ],
+          [
+            "Rebuilt",
+            "Through the 2000s, consecrated 10 October 2008"
+          ],
+          [
+            "Time needed",
+            "About an hour"
+          ],
+          [
+            "Festivals",
+            "Gangtey Tshechu in autumn; Crane Festival on 11 November. Checked each season and confirmed in your journey notes."
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/gangtey-goenpa.webp",
+    "tripSlugs": [],
+    "order": 0,
+    "parent": "phobjikha"
+  },
+  {
+    "slug": "punakha-dzong",
+    "name": "Punakha Dzong",
+    "icon": "dzong-long",
+    "blurb": "The Palace of Great Happiness, between two rivers",
+    "standfirst": "The Palace of Great Happiness, built by the Zhabdrung in 1637 and 1638 at the meeting of two rivers: where the first King was crowned and where the monk body spends the winter.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Its full name is Pungthang Dewa Chhenbi Phodrang, the Palace of Great Happiness. It stands on a low spit of land where the Pho Chhu and the Mo Chhu meet, and from the road above it looks as though it is moored there. At about 180 m long it is the second largest dzong in the country, and the second oldest."
+      },
+      {
+        "kind": "text",
+        "body": "A prophecy attributed to Guru Rinpoche spoke of a man named Namgyal who would come to a hill shaped like a sleeping elephant and build on the tip of its trunk. The spit below the ridge is that trunk. Zhabdrung Ngawang Namgyal began building in 1637 and finished in 1638, working with the master carpenter Zowo Balip, who is said to have seen the whole design in a dream and built it without drawings."
+      },
+      {
+        "kind": "heading",
+        "text": "The seat of the country"
+      },
+      {
+        "kind": "text",
+        "body": "For more than three hundred years Punakha Dzong was where Bhutan was governed from. In 1639 a Tibetan force came down the valley to take the Rangjung Kharsapani, a self-created image of Avalokiteshvara that the Zhabdrung had brought from Ralung, and was defeated here. The Punakha Drubchen re-enacts that defence every year in the courtyards."
+      },
+      {
+        "kind": "text",
+        "body": "On 17 December 1907 Ugyen Wangchuck was crowned here as the first King. The seat of government moved to Thimphu in 1955, but the dzong kept its place in the rites of the monarchy. The fifth King received the sacred scarf here on 1 November 2008 before his coronation in Thimphu, and on 13 October 2011 he married Jetsun Pema in the dzong."
+      },
+      {
+        "kind": "heading",
+        "text": "The Machen"
+      },
+      {
+        "kind": "text",
+        "body": "The Zhabdrung died in retreat in Punakha in 1651, and his death was kept secret for more than half a century while the state he had founded took shape. His embalmed body remains in the dzong, in the Machen Lhakhang in the third courtyard. It is the most sacred room in the country. By tradition only the King and the Je Khenpo enter, and it is closed to visitors."
+      },
+      {
+        "kind": "text",
+        "body": "The dzong is also the winter residence of the Je Khenpo and the central monk body, who come down from Thimphu when the cold arrives and return in spring."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/gelongs-walking.webp",
+        "ratio": "16/10"
+      },
+      {
+        "kind": "heading",
+        "text": "Floods, fire and rebuilding"
+      },
+      {
+        "kind": "text",
+        "body": "A building at the meeting of two glacier-fed rivers lives with water. Glacial lake outburst floods from the headwaters of the Pho Chhu damaged the dzong in 1957 and 1960, and the flood of October 1994 breached its walls. Fire has done as much damage: the dzong burned several times between the eighteenth and nineteenth centuries and again in 1986. The restoration that followed was carried out in traditional materials and methods and completed in the early 2000s, and the flood defences along the Pho Chhu were strengthened at the same time."
+      },
+      {
+        "kind": "heading",
+        "text": "The Bazam and the jacaranda"
+      },
+      {
+        "kind": "text",
+        "body": "You reach the dzong on foot across the Bazam, a roofed cantilever bridge over the Mo Chhu. The old bridge was swept away by floods in the twentieth century, and the present one was rebuilt in the traditional form in 2008. From its far end a steep wooden stair leads up into the first courtyard."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/punakha-dzong-bridge.webp",
+        "ratio": "4/3"
+      },
+      {
+        "kind": "text",
+        "body": "Inside there are three courtyards rather than the usual two: the first for the administration, the second and third for the monastic body. In April and May the jacaranda trees along the outer walls flower lilac against the whitewash."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "It is a working dzong, with offices and a monastic community. Dress as for any temple: long sleeves, long trousers or a long skirt, no hats. Photography is fine in the courtyards and not allowed inside the temples. Shoes come off at the door of the assembly hall. Visiting hours are shorter in winter while the monk body is in residence, and the dzong may close to visitors during ceremonies."
+      },
+      {
+        "kind": "facts",
+        "title": "Visiting, 2026",
+        "rows": [
+          [
+            "Built",
+            "1637 to 1638"
+          ],
+          [
+            "Entry",
+            "Nu 500 adults; children under 18 half price; free for young children"
+          ],
+          [
+            "Time needed",
+            "One to two hours"
+          ],
+          [
+            "Best time",
+            "Spring for the jacaranda; winter for the monk body in residence"
+          ],
+          [
+            "Note",
+            "Opening hours change with the season. Checked each season and confirmed in your journey notes."
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/punakha-foggy-dzong.webp",
+    "tripSlugs": [],
+    "order": 0,
+    "parent": "punakha",
+    "altitudeMetres": 1200,
+    "latitude": 27.5822,
+    "longitude": 89.863,
+    "publishedAt": "2025-07-14"
+  },
+  {
+    "slug": "chimi-lhakhang",
+    "name": "Chimi Lhakhang",
+    "icon": "stupa",
+    "blurb": "Drukpa Kunley’s temple, across the rice fields",
+    "standfirst": "A small temple on a round hillock above the rice fields near Sopsokha, built in 1499 on a site blessed by Drukpa Kunley, the Divine Madman, and visited by couples hoping for a child.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Chimi Lhakhang is a short drive south of Punakha, near the village of Sopsokha on the road from Lobesa. It is not large: a single temple with a courtyard, and a ring of prayer wheels set into the wall. What draws people is the man it belongs to, and the blessing given inside."
+      },
+      {
+        "kind": "heading",
+        "text": "Drukpa Kunley"
+      },
+      {
+        "kind": "text",
+        "body": "Drukpa Kunley (1455 to 1529) was a Tibetan teacher of the Drukpa Kagyu school who travelled through Bhutan at the end of the fifteenth century. He is remembered as the Divine Madman. He taught through songs, jokes, drinking and open sexuality, and used outrageous behaviour to show up hypocrisy and attachment in the people around him, monks included. Bhutanese tell his stories with affection and a good deal of laughter."
+      },
+      {
+        "kind": "text",
+        "body": "Tradition holds that he subdued a demoness who troubled travellers on Dochula with what his biographies call his thunderbolt of flaming wisdom, and trapped her in a rock here. He built a chorten on the spot. In 1499 Ngawang Choegyel, the fourteenth Drukpa hierarch, built the temple beside it. A black chorten behind the temple is said to mark where the subdued spirit, in the form of a dog, was buried, and the name Chimi is often explained as meaning no dog."
+      },
+      {
+        "kind": "heading",
+        "text": "The walk from Sopsokha"
+      },
+      {
+        "kind": "text",
+        "body": "The usual way in is on foot. From the road at Sopsokha a path runs out across the fields, past farmhouses and a small stream, and climbs gently to the hillock. It takes about twenty minutes. Depending on the season you walk between young green rice, ripening grain or mustard in flower, and the path is lined with prayer flags for the last stretch."
+      },
+      {
+        "kind": "text",
+        "body": "It is one of the most pleasant short walks in the valley, and most of our journeys through Punakha include it rather than driving to the gate."
+      },
+      {
+        "kind": "heading",
+        "text": "The blessing"
+      },
+      {
+        "kind": "text",
+        "body": "Inside, the temple keeps a wooden phallus with a silver handle, said to have been brought from Tibet by Drukpa Kunley himself. Pilgrims, many of them couples who have struggled to have children, come to receive a blessing: a monk touches them lightly on the head with the phallus and with other relics of the saint. Some couples return after a child is born to have the child named here, and albums of photographs of those children are kept in the temple."
+      },
+      {
+        "kind": "text",
+        "body": "You do not need to be hoping for a child to receive a blessing, and visitors are welcome to ask. It is given plainly and without ceremony, as it is to Bhutanese pilgrims."
+      },
+      {
+        "kind": "heading",
+        "text": "The paintings in the village"
+      },
+      {
+        "kind": "text",
+        "body": "On the walk you will see large phalluses painted on the walls of houses, sometimes with ribbons and wings, and carved wooden ones hanging from the corners of the eaves. They are not a joke made for visitors. The phallus is Drukpa Kunley’s emblem, and painting one by the door is an old way of protecting a household from the evil eye, malicious gossip and harmful spirits. Some scholars think the custom is older than the saint."
+      },
+      {
+        "kind": "text",
+        "body": "The shops in Sopsokha sell carved wooden ones. It is fine to look, to photograph the house walls from the path, and to ask your guide about them; the people who live here are used to the question and usually answer it with a smile."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "It is an active temple. Dress as for any lhakhang, with arms and legs covered, and take your hat off before entering. Photography is not allowed inside. The walk is on an earth path that can be muddy after rain, so wear shoes you do not mind getting dirty."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Built",
+            "1499, by Ngawang Choegyel"
+          ],
+          [
+            "Getting there",
+            "About 20 minutes on foot across the fields from Sopsokha"
+          ],
+          [
+            "Time needed",
+            "One and a half to two hours with the walk"
+          ],
+          [
+            "Entry",
+            "Nu 500 adults in 2026; children under 18 half price. Checked each season and confirmed in your journey notes."
+          ]
+        ]
+      }
+    ],
+    "image": "/assets/imagery/chimi-lhakhang.webp",
+    "tripSlugs": [],
+    "order": 1,
+    "parent": "punakha",
+    "latitude": 27.5269,
+    "longitude": 89.8783
+  },
+  {
+    "slug": "tashichho-dzong",
+    "name": "Tashichho Dzong",
+    "icon": "dzong-long",
+    "blurb": "The seat of government, and the monk body’s summer home",
+    "standfirst": "The long white dzong at the north end of Thimphu: throne room, secretariat and ministries on one side, the summer home of the central monk body on the other.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Tashichho Dzong lies on the west bank of the Wang Chhu at the northern edge of the city, its whitewashed walls running for the length of a field, with golden roofs on the corner towers and the utse rising in the middle. The name is usually given as the fortress of the glorious religion. Seen from the road across the river at dusk, with the lights coming on along the walls, it is the image of Thimphu most people take home."
+      },
+      {
+        "kind": "heading",
+        "text": "History"
+      },
+      {
+        "kind": "text",
+        "body": "A small dzong on the hill above the valley is said to have been founded in the thirteenth century by Lama Gyalwa Lhanangpa. Zhabdrung Ngawang Namgyal took it over in 1641 and gave it its present name. After a fire in the eighteenth century it was rebuilt on its present site, and the earthquake of 1897 damaged it again."
+      },
+      {
+        "kind": "text",
+        "body": "The dzong you see today is largely the work of the third King, Jigme Dorji Wangchuck. When he made Thimphu the capital, he ordered the dzong enlarged to hold the government. Work began in 1962 and went on through the decade, using traditional methods and materials, and the rebuilt dzong was consecrated at the end of the decade."
+      },
+      {
+        "kind": "heading",
+        "text": "What it holds"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "The throne room and the offices of the King",
+          "The cabinet secretariat and several ministries",
+          "The summer residence of the Je Khenpo and the central monk body, who move to Punakha for the winter",
+          "Some thirty temples and chapels, including the monastic assembly hall"
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "The division is the one every dzong keeps: the government on one side of the central tower, the monastery on the other. Because both halves are in daily use, visitors see only part of the building, and the hours are set around the working day rather than around tourism."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/guided-principle.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "The flag and the evening visit"
+      },
+      {
+        "kind": "text",
+        "body": "On working days the government offices close in the late afternoon, and that is when visitors are let in. Before the gates open, a guard detail lowers the national flag in the courtyard, folds it and carries it away, marking the end of the day. It takes about half an hour and is worth arriving early to watch. Stand quietly while it happens, as everyone around you will."
+      },
+      {
+        "kind": "text",
+        "body": "Inside, you cross the monastic courtyard to the temples your guide is able to open that day. In summer the monks may be at prayer. At weekends, and on days when the offices are closed, the dzong is usually open for longer. When the monk body is in residence the courtyard is at its fullest, and our meditation journey times its visit for the afternoon they return."
+      },
+      {
+        "kind": "heading",
+        "text": "Thimphu Tshechu"
+      },
+      {
+        "kind": "text",
+        "body": "The capital’s tshechu is held here in autumn, with dances in the courtyard and on the festival ground in front of the dzong. In 2026 it ran from 21 to 23 September. The culture pages explain what the festival is and why it is danced."
+      },
+      {
+        "kind": "heading",
+        "text": "Dress and conduct"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Formal, modest dress: long sleeves with a collar, long trousers or a long skirt, closed shoes. No shorts, hats or flip-flops",
+          "Bhutanese visitors wear a kabney or rachu here; you are not expected to, but you will notice it",
+          "Photography is allowed in the courtyards and not inside the temples, and never of the offices",
+          "A licensed guide is required, and bags may be checked at the gate"
+        ]
       },
       {
         "kind": "facts",
@@ -439,60 +1722,550 @@
         "rows": [
           [
             "Entry",
-            "Nu 500 adults, Nu 250 for 6–17, free under 6"
+            "Nu 500 adults, half for ages 6 to 18, free for 5 and under"
           ],
           [
-            "Open",
-            "June to mid-November, 9:00 – 17:00"
+            "Open to visitors",
+            "After office hours on weekdays, usually from about 17:00; longer at weekends"
           ],
           [
-            "Open",
-            "Mid-November to May, 11:00 – 13:00 and 15:00 – 17:00"
+            "Time needed",
+            "About 1 h, plus the flag ceremony"
           ],
           [
-            "Punakha Tshechu",
-            "27 February – 1 March 2026"
+            "Best time",
+            "Late afternoon, and summer when the monk body is in residence"
           ]
         ]
       },
       {
         "kind": "text",
-        "body": "The tshechu re-enacts the defeat of the Tibetan army in 1639, which is not a metaphor here. Photography is fine in the courtyards and not allowed inside the temples. Long sleeves, long trousers or a skirt, and shoes off at the door."
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
       }
     ],
-    "image": "/assets/imagery/punakha-foggy-dzong.webp",
+    "image": "/assets/imagery/tashichho-dzong.jpg",
     "tripSlugs": [],
     "order": 0,
-    "publishedAt": "2025-07-14"
+    "parent": "thimphu",
+    "latitude": 27.4894,
+    "longitude": 89.635
   },
   {
-    "slug": "trongsa-dzong",
-    "name": "Trongsa Dzong",
-    "parent": "trongsa",
-    "icon": "dzong",
-    "blurb": "The ancestral seat of the Wangchuck dynasty",
-    "standfirst": "The ancestral seat of the Wangchuck dynasty, strung along a ridge above the Mangde Chhu, holding the road between east and west.",
+    "slug": "buddha-dordenma",
+    "name": "Buddha Dordenma",
+    "icon": "buddha",
+    "blurb": "The gilded Buddha on the ridge at Kuensel Phodrang",
+    "standfirst": "A gilded bronze Buddha more than 50 m high, seated on the ridge at Kuensel Phodrang above the southern end of Thimphu, with a forest park around it.",
     "body": [
       {
         "kind": "text",
-        "body": "Chhoekhor Raptentse Dzong, built in 1644, is the largest in the country and the one with the best position. It runs along a steep ridge above the Mangde Chhu, and from the road on the far side of the gorge you see the whole length of it at once, with ridge behind ridge going back into the haze."
-      },
-      {
-        "kind": "text",
-        "body": "For centuries every journey between eastern and western Bhutan passed underneath it, which is the point of where it stands. Whoever held Trongsa held the country’s traffic."
+        "body": "You see the Buddha long before you reach it. It sits on the ridge above the southern approach to Thimphu, facing down the valley, and from most of the city it is on the skyline. Up close it is larger than any photograph suggests: a seated Shakyamuni in gilded bronze, above a broad paved plaza with the city spread out below."
       },
       {
         "kind": "heading",
-        "text": "Why it matters"
+        "text": "Kuensel Phodrang"
+      },
+      {
+        "kind": "text",
+        "body": "The ridge is called Kuensel Phodrang. The statue is known as Buddha Dordenma, the Buddha of the vajra throne, the diamond seat on which the Buddha sat at his awakening. It is said to fulfil prophecies found in old texts attributed to Guru Rinpoche and in a vision of the twentieth-century yogi Sonam Zangpo, which spoke of a great image in this place bringing peace to the world."
+      },
+      {
+        "kind": "heading",
+        "text": "Building it"
+      },
+      {
+        "kind": "text",
+        "body": "Work began in 2006. The statue was cast in sections in China, shipped and assembled on the ridge, and gilded. It was dedicated to the sixtieth birth anniversary of the fourth King, Jigme Singye Wangchuck, and was consecrated by the Je Khenpo in September 2015. The cost was met largely by international sponsors."
+      },
+      {
+        "kind": "text",
+        "body": "Published figures for the height differ, depending on whether the throne and base are counted, but all put it above 50 m, which makes it one of the largest seated Buddhas in the world. What is not in dispute is what it holds: 125,000 smaller gilded bronze Buddhas, 100,000 of them eight inches high and 25,000 twelve inches high, set in rows in the shrine hall inside the throne and in the body of the statue."
+      },
+      {
+        "kind": "heading",
+        "text": "Inside"
+      },
+      {
+        "kind": "text",
+        "body": "The shrine hall in the base is lined floor to ceiling with the small Buddhas, each in its own niche, with a large image at the centre. It is a place of worship before it is a sight, and it is often full of Bhutanese families making offerings. Photography is not allowed inside."
+      },
+      {
+        "kind": "text",
+        "body": "In the autumn of 2026 the statue was being re-gilded for the first time since it was completed, with the work expected to finish at the end of October. The plaza stayed open while it went on, but access to the shrine hall was restricted. We confirm the position before each journey."
+      },
+      {
+        "kind": "heading",
+        "text": "The nature park and the walks"
+      },
+      {
+        "kind": "text",
+        "body": "Around the statue, the Kuensel Phodrang Nature Park protects about 943 acres of blue pine forest above the city. It was opened in 2011. Trails lead off from the plaza and the road, and they are used by Thimphu residents for morning walks, running and mountain biking. Walking down through the pines towards the town makes a better end to the visit than the drive, and we do it when the group has the legs for it."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/peace.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "The view"
+      },
+      {
+        "kind": "text",
+        "body": "From the plaza you look straight up the length of the valley: the city along the river, Tashichho Dzong at the far end, and the ridges folding away to the north. Late afternoon is the best time for it, when the light comes across the valley and the statue itself turns gold. Most of our journeys come up then, and sit for a while on the plaza before going down."
+      },
+      {
+        "kind": "facts",
+        "title": "Visiting, 2026",
+        "rows": [
+          [
+            "Entry",
+            "No entry fee"
+          ],
+          [
+            "Time needed",
+            "About 1 h, more with a walk in the park"
+          ],
+          [
+            "Best time",
+            "Late afternoon"
+          ],
+          [
+            "Dress",
+            "Long sleeves and long trousers or a long skirt for the shrine hall; shoes off inside"
+          ]
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
+      }
+    ],
+    "image": "/assets/imagery/buddha-dordenma.webp",
+    "tripSlugs": [],
+    "order": 1,
+    "parent": "thimphu",
+    "latitude": 27.4435,
+    "longitude": 89.6454
+  },
+  {
+    "slug": "memorial-chorten",
+    "name": "National Memorial Chorten",
+    "icon": "chorten",
+    "blurb": "The chorten Thimphu walks around every day",
+    "standfirst": "Built in 1974 in memory of the third King, the white chorten in the middle of Thimphu is where the city’s elderly walk, pray and turn the prayer wheels from first light until evening.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "The chorten stands on a small rise in the centre of Thimphu, just off the main road, whitewashed with a golden spire and a crescent moon and sun at its tip. It is not the oldest religious building in the city, or the largest, but it is the one most used. If you want to see the city’s daily religious life at its most ordinary, this is where to come."
+      },
+      {
+        "kind": "heading",
+        "text": "Why it was built"
+      },
+      {
+        "kind": "text",
+        "body": "The third King, Jigme Dorji Wangchuck, died in 1972. He had wished to build a chorten dedicated to world peace, and after his death his mother, Ashi Phuntsho Choden, had it built in his memory. It was completed in 1974. The chorten was conceived by Thinley Norbu Rinpoche and consecrated by Dudjom Rinpoche, two of the great Nyingma teachers of the time."
+      },
+      {
+        "kind": "text",
+        "body": "Its form is the Jangchub chorten, the chorten of enlightenment, in a Tibetan style: a square base, a rounded body that flares outwards like a vase, and a tapering spire of rings above. Inside are three floors of shrines with statues and mandalas of tantric deities, some of them wrathful, which follow Nyingma teachings. Photography is not allowed inside, and the interior is not always open."
+      },
+      {
+        "kind": "heading",
+        "text": "The walkers"
+      },
+      {
+        "kind": "text",
+        "body": "The life of the chorten is outside. From early morning until dusk there are people walking round it clockwise, many of them elderly, many of them there every day. They carry prayer beads or hand prayer wheels, and they recite mantras under their breath as they walk. Some do a few circuits before work; some stay for hours, sitting in the shade in groups between rounds, or making full prostrations on the boards along the side."
+      },
+      {
+        "kind": "text",
+        "body": "On the auspicious days of the lunar calendar the crowd is larger, and butter lamps burn in the lamp house beside the chorten. None of this is arranged for visitors. You are welcome to join the walk, and a few circuits in company with the people of Thimphu is one of the quieter pleasures of a stay in the city."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/traditional-dress.jpg",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "The prayer wheels"
+      },
+      {
+        "kind": "text",
+        "body": "Along the wall of the enclosure are rows of prayer wheels, and at the entrance are larger wheels, painted red and gold, that take some effort to set moving. Each is filled with printed mantras, and turning one clockwise is held to have the same merit as reciting them. Walkers turn each wheel as they pass, and the sound of them, with the small bells that ring at every revolution, carries across the square."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting respectfully"
       },
       {
         "kind": "list",
         "items": [
-          "It is the ancestral seat of the Wangchuck dynasty; by tradition the Crown Prince serves as Trongsa Penlop before taking the throne",
-          "It houses the second-largest monastic body in the country, about two hundred monks",
-          "There are twenty-five temples inside it, and a printing house for religious texts",
-          "The buildings, courtyards and corridors follow the contours of the mountain rather than a plan, which is why it reads as a labyrinth"
+          "Walk clockwise, with the chorten on your right, and turn prayer wheels clockwise too",
+          "Keep to the pace of the people around you; do not cut across the circuit",
+          "Dress modestly, with long sleeves and long trousers or a long skirt, and take off hats inside the enclosure",
+          "Photograph the chorten freely from the courtyard, but ask before photographing people at prayer, and put the camera away if they decline",
+          "Sit on the benches rather than the steps of the chorten, and never point your feet towards it"
         ]
+      },
+      {
+        "kind": "text",
+        "body": "Early morning and late afternoon are the best times, when the circuit is at its busiest and the light is soft. We often come here on the first evening in Thimphu, walk a few rounds, and sit for a while on the benches before dinner."
+      },
+      {
+        "kind": "facts",
+        "title": "Visiting, 2026",
+        "rows": [
+          [
+            "Built",
+            "1974"
+          ],
+          [
+            "Entry",
+            "Nu 500 adults, half for ages 6 to 18, free for 5 and under"
+          ],
+          [
+            "Time needed",
+            "30 min to 1 h"
+          ],
+          [
+            "Best time",
+            "Early morning or late afternoon"
+          ]
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
+      }
+    ],
+    "image": "/assets/imagery/memorial-chorten.webp",
+    "tripSlugs": [],
+    "order": 2,
+    "parent": "thimphu",
+    "latitude": 27.4664,
+    "longitude": 89.6378
+  },
+  {
+    "slug": "simtokha-dzong",
+    "name": "Simtokha Dzong",
+    "icon": "dzong",
+    "blurb": "The Zhabdrung’s first dzong, at the mouth of the valley",
+    "standfirst": "Built by the Zhabdrung in 1629 on a ridge at the southern entrance to the Thimphu valley, the first dzong of its kind in Bhutan and the model for those that followed.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Simtokha Dzong is small, compact and old. It stands on a low ridge about 5 km south of the city centre, where the roads from Paro, Punakha and Thimphu once came together, and it was placed there to watch all three. Most traffic now passes below it on the way into the capital without stopping, which is a pity: of all the dzongs near Thimphu, this is the one where you can feel the seventeenth century most clearly."
+      },
+      {
+        "kind": "heading",
+        "text": "The Zhabdrung’s first dzong"
+      },
+      {
+        "kind": "text",
+        "body": "Zhabdrung Ngawang Namgyal came to Bhutan from Tibet in 1616 and spent the rest of his life unifying the country under the Drukpa Kagyu. Simtokha, completed in 1629, was the first dzong he built. It was the first to combine the monastery and the civil administration inside one set of walls, the pattern that Punakha, Paro, Trongsa and every later dzong would follow."
+      },
+      {
+        "kind": "text",
+        "body": "Its formal name is Sangak Zabdhon Phodrang, the palace of the profound meaning of secret mantra. The everyday name is explained by a legend: a demoness who troubled travellers on this ridge was subdued and vanished into a rock, and the dzong was built over it. Simmo means demoness, and do means stone."
+      },
+      {
+        "kind": "text",
+        "body": "The dzong was attacked in its first years by the Zhabdrung’s rivals and by forces from Tibet, and it was damaged and repaired more than once. A long restoration, begun in 2002, strengthened its structure while keeping its old fabric."
+      },
+      {
+        "kind": "heading",
+        "text": "The slate carvings"
+      },
+      {
+        "kind": "text",
+        "body": "Set into the outer wall of the utse, all the way round, are around three hundred slate carvings of saints, teachers and deities. They are carved in low relief and painted, and they are among the oldest works of their kind in the country. Walk round them clockwise and slowly; your guide can name many of the figures, and some of them are the same teachers you will see painted on the walls of later temples."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/lam-with-sculpture.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Inside"
+      },
+      {
+        "kind": "text",
+        "body": "The utse holds the main temple, with a large image of Shakyamuni flanked by the eight great bodhisattvas, and the murals here are among the oldest surviving in Bhutan. Other chapels are dedicated to the Zhabdrung and to protective deities. The light is low and the air smells of butter lamps. Photography is not allowed inside."
+      },
+      {
+        "kind": "heading",
+        "text": "The language school"
+      },
+      {
+        "kind": "text",
+        "body": "In the 1960s the third King founded a school here for Dzongkha and traditional learning, the Simtokha Rigzhung Lobdra, at a time when the national language was being given a standard grammar and spelling. It grew into the Institute of Language and Culture Studies, which trained generations of teachers, translators and scholars before moving to a new campus at Taktse, near Trongsa, in 2011. Monks still study in the dzong, and you will hear lessons being recited from the classrooms off the courtyard."
+      },
+      {
+        "kind": "facts",
+        "title": "Visiting, 2026",
+        "rows": [
+          [
+            "Built",
+            "1629"
+          ],
+          [
+            "Entry",
+            "No entry fee"
+          ],
+          [
+            "Distance",
+            "About 5 km south of central Thimphu"
+          ],
+          [
+            "Time needed",
+            "About 45 min"
+          ],
+          [
+            "Dress",
+            "Long sleeves and long trousers or a long skirt; no hats inside"
+          ]
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "We usually stop at Simtokha on the way into or out of Thimphu, since it is on the road to Paro and to Punakha. It is quieter than the dzongs in the centre, and it is a good place to begin, before the larger ones. Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
+      }
+    ],
+    "image": "/assets/imagery/simtokha-dzong.webp",
+    "tripSlugs": [],
+    "order": 3,
+    "parent": "thimphu",
+    "latitude": 27.4381,
+    "longitude": 89.6694
+  },
+  {
+    "slug": "motithang-takin-preserve",
+    "name": "Motithang Takin Preserve",
+    "icon": "pavilion",
+    "blurb": "Bhutan’s national animal, in the forest above Thimphu",
+    "standfirst": "A fenced stretch of forest on the slopes above Thimphu where you can see the takin, Bhutan’s national animal, which in the wild lives high in the mountains of the north.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "The preserve lies in the Motithang district on the hillside above the city, a short drive from the centre. It is a large enclosure of blue pine and grass rather than a zoo, with a path along the fence and a few viewing points. The takin move through it as they please, and on some visits they are at the fence and on others they are a brown shape among the trees."
+      },
+      {
+        "kind": "heading",
+        "text": "The takin"
+      },
+      {
+        "kind": "text",
+        "body": "The takin is a large, heavy-shouldered animal of the goat-antelope family, with a thick coat, a broad arched nose and short horns that sweep back and up. The form found in Bhutan is Budorcas taxicolor whitei. In the wild it lives in the forests and alpine meadows of the north, moving up to high pastures in summer and down into the forest in winter, and trekkers on the Jomolhari route sometimes see it on the upper slopes. It is classed as vulnerable, and it is protected in Bhutan. It is also the national animal, chosen for its place in the country’s religious history as much as for its rarity."
+      },
+      {
+        "kind": "heading",
+        "text": "The Divine Madman’s creation"
+      },
+      {
+        "kind": "text",
+        "body": "The legend concerns Drukpa Kunley, the fifteenth-century saint known as the Divine Madman, whose unconventional teaching is still loved in Bhutan. As the story goes, a crowd gathered to see him work a miracle, and he first asked to be fed. He ate a whole cow and a whole goat, leaving only the bones. Then he took the goat’s head, set it on the cow’s skeleton, and snapped his fingers, and the creature stood up and went off to graze on the hillside. It is a legend, and told with a smile, but it is how most Bhutanese will explain the takin’s unlikely appearance."
+      },
+      {
+        "kind": "heading",
+        "text": "How the preserve began"
+      },
+      {
+        "kind": "text",
+        "body": "The takin here were once kept in a small zoo. The fourth King decided that keeping animals in captivity did not sit well with the country’s religious and conservation values, and ordered them released. The takin, by then used to people, declined to leave. They wandered the streets of Thimphu for weeks looking for food, and in the end it was decided to give them an enclosed stretch of forest on the edge of the city instead. In 2004 the government and WWF Bhutan improved the preserve, with a traditional gate, an information centre and paths."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/jomolhari-trek.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "Come in the morning if you can. The takin tend to come close to the fence early in the day and retreat into the shade later. Sambar and barking deer are sometimes in the enclosure too. Allow about 45 min, and combine it with the viewpoint above Sangaygang or a walk in the forest nearby."
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Stay on the path and outside the fence",
+          "Do not feed the animals, and keep voices low near them",
+          "Photography is welcome; there is no need to get closer than the fence allows",
+          "Take a warm layer: the preserve is higher and cooler than the town"
+        ]
+      },
+      {
+        "kind": "facts",
+        "title": "Visiting, 2026",
+        "rows": [
+          [
+            "Location",
+            "Motithang, on the slopes above central Thimphu"
+          ],
+          [
+            "Time needed",
+            "About 45 min"
+          ],
+          [
+            "Best time",
+            "Morning"
+          ],
+          [
+            "In the wild",
+            "Forests and alpine meadows of the north"
+          ]
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
+      }
+    ],
+    "image": "/assets/imagery/takin-preserve.webp",
+    "tripSlugs": [],
+    "order": 4,
+    "parent": "thimphu",
+    "latitude": 27.4817,
+    "longitude": 89.6111
+  },
+  {
+    "slug": "dochula",
+    "name": "Dochula",
+    "icon": "chorten",
+    "blurb": "The 108 chortens on the pass to Punakha",
+    "standfirst": "The pass at 3,100 m on the road from Thimphu to Punakha, where 108 chortens stand on the ridge and, on a clear day, the high Himalaya shows along the northern horizon.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "The road east from Thimphu climbs steadily through forest for about an hour to reach Dochula, the pass at 3,100 m that divides the Thimphu valley from the valleys of Punakha and Wangdue Phodrang. It has always been a place to stop, catch your breath and hang a prayer flag. Since 2004 it has also been one of the most visited places in the country."
+      },
+      {
+        "kind": "heading",
+        "text": "The 108 chortens"
+      },
+      {
+        "kind": "text",
+        "body": "On the rise at the top of the pass stand 108 whitewashed chortens, arranged in three rings around a central mound. The lowest ring holds forty-five, the next thirty-six and the highest twenty-seven. They are called the Druk Wangyal chortens, the chortens of the victory of the thunder dragon. The number is a sacred one in Buddhism."
+      },
+      {
+        "kind": "text",
+        "body": "They were built at the command of Ashi Dorji Wangmo Wangchuck, the eldest Queen Mother, after the military operation of December 2003, when the fourth King led the Royal Bhutan Army to remove armed insurgent groups from India that had set up camps in the forests of southern Bhutan. The chortens honour the soldiers who died, and they give thanks for the country’s safety. They were consecrated in June 2004."
+      },
+      {
+        "kind": "text",
+        "body": "The chortens are a memorial, and many Bhutanese who stop here walk around them clockwise before going on. Do the same if you wish; the path loops through the rings. They are best in the early morning, when mist often lies on the ridge and the sun comes up through it."
+      },
+      {
+        "kind": "heading",
+        "text": "Druk Wangyal Lhakhang"
+      },
+      {
+        "kind": "text",
+        "body": "On the hillside above the chortens stands Druk Wangyal Lhakhang, completed in 2008 to mark a hundred years of the monarchy and dedicated to the fourth King. Its murals are unusual: alongside the Buddhist figures you would expect, they show scenes from the country’s recent history in the traditional style. Photography is not allowed inside."
+      },
+      {
+        "kind": "text",
+        "body": "Every year on 13 December the Druk Wangyal Tshechu is held on the grass at the pass, a festival begun in 2011 to commemorate the 2003 victory. It is unusual in that the dances are performed by members of the Royal Bhutan Army rather than by monks."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/season-winter.jpg",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "The view"
+      },
+      {
+        "kind": "text",
+        "body": "On a clear day the eastern Himalaya lines the northern horizon from the pass: a long wall of snow peaks running along the border with Tibet, among them Masanggang and, far to the east, Gangkhar Puensum, at more than 7,500 m the highest mountain in Bhutan and the highest in the world never climbed. The clearest days come most often between October and February; in the monsoon months you may see nothing but cloud, and the chortens in the mist are reason enough for the stop."
+      },
+      {
+        "kind": "heading",
+        "text": "On the road to Punakha"
+      },
+      {
+        "kind": "text",
+        "body": "Beyond the pass the road drops a long way through rhododendron, oak and then warmer forest to the Punakha valley, which is more than 1,500 m lower than the pass and noticeably warmer. Near the pass is the Royal Botanical Park at Lamperi, a large protected area of forest known for its rhododendrons in spring. Our journeys that go east stop here, and when the sky is clear we sit on the ridge for a while before going on."
+      },
+      {
+        "kind": "facts",
+        "title": "Dochula at a glance",
+        "rows": [
+          [
+            "Altitude",
+            "3,100 m"
+          ],
+          [
+            "From Thimphu",
+            "About 1 h by road, on the way to Punakha"
+          ],
+          [
+            "The chortens",
+            "108, consecrated in June 2004"
+          ],
+          [
+            "Best for the view",
+            "October to February, early morning"
+          ],
+          [
+            "Bring",
+            "A warm, windproof layer; it is always colder than Thimphu"
+          ]
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Fees, hours and rules are as of 2026. We check them each season and confirm them in your journey notes."
+      }
+    ],
+    "image": "/assets/imagery/dochula-pass.webp",
+    "tripSlugs": [],
+    "order": 5,
+    "parent": "thimphu",
+    "altitudeMetres": 3100,
+    "latitude": 27.49,
+    "longitude": 89.7503
+  },
+  {
+    "slug": "trongsa-dzong",
+    "name": "Trongsa Dzong",
+    "icon": "dzong",
+    "blurb": "The largest dzong, on its ridge above the Mangde Chhu",
+    "standfirst": "The largest dzong in Bhutan, stepping down a spur above the Mangde Chhu: the seat of the Trongsa Penlop, the ancestral home of the Wangchuck kings, and once the only road from west to east.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Its full name is Chhoekhor Raptentse Dzong. It runs down a narrow spur high above the gorge of the Mangde Chhu, and from the road on the far side of the valley you see the whole length of it at once: tower after tower, roof after roof, stepping down the ridge towards the river, with ridge behind ridge fading into haze beyond."
+      },
+      {
+        "kind": "heading",
+        "text": "How it was built"
+      },
+      {
+        "kind": "text",
+        "body": "The first building here was a small temple. In 1543 the Drukpa lama Ngagi Wangchuk, an ancestor of the Zhabdrung, came to meditate nearby. The story goes that he saw a light burning below him on the spur, took it as the sign of a sacred place, and built a small temple there. The village that grew around it was called Trongsa, new village."
+      },
+      {
+        "kind": "text",
+        "body": "A century later the Zhabdrung, who was unifying the country, ordered a dzong built on the site, and put it in the charge of Chhogyal Minjur Tempa. The Department of Culture records construction in 1647; other sources give 1644, and it was enlarged in the years after. The dzong was badly damaged in the great earthquake of 1897 and repaired, and it was extensively restored again between 1999 and 2004 with support from Austria."
+      },
+      {
+        "kind": "heading",
+        "text": "The largest dzong"
+      },
+      {
+        "kind": "text",
+        "body": "It is the largest dzong in the country, and it does not follow a plan so much as the mountain. There is no single rectangle of walls. Buildings, courtyards and corridors are arranged along the contours of the ridge on several levels, linked by passages and stairs, which is why first-time visitors often feel it is a maze. In all there are around two dozen temples inside."
+      },
+      {
+        "kind": "text",
+        "body": "For most of its history the road between east and west ran through the dzong itself: travellers came in by one gate and left by the other, under the eyes of the penlop’s men. Whoever held the dzong held the country’s traffic."
       },
       {
         "kind": "image",
@@ -500,39 +2273,74 @@
         "ratio": "2/3"
       },
       {
+        "kind": "heading",
+        "text": "The Trongsa Penlop"
+      },
+      {
         "kind": "text",
-        "body": "New monument guidelines came into effect on 1 January 2026. Formal dress is required — shoulders and knees covered — and photography is restricted in parts of the interior."
+        "body": "The first governor based here, Chhogyal Minjur Tempa, was appointed Trongsa Penlop by the Zhabdrung in 1647 and given the task of bringing the centre and east under the new state. Over the next two centuries the penlops of Trongsa became the most powerful officials in Bhutan. Jigme Namgyal held the post in the nineteenth century, and his son Ugyen Wangchuck governed from here before he was chosen as the first King in 1907."
+      },
+      {
+        "kind": "text",
+        "body": "Every King since has held the title of Trongsa Penlop before taking the throne. It is the formal mark of the heir, conferred with the red scarf of the office. The present King received it in 2004."
+      },
+      {
+        "kind": "heading",
+        "text": "The monastic body"
+      },
+      {
+        "kind": "text",
+        "body": "The dzong is also the seat of the district’s monastic body, one of the largest in the country, with around two hundred monks. The dzong also has a printing house where religious texts are made from carved wood blocks."
+      },
+      {
+        "kind": "text",
+        "body": "The Trongsa Tshechu is held in the dzong’s courtyard in December or January, according to the lunar calendar, and ends with the unrolling of a thongdrel before dawn."
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting"
+      },
+      {
+        "kind": "text",
+        "body": "It is a working dzong, with district offices and monks in residence, and parts of it are closed to visitors. Dress formally: long sleeves, long trousers or a long skirt, no hats. Photography is allowed in the courtyards but not in the temples, and your guide will tell you where else it is restricted."
+      },
+      {
+        "kind": "text",
+        "body": "Walk slowly and look up: the woodwork on the galleries is some of the finest in the country. Afterwards, climb to the Tower of Trongsa on the hill above for the view straight down onto the roofs."
       },
       {
         "kind": "facts",
-        "title": "Visiting, 2026",
+        "title": "At a glance",
         "rows": [
           [
-            "Entry",
-            "Nu 500 adults, Nu 250 for 6–17, free under 6"
+            "Founded",
+            "1543 as a temple; the dzong in the 1640s"
           ],
           [
-            "Open",
-            "9:00 – 17:00 daily, closed to visitors outside those hours"
+            "Monks",
+            "Around 200"
+          ],
+          [
+            "Time needed",
+            "One to two hours, and another for the Tower of Trongsa above"
           ],
           [
             "Trongsa Tshechu",
-            "Five days in December or January, ending with the thongdrel at dawn"
+            "December or January, by the lunar calendar"
           ],
           [
-            "Getting there",
-            "About seven hours by road from Thimphu"
+            "Entry and hours",
+            "Set nationally and revised from time to time. Checked each season and confirmed in your journey notes."
           ]
         ]
-      },
-      {
-        "kind": "text",
-        "body": "Fees are set nationally and change. March to May and September to November give the clearest skies. If you are walking fit, the Mangdue foot trail brings you in through the western gate, which is how everyone arrived until the road was built."
       }
     ],
     "image": "/assets/imagery/trongsa-dzong.webp",
     "tripSlugs": [],
     "order": 0,
+    "parent": "trongsa",
+    "latitude": 27.4996,
+    "longitude": 90.505,
     "publishedAt": "2025-07-14"
   }
 ]

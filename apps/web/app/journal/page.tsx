@@ -53,7 +53,9 @@ export default async function JournalPage() {
         })}
       />
       <JournalIndex
-        eyebrow={page?.eyebrow ?? 'Notes from Bhutan'}
+        /* The design's numbered eyebrow already prints "Journal"; a row
+           eyebrow that says the same would read "Journal · Journal". */
+        eyebrow={page?.eyebrow && page.eyebrow !== 'Journal' ? page.eyebrow : 'Notes from Bhutan'}
         title={page?.title ?? 'Journal'}
         lead={page?.lead ?? null}
         current={null}
