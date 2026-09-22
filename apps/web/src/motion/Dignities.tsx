@@ -138,8 +138,20 @@ export function Dignities() {
   const [open, setOpen] = useState<number | null>(null)
   const reduced = usePrefersReducedMotion()
   const wrap = useRef<HTMLDivElement>(null)
+  /* Read from the scroll callback, which the broker runs on frames React knows
+     nothing about — a ref, so the guard sees the open plate on the same frame
+     the body lock lands rather than one render later. */
+  const openRef = useRef<number | null>(null)
+  openRef.current = open
 
   const ref = useDocumentProgress((p) => {
+    // Frozen while a plate is open. Locking the body relays out the page, and
+    // the measured document height that decides which dignity is current comes
+    // back different — so the rail would change its word, and the watermark
+    // cross-fade to another guardian, underneath the plate the reader has just
+    // opened. It is the same reading when the plate closes, so nothing is lost
+    // by not taking it while one is up.
+    if (openRef.current !== null) return
     setIndex(Math.floor(p * 4))
     // Written straight to the node rather than held in state. The broker calls
     // this on every frame of every scroll; a setState here would re-render the
@@ -256,17 +268,20 @@ function DignityRail({ active, onOpen }: { active: number; onOpen: (index: numbe
         justifyItems: 'end',
         gap: 6,
         textAlign: 'right',
-        // A plate, not a text-shadow. The design project lifts the caption off
-        // the page with a white glow, which works over the pale grounds it was
-        // drawn on and fails completely in the corner of a full-bleed hero,
-        // where the protection gradient is at its darkest and ink caps simply
-        // vanish. This is the treatment the nav already uses when it has to
-        // stand over a photograph, and it holds on every ground the site has.
-        background: 'var(--surface-veil)',
-        backdropFilter: 'var(--blur-nav)',
+        // No plate. The rail stands on whatever the page puts behind it and
+        // carries its own halo instead — a tighter, denser glow than the
+        // design project's, because that one was drawn for pale grounds and
+        // loses ink caps in the corner of a full-bleed hero, where the
+        // protection gradient is at its darkest.
+        //
+        // Dropping the blur is also what stops the flicker: a backdrop-filter
+        // layer sitting under the plate's animating scrim re-samples what is
+        // behind it every frame, and the click that opened the plate was the
+        // one that made it flash.
+        background: 'transparent',
         padding: 'var(--space-3) var(--space-4)',
-        borderRadius: 'var(--radius-sm)',
         color: hover ? 'var(--gold)' : 'var(--ink)',
+        filter: 'var(--glow-veil)',
         transition: 'color var(--dur-quick) var(--ease-inhale)',
       }}
     >
