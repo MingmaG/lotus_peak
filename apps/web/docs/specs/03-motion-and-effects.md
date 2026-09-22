@@ -215,16 +215,73 @@ the 8s `breathe` wrapper. Entering panel: `opacity 2.6s var(--ease-inhale)` +
 `transform 3.2s var(--ease-settle)` from a 9% lateral offset. Leaving panel: `opacity 1.4s`,
 then the transform resets with `0s 1.4s` delay so it does not visibly snap back.
 
-A bottom-right caption shows the current dignity in English and Dzongkha (each re-keyed so
-the 1.6s `surface` animation replays on change) over four dots, the active one gold.
-
 **Fix B7**: `docHeight` comes from the broker, which recomputes on `load` and via a
 `ResizeObserver` on `document.body` — not from a 700ms timer. Keep the initial arming delay
 so the first paint does not flash a dignity in, but drive the index from real measurements.
 
+The layer's own `translate3d` is written straight to the node in the broker's write phase. It
+is **not** React state: the broker calls back on every frame of every scroll, and a `setState`
+there re-renders the rail and any open plate sixty times a second for a transform React has no
+other reason to know about. Only the index — which changes four times in a whole document — is
+state.
+
+#### The rail
+
+The watermark tells the reader something is there. The rail is what lets them find out what.
+
+In the bottom-right corner, on every route and at every scroll position: the current dignity in
+English and Dzongkha over four markers, the active one gold. **The word is the control.**
+Clicking "Compassion" opens the dragon's plate, "Awareness" the tiger's — whichever the scroll
+has reached.
+
+- **Caption.** Each line re-keyed so `driftIn` replays on change — a drift in from the right,
+  not a rise, because the caption belongs to the corner it sits in. The English word carries a
+  `--gold-rule` at rest, not only a colour change on hover: a bare line of tracked caps in the
+  corner of a page gives a reader no reason to try it. Gold on hover and focus, over
+  `--dur-quick`.
+- **Markers.** Four dots, the active one gold, transitioning on `--dur-turn` (1.2s, the beat
+  the design gives them). An indicator, `aria-hidden`, out of the tab order — four adjacent
+  controls for one destination is noise a screen reader has to read through, and the word
+  already says where it goes. The cost is that only the dignity the reader has scrolled to can
+  be opened from the corner; the plate's own text carries the other three.
+- **Ground.** A `--surface-veil` plate under `--blur-nav`, not the design project's white
+  text-shadow. The glow works over the pale grounds the design was drawn on and fails
+  completely in the corner of a full-bleed hero, where the protection gradient is darkest and
+  ink caps vanish. This is the treatment the nav already uses when it has to stand over a
+  photograph.
+- **Layout.** `z-index: 40` — above `#main` (1) and *below* the nav (50), so the mobile menu, a
+  full-height panel inside the nav's stacking context, covers the rail instead of having it
+  float over the menu's links. The design project puts its caption at 160 to clear the Halo;
+  the Halo is a 7% white bloom over the whole frame, and letting it wash over a line of caps
+  costs nothing next to that collision. No breakpoints — a corner is a corner at every width.
+
+#### The plate
+
+One dignity at length: the art full size on a `--surface-sunken` panel that runs the height of
+the plate, beside the animal, what it stands for, its Dzongkha, the passage on its meaning, and
+the circle the four make together.
+
+It leaves as slowly as it arrives. Entrance: scrim `veil` over `--dur-veil`, panel `riseIn`
+over `--dur-rise` after `--delay-rise`. Exit mirrors it: panel `riseOut` at once, scrim
+`veilOut` after `--delay-veil-out`, so both settle together — and only then is the node
+unmounted.
+
+**The exit timeout is read back from those tokens**, not restated as a number:
+
+```
+exitMs = max(--dur-rise, --delay-veil-out + --dur-veil)
+```
+
+So the unmount cannot drift out of step with the CSS, and under reduced motion — where every
+duration token is `0s` — it comes back `0` and the plate closes with no timer at all. That is
+the whole reduced-motion branch; there is no second code path to keep honest.
+
+The design project's version has `role="dialog"` and Escape. The focus trap, the focus restore
+and the body scroll lock are this port's, matching `InquiryDrawer`.
+
 Dzongkha text requires a font with Tibetan coverage. Commissioner has none — ship a subset of
-Noto Serif Tibetan scoped to `[lang="dz"]`, preloaded, and mark the caption
-`lang="dz"`. Without it these render as tofu.
+Noto Serif Tibetan scoped to `[lang="dz"]`, preloaded, and mark the caption and the plate's
+Dzongkha line `lang="dz"`. Without it these render as tofu.
 
 ### `ShadowArt` (B1)
 
@@ -238,8 +295,8 @@ silhouettes, radial-masked, plus the left-to-right pine gradient
 provides on its own.
 
 Motif keys: `dragon`, `mural`, `friends`, `thangka`, `animals` (illustrations, masked and
-multiplied) and `dzong`, `dzong-long`, `chorten`, `stupa`, `monastery`, `pavilion`, `buddha`
-(silhouettes, unmasked, bottom-anchored, inverted on dark).
+multiplied) and `dzong`, `dzong-long`, `chorten`, `stupa`, `monastery`, `pavilion`, `buddha`,
+`taktsang`, `punakha`, `jakar` (silhouettes, unmasked, bottom-anchored, inverted on dark).
 
 Type it so the mistake cannot recur:
 

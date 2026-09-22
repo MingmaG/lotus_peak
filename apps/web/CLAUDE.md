@@ -17,12 +17,16 @@ These come from the design system's own rules. Breaking one is a bug, not a styl
 
 - **Grounds are white.** Page and section backgrounds are `#FFFFFF` (`--paper`) or
   `#F7F7F6` (`--paper-2`). Never cream, beige or warm-tinted grounds (`#EFE8DD`, `#F7F3EC`).
-  Dark sections use `--pine` / `--pine-2`.
+  Dark sections use `--surface-ground` / `--surface-ground-deep`, which are now the lotus
+  sky inks (`--sky-ink` #0C3E5C and #08293D), not pine.
 - **No Claude/Anthropic brand colours, type or visual language** anywhere in this project.
 - **One typeface**: Commissioner, self-hosted, weights 100–900. No second family, no
   Google Fonts CDN.
-- **Saffron (`--saffron`) is the single CTA colour**, at most one filled button per section.
-  Outline and ghost carry everything else.
+- **Lotus sky leads.** `--sky-deep` (#15618F) is the primary CTA and accent colour, reached
+  through `--cta-bg` / `--text-accent`. Saffron is the *single secondary accent*
+  (`--cta-2-bg`, the `secondary` Button variant, eyebrows and rules on dark grounds) and
+  never the primary call to action. At most one filled button per section; outline and
+  ghost carry everything else.
 - **Never hardcode a colour, size, duration or easing.** Everything goes through the CSS
   custom properties in `src/design-system/tokens/`. If a value you need is not a token,
   add a token — do not inline a hex or a `ms`.

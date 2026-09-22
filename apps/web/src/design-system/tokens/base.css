@@ -3,6 +3,6 @@ body{margin:0;background-color:var(--surface-page);background-image:repeating-li
 h1,h2,h3,h4{font-family:var(--font-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);margin:0;line-height:var(--leading-heading);text-wrap:pretty}
 p{margin:0;text-wrap:pretty}
 a{color:var(--text-accent);text-decoration:none;text-underline-offset:.2em;transition:color var(--dur-quick) var(--ease-breath)}
-a:hover{color:var(--maroon-2);text-decoration:underline}
+a:hover{color:var(--sky-ink);text-decoration:underline}
 img{display:block;max-width:100%}
 :focus-visible{outline:2px solid var(--focus-ring);outline-offset:3px}

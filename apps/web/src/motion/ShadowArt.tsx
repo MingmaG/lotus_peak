@@ -30,6 +30,9 @@ export const MOTIFS = {
   monastery: 'icons/monastery.png',
   pavilion: 'icons/pavilion.png',
   buddha: 'icons/buddha.png',
+  taktsang: 'icons/taktsang.png',
+  punakha: 'icons/punakha.png',
+  jakar: 'icons/jakar.png',
 } as const
 
 /** Intrinsic pixel size of each motif, so next/image can cap its srcset. */
@@ -46,6 +49,9 @@ const MOTIF_SIZE = {
   monastery: { width: 315, height: 140 },
   pavilion: { width: 120, height: 125 },
   buddha: { width: 110, height: 125 },
+  taktsang: { width: 280, height: 264 },
+  punakha: { width: 640, height: 220 },
+  jakar: { width: 600, height: 240 },
 } as const
 
 export type MotifName = keyof typeof MOTIFS
@@ -58,6 +64,9 @@ const SILHOUETTE = new Set<MotifName>([
   'monastery',
   'pavilion',
   'buddha',
+  'taktsang',
+  'punakha',
+  'jakar',
 ])
 
 export type ShadowArtProps = {

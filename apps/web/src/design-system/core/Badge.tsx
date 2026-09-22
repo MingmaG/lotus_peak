@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 
-export type BadgeTone = 'neutral' | 'pine' | 'saffron' | 'maroon' | 'gold'
+export type BadgeTone = 'neutral' | 'sky' | 'pine' | 'saffron' | 'maroon' | 'gold'
 
 export type BadgeProps = {
   tone?: BadgeTone
@@ -10,6 +10,7 @@ export type BadgeProps = {
 
 const TONES: Record<BadgeTone, CSSProperties> = {
   neutral: { color: 'var(--text-muted)', border: '1px solid var(--border-hairline)' },
+  sky: { color: 'var(--sky-deep)', border: '1px solid var(--sky-soft)', background: 'var(--sky-soft)' },
   pine: { color: 'var(--pine)', border: '1px solid var(--pine-soft)', background: 'var(--pine-soft)' },
   saffron: { color: 'var(--wood)', border: '1px solid var(--saffron-soft)', background: 'var(--saffron-soft)' },
   maroon: { color: 'var(--paper)', border: '1px solid var(--maroon)', background: 'var(--maroon)' },

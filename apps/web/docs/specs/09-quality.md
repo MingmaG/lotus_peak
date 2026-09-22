@@ -78,7 +78,9 @@ Check these specifically; the design runs close in places:
   or darken the token.
 - Copy over hero imagery — the scrims (`rgba(31,29,26,.38)` + gradient) must be verified per
   image, not assumed. Test each hero at its actual crop.
-- `--saffron` (#D98A2B) as a CTA fill takes `--ink` text, not white. Do not invert it.
+- `--sky-deep` (#15618F) as the primary CTA fill takes white text — 6.7:1. `--sky` (#7AC2FE)
+  is a fill and large-shape colour only; never set type in it.
+- `--saffron` (#D98A2B) as a secondary CTA fill takes `--ink` text, not white. Do not invert it.
 - `--gold` is a line colour only; never use it for text.
 
 ### Motion
@@ -104,8 +106,13 @@ Check these specifically; the design runs close in places:
 - Landmarks: `header`, `nav`, `main` (with `id="main"`), `footer`.
 - `Strip` is `aria-label="Gallery"`; under reduced motion it is a real horizontal scroll
   region with `tabindex="0"` so keyboard users can reach it.
-- The Dzongkha caption in `Dignities` is `lang="dz"` and `aria-hidden` (it is decorative), but
-  the font must still cover it — see `03-motion-and-effects.md` §5.
+- The Dzongkha caption in `Dignities` is `lang="dz"` and `aria-hidden` — the rail's buttons
+  already announce each dignity by name and meaning — but the font must still cover it, there
+  and in the plate, where the same text is read out. See `03-motion-and-effects.md` §5.
+- The rail's caption is a real button with an `aria-label` naming the dignity and what it
+  stands for; the four markers under it are `aria-hidden` decoration, not controls. The plate
+  is a modal dialog: focus moves into it, Tab is trapped, Escape closes it and focus returns
+  to the word that opened it.
 
 ## 4. Browsers
 
@@ -142,12 +149,15 @@ E2E suites that exist specifically because of the audit:
 3. **One listener** — exactly one `scroll` listener on `window` after load, on every route
    (B10).
 4. **Dignities** — exactly one instance in the DOM; the index advances 0→3 across a full
-   scroll of `/` (B7).
-5. **Nav offset** — `--nav-h` matches the measured nav height at 360 / 768 / 1440, scrolled
+   scroll of `/` (B7), and the named word in the corner changes with it.
+5. **Dignity plate** — open it from the corner word with the keyboard alone; focus lands
+   inside, Tab does not leave it, Escape closes it and focus returns to that word. Under
+   reduced motion it is gone within a frame rather than after the 1.75s exit.
+6. **Nav offset** — `--nav-h` matches the measured nav height at 360 / 768 / 1440, scrolled
    and unscrolled (B8).
-6. **Keyboard enquiry** — complete and submit an enquiry from `/trips/valleys` using only the
+7. **Keyboard enquiry** — complete and submit an enquiry from `/trips/valleys` using only the
    keyboard, including opening and closing the drawer.
-7. **Provider parity** — the same visual tests pass with `CONTENT_SOURCE=file` and
+8. **Provider parity** — the same visual tests pass with `CONTENT_SOURCE=file` and
    `CONTENT_SOURCE=prisma` against the same seed.
 
 ## 6. Monitoring

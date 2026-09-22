@@ -9,6 +9,9 @@ export type SiteIconName =
   | 'pavilion'
   | 'dzong-long'
   | 'buddha'
+  | 'taktsang'
+  | 'punakha'
+  | 'jakar'
 
 /** Intrinsic width/height of each silhouette drawing. */
 const RATIO: Record<SiteIconName, number> = {
@@ -19,6 +22,19 @@ const RATIO: Record<SiteIconName, number> = {
   pavilion: 120 / 125,
   'dzong-long': 320 / 110,
   buddha: 110 / 125,
+  taktsang: 140 / 132,
+  punakha: 320 / 110,
+  jakar: 300 / 120,
+}
+
+/**
+ * Framed-mode enlargement. Wide silhouettes fitted by their longest side sit
+ * low and small in the ring, so they may run closer to it than the square ones
+ * without reading oversized. Ported from the design project's FIT map.
+ */
+const FIT: Partial<Record<SiteIconName, number>> = {
+  punakha: 1.32,
+  jakar: 1.25,
 }
 
 export type SiteIconProps = {
@@ -33,6 +49,11 @@ export type SiteIconProps = {
 
 /**
  * Bhutanese architectural silhouette rendered as a flat single-colour mask.
+ *
+ * The generic names (dzong, chorten, stupa, monastery, pavilion, dzong-long,
+ * buddha) are building types; `taktsang`, `punakha` and `jakar` are the three
+ * place-specific silhouettes — Tiger's Nest on its cliff, Punakha Dzong's long
+ * wall with three towers, and Jakar Dzong's tall utse on its hill.
  *
  * `framed` gives every silhouette the same square footprint: fitted by its
  * longest side inside a size×size box, standing on a gold hairline baseline
@@ -79,7 +100,7 @@ export function SiteIcon({
     )
   }
 
-  const inner = Math.round(size * 0.56)
+  const inner = Math.round(size * 0.56 * (FIT[name] ?? 1))
   const w = r >= 1 ? inner : Math.round(inner * r)
   const h = r >= 1 ? Math.round(inner / r) : inner
 

@@ -15,11 +15,16 @@ change it in the design project first.
 
 ### Colour
 
-Premium white grounds, monk-robe accents, Himalayan greens, gold as line only.
+Premium white grounds, lotus sky leading, monk-robe saffron as the one secondary accent,
+Himalayan greens, gold as line only.
 
 ```
 Base       --paper #FFFFFF  --paper-2 #F7F7F6  --paper-3 #ECECEA
            --stone-1 #8A857C  --stone-2 #5E5A53  --wood #4B3A2F  --ink #1F1D1A
+Lotus sky  --sky #7AC2FE        (the mark's blue — fills and large shapes, never type)
+           --sky-2 #4FA5EC      --sky-deep #15618F  (type, rules, CTAs — 6.7:1 on white)
+           --sky-ink #0C3E5C    (dark section grounds)
+           --sky-soft #DCEDFC   --sky-wash #F2F8FD
 Robe       --saffron #D98A2B  --saffron-2 #E8A23C  --saffron-soft #F3DDBC
            --maroon #7A1F2B   --maroon-2 #5E1620
 Himalaya   --pine #2F4032  --pine-2 #1F2B22  --pine-soft #D6DCD3
@@ -31,7 +36,8 @@ Flags      --flag-{blue,white,red,green,yellow}       (the Divider variant="flag
 
 Semantic aliases are what components use: `--surface-page`, `--surface-sunken`,
 `--surface-ground`, `--text-body`, `--text-muted`, `--text-faint`, `--text-accent`,
-`--border-hairline`, `--border-gold`, `--cta-bg`, `--focus-ring`.
+`--border-hairline`, `--border-gold`, `--border-sky`, `--surface-tint`, `--cta-bg`,
+`--cta-2-bg`, `--focus-ring`.
 
 Never use a base token where a semantic one exists. Never use a raw hex — Stylelint rejects it
 outside `tokens/`.
@@ -83,7 +89,7 @@ fetching, no domain types, no `process.env`. That is what keeps them testable an
 | `Badge` | `tone: neutral\|pine\|saffron\|maroon\|gold` | Quiet metadata only — difficulty, season, altitude. Never promotional |
 | `Divider` | `variant: hairline\|gold\|flags\|kera`, `width`, `height` | `kera` is a woven-textile rule, 6px default; `flags` at most once per page |
 | `Eyebrow` | `number`, `tone: accent\|muted\|inverse` | Tracked caps label above a heading, optionally numbered (`01 — Our purpose`) |
-| `SiteIcon` | `name: dzong\|chorten\|stupa\|monastery\|pavilion\|dzong-long\|buddha`, `size`, `color`, `framed`, `ring` | Flat single-colour mask of a Bhutanese silhouette. `framed` gives every icon the same square footprint inside a gold ring on a gold baseline — use it whenever several sit in a row |
+| `SiteIcon` | `name: dzong\|chorten\|stupa\|monastery\|pavilion\|dzong-long\|buddha\|taktsang\|punakha\|jakar`, `size`, `color`, `framed`, `ring` | Flat single-colour mask of a Bhutanese silhouette. The first seven are building types; `taktsang`, `punakha` and `jakar` are place-specific. `framed` gives every icon the same square footprint inside a gold ring on a gold baseline — use it whenever several sit in a row. Wide silhouettes carry a framed-mode enlargement (`punakha` 1.32, `jakar` 1.25) so they do not read undersized against the square ones |
 | `Tooltip` | `label`, `children` | Hover/focus, for terse glosses (SDF, altitude) |
 | `WindowFrame` | `src`, `alt`, `aspectRatio`, `tone: ink\|paper` | Photo inside a traditional rabsel window — carved cornice above, timber base below. One hero-scale image per page, never in a grid |
 
@@ -166,7 +172,7 @@ project UI into `public/assets/`, preserving paths:
 ```
 assets/logo.webp
 assets/fonts/Commissioner-{Thin,ExtraLight,Regular,Medium,SemiBold,Bold,ExtraBold,Black}.ttf
-assets/icons/{buddha,chorten,dzong,dzong-long,monastery,pavilion,stupa}.png
+assets/icons/{buddha,chorten,dzong,dzong-long,jakar,monastery,pavilion,punakha,stupa,taktsang}.png
 assets/illustrations/{bhutan-dragon.jpg, bhutan-silhouettes.png, druk-dragon-mural.jpg,
                       four-animals.jpg, four-harmonious-friends.jpg,
                       harmonious-friends-thangka.jpg,

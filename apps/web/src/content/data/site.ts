@@ -13,7 +13,7 @@ export const DESTINATIONS: Destination[] = [
   {
     slug: 'paro',
     name: 'Paro',
-    icon: 'dzong',
+    icon: 'taktsang',
     blurb: 'Taktsang, Kichu and Dungtse Lhakhang',
     detail:
       'The valley you arrive in, and the only one with an airport. Rinpung Dzong stands over the town with the old watchtower above it, now the National Museum. Kyichu Lhakhang is one of the oldest temples in the country. Taktsang is a morning’s walk up the cliff at the head of the valley.',
@@ -35,7 +35,7 @@ export const DESTINATIONS: Destination[] = [
   {
     slug: 'punakha',
     name: 'Punakha',
-    icon: 'dzong-long',
+    icon: 'punakha',
     blurb: 'The dzong between two rivers',
     detail:
       'Warm, low and green, an hour beyond Dochula. The dzong stands where the Pho Chhu and Mo Chhu meet and is reached by a roofed cantilever bridge. Every king of Bhutan has been crowned in it, and the monk body moves down here for the winter.',
@@ -46,7 +46,7 @@ export const DESTINATIONS: Destination[] = [
   {
     slug: 'bumthang',
     name: 'Bumthang',
-    icon: 'monastery',
+    icon: 'jakar',
     blurb: 'Jakar, Kurjey, Tamshing, Könchogsum',
     detail:
       'Four high valleys in the centre of the country and the spiritual heartland of it. Jakar Dzong above the main valley, Kurjey over Guru Rinpoche’s cave, Pema Lingpa’s unrestored murals at Tamshing, the burning lake in the Tang Chhu, and Tharpaling at 3,600 m.',

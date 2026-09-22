@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, type CSSProperties, type ReactNode } from 'react'
 
-type Variant = 'primary' | 'outline' | 'ghost' | 'inverse'
+type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'inverse'
 type Size = 'sm' | 'md' | 'lg'
 
 const V: Record<Variant, CSSProperties & { fill?: string; hoverColor?: string; hoverBorder?: string }> = {
@@ -14,6 +14,14 @@ const V: Record<Variant, CSSProperties & { fill?: string; hoverColor?: string; h
     fill: 'var(--cta-bg-hover)',
     hoverColor: 'var(--cta-fg)',
     hoverBorder: 'var(--cta-bg-hover)',
+  },
+  secondary: {
+    background: 'var(--cta-2-bg)',
+    color: 'var(--cta-2-fg)',
+    border: '1px solid var(--cta-2-bg)',
+    fill: 'var(--cta-2-bg-hover)',
+    hoverColor: 'var(--cta-2-fg)',
+    hoverBorder: 'var(--cta-2-bg-hover)',
   },
   outline: {
     background: 'transparent',
@@ -62,7 +70,7 @@ export type ButtonProps = {
 /**
  * Filled variants hover like water rising: a fill layer grows from the bottom
  * edge over --dur-slow on --ease-settle, and the label recolours as the level
- * passes it. Ghost simply deepens to maroon-2.
+ * passes it. Ghost simply deepens to sky-ink.
  */
 export function Button({
   variant = 'primary',
@@ -110,7 +118,7 @@ export function Button({
       vv.color = hoverColor
       vv.border = `1px solid ${hoverBorder}`
     } else {
-      vv.color = 'var(--maroon-2)'
+      vv.color = 'var(--sky-ink)'
     }
   }
 

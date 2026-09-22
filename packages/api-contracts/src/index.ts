@@ -317,6 +317,15 @@ export interface ApiSite {
 export type TripType = 'mindfulness' | 'meditation' | 'festival' | 'trekking';
 export type Difficulty = 'Gentle' | 'Moderate' | 'Demanding';
 export type SeasonKey = 'spring' | 'summer' | 'autumn' | 'winter';
+/**
+ * The silhouettes the design system can draw.
+ *
+ * The first seven are building types, and the admin stores them as the
+ * `SiteIcon` enum. The last three name a single place each — Taktsang, Punakha
+ * and Jakar — because those three dzongs read as themselves rather than as a
+ * generic dzong, and the destinations pages use them. They are not in the
+ * admin's enum yet, so only the file provider can set them for now.
+ */
 export type SiteIconName =
   | 'dzong'
   | 'chorten'
@@ -324,7 +333,10 @@ export type SiteIconName =
   | 'monastery'
   | 'pavilion'
   | 'dzong-long'
-  | 'buddha';
+  | 'buddha'
+  | 'taktsang'
+  | 'punakha'
+  | 'jakar';
 
 export interface ApiItineraryDay {
   /**

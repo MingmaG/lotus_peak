@@ -12,7 +12,7 @@ export function Eyebrow({ number, tone = 'accent', children, style }: EyebrowPro
   const color = {
     accent: 'var(--text-accent)',
     muted: 'var(--text-muted)',
-    inverse: 'var(--saffron-2)',
+    inverse: 'var(--sky-soft)',
   }[tone]
 
   return (
