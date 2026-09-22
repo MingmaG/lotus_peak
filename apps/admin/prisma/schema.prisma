@@ -961,15 +961,37 @@ model Departure {
 // THE CATALOGUE — places, activities, seasons, culture
 // =============================================================================
 
+/// Where we go: a valley, or a place inside one.
+///
+/// One table for both, because they are the same kind of thing at two scales.
+/// Paro is a destination; Taktsang is a destination whose `parentId` is Paro.
+/// Each has a page of its own — `/destinations/paro` and
+/// `/destinations/paro/taktsang` — with the same fields, the same editor and
+/// the same SEO tab. A second `Attraction` table would have meant a second
+/// editor, a second set of routes and, sooner or later, Taktsang written up in
+/// both.
+///
+/// One level deep, by rule rather than by schema: the API refuses a parent
+/// that itself has a parent. A place inside a place inside a valley is a
+/// breadcrumb nobody reads and a URL nobody types.
 model Destination {
-  id     String   @id @default(cuid())
-  slug   String   @unique
-  name   String
-  icon   SiteIcon @default(DZONG)
-  /// One line, on the card.
-  blurb  String
-  /// A paragraph, on the index.
-  detail String
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  name       String
+  icon       SiteIcon @default(DZONG)
+  /// One line, on the card. "Taktsang, Kichu and Dungtse Lhakhang".
+  blurb      String
+  /// The sentence under the title. Also the default meta description, so it
+  /// has to stand on its own.
+  standfirst String   @default("")
+  /// The page, written as one rich-text document. Figures store a media id,
+  /// never a URL — see `server/schema/rich-text.ts`.
+  body       String   @default("")
+
+  /// Null for a valley. A place names the valley it is in.
+  parentId String?
+  parent   Destination?  @relation("DestinationPlaces", fields: [parentId], references: [id], onDelete: SetNull)
+  places   Destination[] @relation("DestinationPlaces")
 
   imageId String?
   image   Media?  @relation("DestinationImage", fields: [imageId], references: [id], onDelete: SetNull)
@@ -979,8 +1001,10 @@ model Destination {
   longitude      Float?
 
   trips       TripOnDestination[]
-  sortOrder   Int                 @default(0)
-  status      ContentStatus       @default(PUBLISHED)
+  culture     CultureOnDestination[]
+  posts       PostOnDestination[]
+  sortOrder   Int                    @default(0)
+  status      ContentStatus          @default(PUBLISHED)
   publishedAt DateTime?
 
   metaTitle         String?
@@ -1005,6 +1029,7 @@ model Destination {
   deletedAt DateTime?
 
   @@index([status, sortOrder])
+  @@index([parentId, sortOrder])
   @@map("destinations")
 }
 
@@ -1141,12 +1166,24 @@ model Season {
   @@map("seasons")
 }
 
+/// Culture: what makes Bhutan Bhutan. Tshechu, dzongs, textiles, the thirteen
+/// arts. Each has a page at `/culture/<slug>`.
+///
+/// Not a place — a dzong in general is culture, Punakha Dzong is a
+/// destination — and not an entry in the journal, which is dated and
+/// editorial. `destinations` is where a traveller goes to see it.
 model CultureArticle {
-  id    String   @id @default(cuid())
-  slug  String   @unique
-  title String
-  body  String
-  icon  SiteIcon @default(CHORTEN)
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  title      String
+  /// The sentence under the title, on the card and in the meta description.
+  standfirst String   @default("")
+  /// The page, as one rich-text document.
+  body       String
+  icon       SiteIcon @default(CHORTEN)
+
+  destinations CultureOnDestination[]
+  posts        PostOnCulture[]
 
   imageId String?
   image   Media?  @relation("CultureImage", fields: [imageId], references: [id], onDelete: SetNull)
@@ -1287,17 +1324,18 @@ model Person {
 /// reaches every entry that used it — the rule at the top of this file about
 /// never storing a serialised image, kept.
 model Post {
-  id             String @id @default(cuid())
-  slug           String @unique
+  id             String          @id @default(cuid())
+  slug           String          @unique
   title          String
   /// The standfirst. Also the default meta description, and the sentence
   /// marked `speakable` in the structured data.
   standfirst     String
-  /// Where it is about. "Bumthang", "Paro".
-  region         String
-  body           String @default("")
+  /// Which of the four shelves of the journal it sits on. Not a place: where
+  /// an entry is *about* is `destinations` below, which links to a page.
+  category       JournalCategory @default(STORIES)
+  body           String          @default("")
   /// Computed on save so both apps print the same number.
-  readingMinutes Int    @default(1)
+  readingMinutes Int             @default(1)
 
   heroId String?
   hero   Media?  @relation("PostHero", fields: [heroId], references: [id], onDelete: SetNull)
@@ -1305,8 +1343,12 @@ model Post {
   authorId String?
   author   User?   @relation("PostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
-  tags      String[]     @default([])
-  tripLinks PostOnTrip[]
+  tags         String[]            @default([])
+  tripLinks    PostOnTrip[]
+  /// The places it is about, and the culture it explains. Both render as
+  /// links on the entry, and the entry is listed on each of those pages.
+  destinations PostOnDestination[]
+  culture      PostOnCulture[]
 
   status       ContentStatus @default(DRAFT)
   publishedAt  DateTime?
@@ -1336,6 +1378,7 @@ model Post {
   deletedAt DateTime?
 
   @@index([status, publishedAt])
+  @@index([category, status, publishedAt])
   @@index([slug])
   @@map("posts")
 }
@@ -1350,6 +1393,62 @@ model PostOnTrip {
   @@id([postId, tripId])
   @@index([tripId])
   @@map("post_on_trips")
+}
+
+/// The four shelves of the journal.
+///
+/// An enum and not a table: the design has four tabs, and a fifth is a design
+/// decision rather than a row somebody adds on a Tuesday. Where an entry is
+/// about is deliberately *not* one of these — see `PostOnDestination`.
+enum JournalCategory {
+  /// Travel stories and itineraries, told after the fact.
+  JOURNEYS
+  /// Practical, search-shaped: permits, seasons, what to pack, what it costs.
+  TRAVEL_GUIDES
+  /// Things a visitor can do.
+  EXPERIENCES
+  /// People, places and perspectives.
+  STORIES
+}
+
+/// An entry and a place it is about. Edited from the entry.
+model PostOnDestination {
+  postId        String
+  post          Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  sortOrder     Int         @default(0)
+
+  @@id([postId, destinationId])
+  @@index([destinationId])
+  @@map("post_on_destinations")
+}
+
+/// An entry and the culture it explains. Edited from the entry.
+model PostOnCulture {
+  postId    String
+  post      Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  cultureId String
+  culture   CultureArticle @relation(fields: [cultureId], references: [id], onDelete: Cascade)
+  sortOrder Int            @default(0)
+
+  @@id([postId, cultureId])
+  @@index([cultureId])
+  @@map("post_on_culture")
+}
+
+/// A piece of culture and a place to see it — dzongs and Punakha Dzong,
+/// tshechu and Paro. Edited from the culture piece, shown on both pages.
+model CultureOnDestination {
+  cultureId     String
+  culture       CultureArticle @relation(fields: [cultureId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination    @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  sortOrder     Int            @default(0)
+
+  @@id([cultureId, destinationId])
+  @@index([destinationId])
+  @@map("culture_on_destinations")
 }
 
 // =============================================================================

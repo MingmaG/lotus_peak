@@ -2,65 +2,87 @@
   {
     "slug": "tshechu",
     "title": "Tshechu",
-    "body": "Annual festivals held in dzong courtyards on the tenth day of a lunar month, honouring Guru Rinpoche. Masked cham dances, a giant thongdrel unrolled at dawn, and the whole valley in its finest dress. Paro Tshechu falls in spring, Thimphu Tshechu in September.",
     "icon": "chorten",
     "image": "/assets/imagery/cham-masked-dance.webp",
-    "order": 1
+    "order": 1,
+    "standfirst": "Annual festivals held in dzong courtyards on the tenth day of a lunar month, honouring Guru Rinpoche.",
+    "body": "Masked cham dances, a giant thongdrel unrolled at dawn, and the whole valley in its finest dress. Paro Tshechu falls in spring, Thimphu Tshechu in September.",
+    "destinations": [
+      "paro",
+      "thimphu"
+    ]
   },
   {
     "slug": "dzongs",
     "title": "Dzongs",
-    "body": "Fortress-monasteries that hold both the district administration and the monastic body. Whitewashed walls, a central utse tower, and windows framed in painted timber.",
     "icon": "dzong-long",
     "image": "/assets/imagery/tashichho-dzong.jpg",
-    "order": 2
+    "order": 2,
+    "standfirst": "Fortress-monasteries that hold both the district administration and the monastic body.",
+    "body": "Whitewashed walls, a central utse tower, and windows framed in painted timber.",
+    "destinations": [
+      "punakha-dzong",
+      "trongsa-dzong"
+    ]
   },
   {
     "slug": "textiles",
     "title": "Textiles",
-    "body": "Weaving is one of the thirteen traditional arts. A kera, the woven belt that fastens the kira, carries patterns particular to its valley and its weaver.",
     "icon": "pavilion",
     "image": "/assets/textures/kera-full.jpg",
-    "order": 3
+    "order": 3,
+    "standfirst": "Weaving is one of the thirteen traditional arts.",
+    "body": "A kera, the woven belt that fastens the kira, carries patterns particular to its valley and its weaver.",
+    "destinations": []
   },
   {
     "slug": "jomzo",
     "title": "Jomzo and the crafts",
-    "body": "Zorig Chusum, the thirteen arts: painting, sculpture, casting, woodwork, weaving and more. Jomzo shapes clay, copper and gold into sacred images, and the workshops are open — you can stand at the bench and watch a figure come up out of the clay.",
     "icon": "buddha",
     "image": "/assets/imagery/lam-with-sculpture.webp",
-    "order": 4
+    "order": 4,
+    "standfirst": "Zorig Chusum, the thirteen arts: painting, sculpture, casting, woodwork, weaving and more.",
+    "body": "Jomzo shapes clay, copper and gold into sacred images, and the workshops are open — you can stand at the bench and watch a figure come up out of the clay.",
+    "destinations": []
   },
   {
     "slug": "gross-national-happiness",
     "title": "Gross National Happiness",
-    "body": "Bhutan measures progress by well-being, culture, environment and good governance rather than output alone. It is the only carbon-negative country in the world, and the constitution requires that sixty per cent of it stay under forest.",
     "icon": "monastery",
     "image": "/assets/imagery/travel-with-heart.webp",
-    "order": 5
+    "order": 5,
+    "standfirst": "Bhutan measures progress by well-being, culture, environment and good governance rather than output alone.",
+    "body": "It is the only carbon-negative country in the world, and the constitution requires that sixty per cent of it stay under forest.",
+    "destinations": []
   },
   {
     "slug": "kira-and-gho",
     "title": "Kira and gho",
-    "body": "National dress worn daily: the kira for women, the gho for men, with a kabney or rachu scarf added inside dzongs and temples.",
     "icon": "stupa",
     "image": "/assets/imagery/traditional-dress.jpg",
-    "order": 6
+    "order": 6,
+    "standfirst": "National dress worn daily: the kira for women, the gho for men, with a kabney or rachu scarf added inside dzongs and temples.",
+    "body": "",
+    "destinations": []
   },
   {
     "slug": "archery",
     "title": "Archery and khuru",
-    "body": "Datse is the national sport and it is played everywhere, over 145 m, with singing and dancing from the team at the far end when a shot lands. Khuru is its winter cousin: weighted darts thrown twenty metres at a small board.",
     "icon": "pavilion",
     "image": "/assets/imagery/archery.webp",
-    "order": 7
+    "order": 7,
+    "standfirst": "Datse is the national sport and it is played everywhere, over 145 m, with singing and dancing from the team at the far end when a shot lands.",
+    "body": "Khuru is its winter cousin: weighted darts thrown twenty metres at a small board.",
+    "destinations": []
   },
   {
     "slug": "food",
     "title": "At the table",
-    "body": "Red rice, and chilli treated as a vegetable rather than a spice. Ema datshi — chillies and cheese — is the national dish. Every meal on our journeys is included, and there is always something mild alongside.",
     "icon": "chorten",
     "image": "/assets/imagery/cuisine.webp",
-    "order": 8
+    "order": 8,
+    "standfirst": "Red rice, and chilli treated as a vegetable rather than a spice.",
+    "body": "Ema datshi — chillies and cheese — is the national dish. Every meal on our journeys is included, and there is always something mild alongside.",
+    "destinations": []
   }
 ]
