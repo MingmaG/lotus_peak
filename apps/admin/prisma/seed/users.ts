@@ -5,10 +5,16 @@ import { SYSTEM_ROLES } from '@/lib/auth/permissions';
 /**
  * The roles, and the one login a fresh install needs.
  *
- * `upsert` on the slug rather than `create`, so re-running the seed after
- * adding a permission to a role updates it instead of failing — which is what
- * makes `npm run db:seed` safe to run against an install that already has
- * content in it.
+ * `upsert` on the slug rather than `create`, so re-running the seed against an
+ * install that already has content in it updates instead of failing — which is
+ * what makes `npm run db:seed` safe to run twice.
+ *
+ * What it does *not* do is write the permissions back over a role that already
+ * exists. These four are a starting point the office edits from the Roles
+ * screen, and a seed that reset them would quietly undo that work on the next
+ * deploy that ran it — the same helpfulness that stops this file resetting the
+ * owner's password. The owner is the exception: `*` is what the last-owner
+ * guard assumes, so that one is held to it.
  */
 export async function seedRoles(): Promise<Map<string, string>> {
   const ids = new Map<string, string>();
@@ -24,10 +30,8 @@ export async function seedRoles(): Promise<Map<string, string>> {
         isSystem: true,
       },
       update: {
-        name: role.name,
-        description: role.description,
-        permissions: role.permissions,
         isSystem: true,
+        ...(role.slug === 'owner' ? { permissions: role.permissions } : {}),
       },
     });
     ids.set(role.slug, row.id);

@@ -72,16 +72,23 @@ export class ForbiddenError extends Error {
 }
 
 /**
- * For a page or a handler that needs one specific permission.
+ * For a page that needs one specific permission.
  *
- * Throws rather than redirects on a *missing* permission, because a signed-in
- * person sent to the login screen has no idea what happened. The route handler
- * wrapper turns this into a 403 with the permission named; a page renders the
- * "you do not have access to this" screen.
+ * A missing permission sends them to `/no-access`, naming what is missing —
+ * not to the login screen, which tells a signed-in person nothing, and not by
+ * throwing, which is a 500 with a digest on it. The one place a thrown error
+ * would have worked is a route handler, and no route handler calls this: the
+ * `route()` wrapper declares its permission and raises {@link ForbiddenError}
+ * itself, where a 403 with the permission in the body is the right answer.
+ *
+ * `redirect` throws `NEXT_REDIRECT`, so like every `redirect` this must not be
+ * called inside a `try` that swallows it.
  */
 export async function requirePermission(required: Permission): Promise<CurrentUser> {
   const user = await requireUser();
-  if (!can(user.permissions, required)) throw new ForbiddenError(required);
+  if (!can(user.permissions, required)) {
+    redirect(`/no-access?need=${encodeURIComponent(required)}`);
+  }
   return user;
 }
 

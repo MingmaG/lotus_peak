@@ -221,12 +221,11 @@ export const NAVIGATION: NavGroup[] = [
   },
   {
     /**
-     * The half of the business this panel does not run yet.
+     * The other half of the business.
      *
-     * Every screen in this group is a placeholder — see `NotBuiltYet`. They are
-     * here so the navigation is the one the office will end up with rather than
-     * one that grows under them, and so a role granted today already covers a
-     * screen built next month.
+     * Ordered by how often the office opens them, not by how the tables
+     * relate: bookings all day, payments when a statement arrives, coupons
+     * twice a season.
      */
     label: 'Selling',
     items: [
@@ -235,12 +234,14 @@ export const NAVIGATION: NavGroup[] = [
         href: '/bookings',
         icon: BookMarked,
         permission: 'bookings.read',
+        hint: 'Who is coming, what it costs, and what they have paid',
       },
       {
         label: 'Payments',
         href: '/payments',
         icon: CircleDollarSign,
         permission: 'payments.read',
+        hint: 'Every transaction, for reconciling a bank statement',
       },
       {
         label: 'Coupons',
@@ -258,6 +259,7 @@ export const NAVIGATION: NavGroup[] = [
         href: '/customers',
         icon: Users,
         permission: 'customers.read',
+        hint: 'Who a booking is invoiced to, and everything they have travelled on',
       },
       {
         label: 'Newsletter',
@@ -352,10 +354,11 @@ export const NAVIGATION: NavGroup[] = [
         hint: 'Licences and certificates, and when they expire',
       },
       {
-        label: 'Users',
+        label: 'Accounts',
         href: '/users',
         icon: Users,
         permission: 'users.read',
+        hint: 'Who may sign in, and what each role is allowed to do',
       },
       {
         label: 'Activity',
