@@ -13,8 +13,13 @@ import { graphForIndex } from '@/seo/graph'
  * entry needs no rebuild. An empty one says so, and asks not to be indexed —
  * a thin page is worse for the site than no page — and it is left out of the
  * sitemap by the panel for the same reason.
+ *
+ * No `dynamicParams = false`, although the four keys are fixed. With it, the
+ * first on-demand revalidation after a publish made Next regenerate the page
+ * through a path that throws `NoFallbackError`, and all four shelves answered
+ * 404 until the next deploy. An unknown key is refused by `shelf()` below with
+ * `notFound()`, which is the same answer without the trap.
  */
-export const dynamicParams = false
 
 export function generateStaticParams() {
   return JOURNAL_CATEGORIES.map((c) => ({ category: c.key }))
