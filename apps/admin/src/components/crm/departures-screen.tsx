@@ -1,33 +1,15 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarRange, Loader2, Plus } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { CalendarRange, Plus } from 'lucide-react';
+import Link from 'next/link';
 import * as React from 'react';
-import { toast } from 'sonner';
 
 import { EmptyState } from '@/components/shared/empty-state';
-import { Field } from '@/components/shared/editor-shell';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { apiDelete, apiGet, apiPatch, apiPost } from '@/lib/api-client';
+import { apiGet } from '@/lib/api-client';
 import { currency, formatDate, humanise } from '@/lib/format';
 
 interface Row {
@@ -45,21 +27,6 @@ interface Row {
   trip: { id: string; title: string; slug: string };
 }
 
-interface Form {
-  id: string | null;
-  tripId: string;
-  startDate: string;
-  endDate: string;
-  priceUsd: number;
-  placesTotal: string;
-  placesLeft: string;
-  status: string;
-  note: string;
-  isFixed: boolean;
-  wasPriceUsd: string;
-  isPublished: boolean;
-}
-
 /**
  * Dated departures.
  *
@@ -72,79 +39,13 @@ interface Form {
  * left". The design forbids urgency, and a count that reads as pressure is the
  * same thing wearing a number.
  */
-export function DeparturesScreen({
-  trips,
-  canWrite,
-}: {
-  trips: { id: string; title: string }[];
-  canWrite: boolean;
-}) {
-  const client = useQueryClient();
+export function DeparturesScreen({ canWrite }: { canWrite: boolean }) {
   const [past, setPast] = React.useState(false);
-  const [editing, setEditing] = React.useState<Form | null>(null);
 
   const { data, isLoading } = useQuery<{ items: Row[] }>({
     queryKey: ['departures', past],
     queryFn: () => apiGet(`/api/departures${past ? '?past=1' : ''}`),
   });
-
-  const save = useMutation({
-    mutationFn: () => {
-      if (!editing) throw new Error('Nothing to save.');
-      const body = {
-        tripId: editing.tripId,
-        startDate: new Date(editing.startDate).toISOString(),
-        endDate: new Date(editing.endDate).toISOString(),
-        priceUsd: editing.priceUsd,
-        placesTotal: editing.placesTotal ? Number(editing.placesTotal) : null,
-        placesLeft: editing.placesLeft ? Number(editing.placesLeft) : null,
-        status: editing.status,
-        note: editing.note || null,
-        isFixed: editing.isFixed,
-        wasPriceUsd: editing.wasPriceUsd ? Number(editing.wasPriceUsd) : null,
-        isPublished: editing.isPublished,
-      };
-      return editing.id
-        ? apiPatch(`/api/departures/${editing.id}`, body)
-        : apiPost('/api/departures', body);
-    },
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ['departures'] });
-      setEditing(null);
-      toast.success('Saved');
-    },
-    onError: (error: Error) => toast.error(error.message, { duration: 8_000 }),
-  });
-
-  const destroy = useMutation({
-    mutationFn: (id: string) => apiDelete(`/api/departures/${id}`),
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ['departures'] });
-      setEditing(null);
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  const blank = (): Form => {
-    const start = new Date();
-    start.setMonth(start.getMonth() + 3);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 10);
-    return {
-      id: null,
-      tripId: trips[0]?.id ?? '',
-      startDate: start.toISOString().slice(0, 10),
-      endDate: end.toISOString().slice(0, 10),
-      priceUsd: 0,
-      placesTotal: '',
-      placesLeft: '',
-      status: 'OPEN',
-      note: '',
-      isFixed: false,
-      wasPriceUsd: '',
-      isPublished: true,
-    };
-  };
 
   return (
     <div className="space-y-4">
@@ -159,9 +60,11 @@ export function DeparturesScreen({
         </Tabs>
 
         {canWrite && (
-          <Button size="sm" onClick={() => setEditing(blank())}>
-            <Plus className="mr-1.5 size-3.5" />
-            Add a departure
+          <Button size="sm" asChild>
+            <Link href="/departures/new">
+              <Plus className="mr-1.5 size-3.5" />
+              Add a departure
+            </Link>
           </Button>
         )}
       </div>
@@ -182,25 +85,8 @@ export function DeparturesScreen({
         <ul className="divide-y rounded-lg border">
           {data?.items.map((row) => (
             <li key={row.id}>
-              <button
-                type="button"
-                disabled={!canWrite}
-                onClick={() =>
-                  setEditing({
-                    id: row.id,
-                    tripId: row.trip.id,
-                    startDate: row.startDate.slice(0, 10),
-                    endDate: row.endDate.slice(0, 10),
-                    priceUsd: row.priceUsd,
-                    placesTotal: row.placesTotal?.toString() ?? '',
-                    placesLeft: row.placesLeft?.toString() ?? '',
-                    status: row.status,
-                    note: row.note ?? '',
-                    isFixed: row.isFixed,
-                    wasPriceUsd: row.wasPriceUsd?.toString() ?? '',
-                    isPublished: row.isPublished,
-                  })
-                }
+              <Link
+                href={`/departures/${row.id}`}
                 className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 p-4 text-left transition-colors hover:bg-muted/40"
               >
                 {/* `basis-full` on a phone: the title and the dates take the
@@ -224,177 +110,12 @@ export function DeparturesScreen({
                 {!row.isPublished && (
                   <span className="shrink-0 text-xs italic text-muted-foreground">hidden</span>
                 )}
-              </button>
+              </Link>
             </li>
           ))}
         </ul>
       )}
 
-      <Sheet open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
-        <SheetContent className="flex w-full flex-col overflow-y-auto sm:max-w-lg">
-          {editing && (
-            <>
-              <SheetHeader>
-                <SheetTitle>{editing.id ? 'This departure' : 'A new departure'}</SheetTitle>
-                <SheetDescription>
-                  Published departures render as a small table of dates on the journey page.
-                </SheetDescription>
-              </SheetHeader>
-
-              <div className="flex-1 space-y-4 py-4">
-                <Field label="Journey">
-                  <Select
-                    value={editing.tripId}
-                    onValueChange={(tripId) => setEditing({ ...editing, tripId })}
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {trips.map((trip) => (
-                        <SelectItem key={trip.id} value={trip.id}>
-                          {trip.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Starts">
-                    <Input
-                      type="date"
-                      value={editing.startDate}
-                      onChange={(event) => setEditing({ ...editing, startDate: event.target.value })}
-                    />
-                  </Field>
-                  <Field label="Ends">
-                    <Input
-                      type="date"
-                      value={editing.endDate}
-                      onChange={(event) => setEditing({ ...editing, endDate: event.target.value })}
-                    />
-                  </Field>
-                </div>
-
-                <Field label="Price, US$" hint="Per person, for this departure.">
-                  <Input
-                    type="number"
-                    value={editing.priceUsd}
-                    onChange={(event) =>
-                      setEditing({ ...editing, priceUsd: Number(event.target.value) })
-                    }
-                  />
-                </Field>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Places" hint="Leave empty not to publish a capacity.">
-                    <Input
-                      type="number"
-                      value={editing.placesTotal}
-                      onChange={(event) =>
-                        setEditing({ ...editing, placesTotal: event.target.value })
-                      }
-                    />
-                  </Field>
-                  <Field label="Places left">
-                    <Input
-                      type="number"
-                      value={editing.placesLeft}
-                      onChange={(event) =>
-                        setEditing({ ...editing, placesLeft: event.target.value })
-                      }
-                    />
-                  </Field>
-                </div>
-
-                <Field
-                  label="Status"
-                  hint="The site prints this as a word. It never prints “only 2 left” — the design has no urgency in it, and a count that reads as pressure is the same thing wearing a number."
-                >
-                  <Select
-                    value={editing.status}
-                    onValueChange={(status) => setEditing({ ...editing, status })}
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="OPEN">Open</SelectItem>
-                      <SelectItem value="GUARANTEED">Guaranteed to run</SelectItem>
-                      <SelectItem value="FEW_PLACES">Few places</SelectItem>
-                      <SelectItem value="CLOSED">Closed</SelectItem>
-                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field label="Note">
-                  <Input
-                    value={editing.note}
-                    placeholder="Timed to Paro Tshechu"
-                    onChange={(event) => setEditing({ ...editing, note: event.target.value })}
-                  />
-                </Field>
-
-                <Field
-                  label="Was"
-                  hint="Struck through beside the price, for an early-booking rate. Leave it empty and there is no strike-through."
-                >
-                  <Input
-                    type="number"
-                    min={0}
-                    value={editing.wasPriceUsd}
-                    onChange={(event) =>
-                      setEditing({ ...editing, wasPriceUsd: event.target.value })
-                    }
-                  />
-                </Field>
-
-                <label className="flex items-center gap-2 text-sm">
-                  <Switch
-                    checked={editing.isFixed}
-                    onCheckedChange={(isFixed) => setEditing({ ...editing, isFixed })}
-                  />
-                  {/* Most of these journeys are sold as "we will find a date
-                      together". The fixed ones are the exception, and the site
-                      lists them as a calendar rather than as an invitation. */}
-                  A fixed date, running whoever books it
-                </label>
-
-                <label className="flex items-center gap-2 text-sm">
-                  <Switch
-                    checked={editing.isPublished}
-                    onCheckedChange={(isPublished) => setEditing({ ...editing, isPublished })}
-                  />
-                  Show it on the site
-                </label>
-              </div>
-
-              <SheetFooter className="flex-row justify-between gap-2 border-t pt-4">
-                {editing.id ? (
-                  <Button
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => {
-                      if (window.confirm('Remove this departure?')) destroy.mutate(editing.id!);
-                    }}
-                  >
-                    Remove
-                  </Button>
-                ) : (
-                  <span />
-                )}
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setEditing(null)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={() => save.mutate()} disabled={save.isPending}>
-                    {save.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-                    Save
-                  </Button>
-                </div>
-              </SheetFooter>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }
