@@ -130,6 +130,15 @@ export interface RichTextEditorProps {
   minHeight?: string;
   className?: string;
   disabled?: boolean;
+  /**
+   * Draws the document without a toolbar or a frame, and cannot be edited.
+   *
+   * For the preview a record opens on. Read through this editor rather than
+   * set as inner HTML because the editor's schema *is* the allowlist: a node
+   * it does not know is dropped on the way in, so the preview can show only
+   * what an edit could have produced.
+   */
+  readOnly?: boolean;
   'aria-labelledby'?: string;
 }
 
@@ -279,6 +288,7 @@ export function RichTextEditor({
   minHeight = 'min-h-[220px]',
   className,
   disabled = false,
+  readOnly = false,
   'aria-labelledby': labelledBy,
 }: RichTextEditorProps) {
   const [linkOpen, setLinkOpen] = React.useState(false);
@@ -288,7 +298,7 @@ export function RichTextEditor({
   const editor = useEditor({
     /* TipTap renders on the server by default, which mismatches on hydration. */
     immediatelyRender: false,
-    editable: !disabled,
+    editable: !disabled && !readOnly,
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3, 4] },
@@ -323,7 +333,7 @@ export function RichTextEditor({
     content: value,
     editorProps: {
       attributes: {
-        class: cn('lp-prose tiptap px-4 py-3 focus:outline-none', minHeight),
+        class: cn('lp-prose tiptap focus:outline-none', !readOnly && ['px-4 py-3', minHeight]),
         ...(labelledBy ? { 'aria-labelledby': labelledBy } : {}),
       },
 
@@ -386,13 +396,25 @@ export function RichTextEditor({
   }, [value, editor]);
 
   React.useEffect(() => {
-    editor?.setEditable(!disabled);
-  }, [editor, disabled]);
+    editor?.setEditable(!disabled && !readOnly);
+  }, [editor, disabled, readOnly]);
+
+  /* A read-only view follows its value: the preview is re-rendered with the
+     saved body, and the "only when empty" rule above is for a field somebody
+     is typing into. */
+  React.useEffect(() => {
+    if (!editor || !readOnly) return;
+    if (editor.getHTML() !== value) editor.commands.setContent(value, false);
+  }, [editor, readOnly, value]);
 
   if (!editor) {
     return (
       <div className={cn('animate-pulse rounded-lg border bg-muted/30', minHeight, className)} />
     );
+  }
+
+  if (readOnly) {
+    return <EditorContent editor={editor} className={cn('lp-rich-view', className)} />;
   }
 
   return (

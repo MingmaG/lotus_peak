@@ -4,7 +4,9 @@ import type {
   ApiActivity,
   ApiCompany,
   ApiCultureArticle,
+  ApiCultureSummary,
   ApiDestination,
+  ApiDestinationSummary,
   ApiGalleryImage,
   ApiImage,
   ApiNavLink,
@@ -20,10 +22,10 @@ import type {
   ApiSocialLink,
   ApiTrip,
   ApiTripSummary,
+  JournalCategory,
   SiteIconName,
 } from '@lotuspeak/api-contracts';
 import type {
-  Destination,
   Difficulty,
   MenuItem,
   Prisma,
@@ -46,6 +48,13 @@ import {
   type FigureMedia,
 } from '@/server/schema/rich-text';
 import { MEDIA_INCLUDE, serialiseMedia, type MediaWithRenditions } from './media';
+import {
+  CATEGORY_FROM_WIRE,
+  CATEGORY_TO_WIRE,
+  culturePath,
+  destinationPath,
+  postPath,
+} from './content-paths';
 
 /**
  * Prisma rows → the shapes in `@lotuspeak/api-contracts`.
@@ -573,29 +582,84 @@ export async function tripSlugs(): Promise<string[]> {
 /*  Journal                                                                    */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * What a card needs to link to an entry, and the places on the line above it.
+ *
+ * Only the places that are themselves published. An entry about a place the
+ * office has hidden would otherwise print a link that 404s.
+ */
+const POST_SUMMARY_INCLUDE = {
+  hero: { include: MEDIA_INCLUDE },
+  destinations: {
+    orderBy: { sortOrder: 'asc' as const },
+    include: {
+      destination: {
+        select: {
+          slug: true,
+          name: true,
+          status: true,
+          deletedAt: true,
+          parent: { select: { slug: true, status: true, deletedAt: true } },
+        },
+      },
+    },
+  },
+} satisfies Prisma.PostInclude;
+
+type PostSummaryRow = Prisma.PostGetPayload<{ include: typeof POST_SUMMARY_INCLUDE }>;
+
+function serialisePostSummary(post: PostSummaryRow): ApiPostSummary {
+  return {
+    slug: post.slug,
+    title: post.title,
+    path: postPath(post.slug),
+    standfirst: post.standfirst,
+    date: (post.publishedAt ?? post.createdAt).toISOString(),
+    category: CATEGORY_TO_WIRE[post.category],
+    places: post.destinations
+      .map((link) => link.destination)
+      .filter((d) => isLive(d) && (!d.parent || isLive(d.parent)))
+      .map((d) => ({ slug: d.slug, title: d.name, path: destinationPath(d.slug, d.parent?.slug) })),
+    heroImage: img(post.hero),
+    readingMinutes: post.readingMinutes,
+  };
+}
+
+function isLive(row: { status: string; deletedAt: Date | null }): boolean {
+  return row.status === 'PUBLISHED' && row.deletedAt === null;
+}
+
 export async function listPosts(options?: {
   limit?: number;
   exclude?: string;
+  category?: JournalCategory;
 }): Promise<ApiPostSummary[]> {
   const rows = await db.post.findMany({
     where: {
       ...PUBLISHED,
       ...(options?.exclude ? { slug: { not: options.exclude } } : {}),
+      ...(options?.category ? { category: CATEGORY_FROM_WIRE[options.category] } : {}),
     },
     orderBy: [{ sortOrder: 'asc' }, { publishedAt: 'desc' }],
     take: options?.limit,
-    include: { hero: { include: MEDIA_INCLUDE } },
+    include: POST_SUMMARY_INCLUDE,
   });
 
-  return rows.map((post) => ({
-    slug: post.slug,
-    title: post.title,
-    standfirst: post.standfirst,
-    date: (post.publishedAt ?? post.createdAt).toISOString(),
-    region: post.region,
-    heroImage: img(post.hero),
-    readingMinutes: post.readingMinutes,
-  }));
+  return rows.map(serialisePostSummary);
+}
+
+/** Published entries linked to any of these rows, newest first. */
+async function postsAbout(
+  where: Prisma.PostWhereInput,
+  limit = 6,
+): Promise<ApiPostSummary[]> {
+  const rows = await db.post.findMany({
+    where: { ...PUBLISHED, ...where },
+    orderBy: [{ publishedAt: 'desc' }],
+    take: limit,
+    include: POST_SUMMARY_INCLUDE,
+  });
+  return rows.map(serialisePostSummary);
 }
 
 export async function getPost(
@@ -611,6 +675,16 @@ export async function getPost(
         select: { name: true, jobTitle: true, avatar: { include: MEDIA_INCLUDE } },
       },
       tripLinks: { orderBy: { sortOrder: 'asc' }, include: { trip: { select: { slug: true } } } },
+      destinations: {
+        orderBy: { sortOrder: 'asc' },
+        where: { destination: PUBLISHED_DESTINATION },
+        include: { destination: { include: DESTINATION_SUMMARY_INCLUDE } },
+      },
+      culture: {
+        orderBy: { sortOrder: 'asc' },
+        where: { culture: PUBLISHED },
+        include: { culture: { include: { image: { include: MEDIA_INCLUDE } } } },
+      },
     },
   });
   if (!post) return null;
@@ -625,7 +699,7 @@ export async function getPost(
     title: post.title,
     standfirst: post.standfirst,
     date: (post.publishedAt ?? post.createdAt).toISOString(),
-    region: post.region,
+    category: CATEGORY_TO_WIRE[post.category],
     heroImage: img(post.hero),
     body,
     author: post.author
@@ -637,6 +711,8 @@ export async function getPost(
       : null,
     tags: post.tags,
     relatedTripSlugs: post.tripLinks.map((link) => link.trip.slug),
+    destinations: post.destinations.map((link) => serialiseDestinationSummary(link.destination)),
+    culture: post.culture.map((link) => serialiseCultureSummary(link.culture)),
     readingMinutes: post.readingMinutes,
     seo: serialiseSeo(post, img(post.ogImage)),
   };
@@ -703,50 +779,163 @@ async function resolveMedia(ids: string[]): Promise<Map<string, ApiImage>> {
 /*  Places, activities, seasons, culture, gallery, reflections                 */
 /* -------------------------------------------------------------------------- */
 
-export async function listDestinations(): Promise<ApiDestination[]> {
-  const rows = await db.destination.findMany({
-    where: PUBLISHED,
-    orderBy: { sortOrder: 'asc' },
-    include: {
-      image: { include: MEDIA_INCLUDE },
-      ogImage: { include: MEDIA_INCLUDE },
+/**
+ * A place is visible when it is published *and* its valley is.
+ *
+ * Its address is made of its valley's slug, so a place under a hidden valley
+ * would be a page whose breadcrumb and whose parent both 404. Hiding Paro
+ * hides Taktsang with it, which is what the office means by hiding Paro.
+ */
+const PUBLISHED_DESTINATION = {
+  ...PUBLISHED,
+  OR: [{ parentId: null }, { parent: PUBLISHED }],
+} satisfies Prisma.DestinationWhereInput;
+
+const DESTINATION_SUMMARY_INCLUDE = {
+  image: { include: MEDIA_INCLUDE },
+  parent: {
+    select: {
+      slug: true,
+      name: true,
+      /* A place is offered by the journeys through its valley. */
       trips: {
-        /* The destination's own order, not the route's, and only the journeys
-           it actually offers — a null `offerOrder` is a route that passes
-           through. See `TripOnDestination` in the schema. */
         where: { offerOrder: { not: null } },
-        orderBy: { offerOrder: 'asc' },
+        orderBy: { offerOrder: 'asc' as const },
         include: { trip: { select: { slug: true, status: true, deletedAt: true } } },
       },
     },
-  });
+  },
+  places: {
+    where: PUBLISHED,
+    orderBy: { sortOrder: 'asc' as const },
+    select: { slug: true, name: true },
+  },
+  trips: {
+    /* The destination's own order, not the route's, and only the journeys
+       it actually offers — a null `offerOrder` is a route that passes
+       through. See `TripOnDestination` in the schema. */
+    where: { offerOrder: { not: null } },
+    orderBy: { offerOrder: 'asc' as const },
+    include: { trip: { select: { slug: true, status: true, deletedAt: true } } },
+  },
+} satisfies Prisma.DestinationInclude;
 
-  return rows.map((row) => serialiseDestination(row));
-}
+type DestinationSummaryRow = Prisma.DestinationGetPayload<{
+  include: typeof DESTINATION_SUMMARY_INCLUDE;
+}>;
 
-type DestinationRow = Destination & {
-  image: MediaWithRenditions | null;
-  ogImage: MediaWithRenditions | null;
-  trips: { trip: { slug: string; status: string; deletedAt: Date | null } }[];
-};
+function serialiseDestinationSummary(row: DestinationSummaryRow): ApiDestinationSummary {
+  /* A place has no journeys of its own; it is reached by the ones through
+     its valley, and the page says so in those words. */
+  const tripLinks = row.parent ? row.parent.trips : row.trips;
 
-function serialiseDestination(row: DestinationRow): ApiDestination {
   return {
     slug: row.slug,
     name: row.name,
+    path: destinationPath(row.slug, row.parent?.slug),
+    parentSlug: row.parent?.slug ?? null,
     icon: ICON[row.icon],
     blurb: row.blurb,
-    detail: row.detail,
+    standfirst: row.standfirst,
     image: img(row.image),
     /* Unpublished journeys are filtered out here rather than in the query,
        because the join is already loaded and a second `where` on a nested
        relation is a second round trip for six rows. */
-    tripSlugs: row.trips
-      .filter((link) => link.trip.status === 'PUBLISHED' && !link.trip.deletedAt)
+    tripSlugs: tripLinks
+      .filter((link) => isLive(link.trip))
       .map((link) => link.trip.slug),
     altitudeMetres: row.altitudeMetres,
     latitude: row.latitude,
     longitude: row.longitude,
+    places: row.parent
+      ? []
+      : row.places.map((place) => ({
+          slug: place.slug,
+          title: place.name,
+          path: destinationPath(place.slug, row.slug),
+        })),
+  };
+}
+
+/** Every published valley and place, valleys first in their order. */
+export async function listDestinations(): Promise<ApiDestinationSummary[]> {
+  const rows = await db.destination.findMany({
+    where: PUBLISHED_DESTINATION,
+    orderBy: [{ sortOrder: 'asc' }],
+    include: DESTINATION_SUMMARY_INCLUDE,
+  });
+
+  /* Valleys in their order, then places in theirs. A place's `sortOrder` is
+     its position inside its valley, so sorting the two together would
+     interleave Taktsang with Thimphu. */
+  return [...rows.filter((row) => !row.parentId), ...rows.filter((row) => row.parentId)].map(
+    serialiseDestinationSummary,
+  );
+}
+
+/** The path a destination's page is at, published or not. For the preview check. */
+export async function destinationPathForSlug(slug: string): Promise<string | null> {
+  const row = await db.destination.findFirst({
+    where: { slug, deletedAt: null },
+    select: { slug: true, parent: { select: { slug: true } } },
+  });
+  return row ? destinationPath(row.slug, row.parent?.slug) : null;
+}
+
+export async function getDestination(
+  slug: string,
+  options?: { preview?: boolean },
+): Promise<ApiDestination | null> {
+  const preview = options?.preview === true;
+  const row = await db.destination.findFirst({
+    where: { slug, ...(preview ? { deletedAt: null } : PUBLISHED_DESTINATION) },
+    include: {
+      ...DESTINATION_SUMMARY_INCLUDE,
+      ogImage: { include: MEDIA_INCLUDE },
+      places: {
+        where: PUBLISHED,
+        orderBy: { sortOrder: 'asc' },
+        include: DESTINATION_SUMMARY_INCLUDE,
+      },
+    },
+  });
+  if (!row) return null;
+
+  /**
+   * A valley's page gathers what is linked to its places as well.
+   *
+   * Punakha's page should say "see a dzong here" although the link was made
+   * between dzongs and Punakha Dzong — the place is in the valley, and a
+   * traveller reading about the valley is the one who needs to know.
+   */
+  const ids = [row.id, ...row.places.map((place) => place.id)];
+
+  const [cultureLinks, posts] = await Promise.all([
+    db.cultureOnDestination.findMany({
+      where: { destinationId: { in: ids }, culture: PUBLISHED },
+      orderBy: { sortOrder: 'asc' },
+      include: { culture: { include: { image: { include: MEDIA_INCLUDE } } } },
+    }),
+    postsAbout({ destinations: { some: { destinationId: { in: ids } } } }),
+  ]);
+
+  const seen = new Set<string>();
+  const culture = cultureLinks
+    .map((link) => link.culture)
+    .filter((article) => (seen.has(article.id) ? false : (seen.add(article.id), true)))
+    .map(serialiseCultureSummary);
+
+  const body = resolveRichTextMedia(row.body, await resolveFigureMedia(row.body));
+
+  return {
+    ...serialiseDestinationSummary(row),
+    body,
+    parent: row.parent
+      ? { slug: row.parent.slug, title: row.parent.name, path: destinationPath(row.parent.slug, null) }
+      : null,
+    placeCards: row.places.map(serialiseDestinationSummary),
+    culture,
+    posts,
     seo: serialiseSeo(row, img(row.ogImage)),
   };
 }
@@ -798,26 +987,62 @@ export async function listSeasons(): Promise<ApiSeason[]> {
   }));
 }
 
-export async function listCulture(): Promise<ApiCultureArticle[]> {
+function serialiseCultureSummary(row: {
+  slug: string;
+  title: string;
+  standfirst: string;
+  icon: SiteIcon;
+  image: MediaWithRenditions | null;
+}): ApiCultureSummary {
+  return {
+    slug: row.slug,
+    title: row.title,
+    path: culturePath(row.slug),
+    standfirst: row.standfirst,
+    icon: ICON[row.icon],
+    image: img(row.image),
+  };
+}
+
+export async function listCulture(): Promise<ApiCultureSummary[]> {
   const rows = await db.cultureArticle.findMany({
     where: PUBLISHED,
     orderBy: { sortOrder: 'asc' },
+    include: { image: { include: MEDIA_INCLUDE } },
+  });
+  return rows.map(serialiseCultureSummary);
+}
+
+export async function getCulture(
+  slug: string,
+  options?: { preview?: boolean },
+): Promise<ApiCultureArticle | null> {
+  const row = await db.cultureArticle.findFirst({
+    where: { slug, ...visible(options?.preview === true) },
     include: {
       image: { include: MEDIA_INCLUDE },
       ogImage: { include: MEDIA_INCLUDE },
+      destinations: {
+        orderBy: { sortOrder: 'asc' },
+        where: { destination: PUBLISHED_DESTINATION },
+        include: { destination: { include: DESTINATION_SUMMARY_INCLUDE } },
+      },
     },
   });
+  if (!row) return null;
 
-  return rows.map(
-    (row): ApiCultureArticle => ({
-      slug: row.slug,
-      title: row.title,
-      body: row.body,
-      icon: ICON[row.icon],
-      image: img(row.image),
-      seo: serialiseSeo(row, img(row.ogImage)),
-    }),
-  );
+  const [posts, body] = await Promise.all([
+    postsAbout({ culture: { some: { cultureId: row.id } } }),
+    resolveFigureMedia(row.body).then((media) => resolveRichTextMedia(row.body, media)),
+  ]);
+
+  return {
+    ...serialiseCultureSummary(row),
+    body,
+    destinations: row.destinations.map((link) => serialiseDestinationSummary(link.destination)),
+    posts,
+    seo: serialiseSeo(row, img(row.ogImage)),
+  };
 }
 
 export async function listGallery(options?: { limit?: number }): Promise<ApiGalleryImage[]> {
@@ -980,51 +1205,68 @@ function serialiseSections(
 /* -------------------------------------------------------------------------- */
 
 export async function getSitemap() {
-  const [trips, posts, pages, destinations] = await Promise.all([
+  const SEO_FIELDS = { updatedAt: true, sitemapPriority: true, sitemapChangeFreq: true } as const;
+
+  const [trips, posts, pages, destinations, culture] = await Promise.all([
     db.trip.findMany({
       where: { ...PUBLISHED, noIndex: false },
-      select: { slug: true, updatedAt: true, sitemapPriority: true, sitemapChangeFreq: true },
+      select: { slug: true, ...SEO_FIELDS },
     }),
     db.post.findMany({
       where: { ...PUBLISHED, noIndex: false },
-      select: { slug: true, updatedAt: true, sitemapPriority: true, sitemapChangeFreq: true },
+      select: { slug: true, category: true, ...SEO_FIELDS },
     }),
     db.page.findMany({
       where: { ...PUBLISHED, noIndex: false, showInSitemap: true },
-      select: { path: true, updatedAt: true, sitemapPriority: true, sitemapChangeFreq: true },
+      select: { path: true, ...SEO_FIELDS },
     }),
     db.destination.findMany({
+      where: { ...PUBLISHED_DESTINATION, noIndex: false },
+      select: { slug: true, parent: { select: { slug: true } }, ...SEO_FIELDS },
+    }),
+    db.cultureArticle.findMany({
       where: { ...PUBLISHED, noIndex: false },
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, ...SEO_FIELDS },
     }),
   ]);
 
+  const entry = (
+    path: string,
+    row: { updatedAt: Date; sitemapPriority: number; sitemapChangeFreq: string },
+  ) => ({
+    path,
+    lastModified: row.updatedAt.toISOString(),
+    changeFrequency: row.sitemapChangeFreq as ApiSeo['sitemapChangeFreq'],
+    priority: row.sitemapPriority,
+  });
+
+  /**
+   * A shelf of the journal is listed only when something is on it.
+   *
+   * An empty category page is a thin page, and a sitemap that offers a
+   * crawler four of them on day one is four reasons to think less of the
+   * site. Its freshness is its newest entry's.
+   */
+  const shelves = new Map<string, Date>();
+  for (const post of posts) {
+    const key = CATEGORY_TO_WIRE[post.category];
+    const current = shelves.get(key);
+    if (!current || post.updatedAt > current) shelves.set(key, post.updatedAt);
+  }
+
   const entries = [
-    ...pages.map((page) => ({
-      path: page.path,
-      lastModified: page.updatedAt.toISOString(),
-      changeFrequency: page.sitemapChangeFreq as ApiSeo['sitemapChangeFreq'],
-      priority: page.sitemapPriority,
-    })),
-    ...trips.map((trip) => ({
-      path: `/trips/${trip.slug}`,
-      lastModified: trip.updatedAt.toISOString(),
-      changeFrequency: trip.sitemapChangeFreq as ApiSeo['sitemapChangeFreq'],
-      priority: trip.sitemapPriority,
-    })),
-    ...posts.map((post) => ({
-      path: `/journal/${post.slug}`,
-      lastModified: post.updatedAt.toISOString(),
-      changeFrequency: post.sitemapChangeFreq as ApiSeo['sitemapChangeFreq'],
-      priority: post.sitemapPriority,
+    ...pages.map((page) => entry(page.path, page)),
+    ...trips.map((trip) => entry(`/trips/${trip.slug}`, trip)),
+    ...destinations.map((row) => entry(destinationPath(row.slug, row.parent?.slug), row)),
+    ...culture.map((row) => entry(culturePath(row.slug), row)),
+    ...posts.map((post) => entry(postPath(post.slug), post)),
+    ...[...shelves].map(([key, updatedAt]) => ({
+      path: `/journal/category/${key}`,
+      lastModified: updatedAt.toISOString(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.5,
     })),
   ];
-
-  /* Destinations render as anchors on one page rather than as pages of their
-     own, so they contribute their freshness to that page and not entries of
-     their own — a sitemap listing six URLs that all resolve to the same
-     document is six ways to say one thing. */
-  void destinations;
 
   return entries.sort((a, b) => b.priority - a.priority);
 }

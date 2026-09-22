@@ -53,19 +53,36 @@ export async function changeSlug(args: {
     (slug) => slug !== next,
   );
 
-  const from = joinPath(args.pathPrefix, args.currentSlug);
-  const to = joinPath(args.pathPrefix, next);
+  await redirectMoved({
+    from: joinPath(args.pathPrefix, args.currentSlug),
+    to: joinPath(args.pathPrefix, next),
+    note: `Written automatically when the ${args.entity} slug changed.`,
+  });
+
+  return { slug: next, slugHistory: history };
+}
+
+/**
+ * Keeps an old URL answering after a page moves.
+ *
+ * `changeSlug` is the common case; this is the general one. A place's URL has
+ * its valley's slug in it — `/destinations/paro/taktsang` — so renaming Paro,
+ * or moving Taktsang to another valley, moves a page whose own slug never
+ * changed. Those callers know both paths and need the same two writes.
+ */
+export async function redirectMoved(args: { from: string; to: string; note: string }): Promise<void> {
+  if (args.from === args.to) return;
 
   await db.redirect.upsert({
-    where: { source: from },
+    where: { source: args.from },
     create: {
-      source: from,
-      target: to,
+      source: args.from,
+      target: args.to,
       type: 'MOVED_301',
       isAutomatic: true,
-      note: `Written automatically when the ${args.entity} slug changed.`,
+      note: args.note,
     },
-    update: { target: to, isActive: true },
+    update: { target: args.to, isActive: true },
   });
 
   /**
@@ -77,11 +94,15 @@ export async function changeSlug(args: {
    * deleted. Rewriting them flat keeps every old URL one hop from the answer.
    */
   await db.redirect.updateMany({
-    where: { target: from, source: { not: to } },
-    data: { target: to },
+    where: { target: args.from, source: { not: args.to } },
+    data: { target: args.to },
   });
 
-  return { slug: next, slugHistory: history };
+  /* A page moved back to where it was must not be redirected away from itself. */
+  await db.redirect.updateMany({
+    where: { source: args.to, isAutomatic: true },
+    data: { isActive: false },
+  });
 }
 
 function joinPath(prefix: string, slug: string): string {

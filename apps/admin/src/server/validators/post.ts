@@ -28,12 +28,17 @@ export const postSchema = z.object({
   title: z.string().min(1, 'Give the entry a title.').max(200),
   slug: z.string().max(140).optional(),
   standfirst: z.string().max(600).default(''),
-  region: z.string().max(120).default(''),
+  /** Which shelf. Where it is about is `destinationIds`, not this. */
+  category: z.enum(['JOURNEYS', 'TRAVEL_GUIDES', 'EXPERIENCES', 'STORIES']).default('STORIES'),
   body: richTextSchema.default(''),
   heroId: z.string().nullable().optional(),
   authorId: z.string().nullable().optional(),
   tags: z.array(z.string().max(60)).max(20).default([]),
   relatedTripIds: z.array(z.string()).max(12).default([]),
+  /** The places it is about. A valley or a place inside one. */
+  destinationIds: z.array(z.string()).max(12).default([]),
+  /** The culture it explains. */
+  cultureIds: z.array(z.string()).max(12).default([]),
   featured: z.boolean().default(false),
   status: statusSchema.default('DRAFT'),
   publishedAt: z.string().datetime().nullable().optional(),
