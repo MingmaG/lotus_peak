@@ -41,7 +41,7 @@ packages/
   email         the transactional templates, as table HTML
   media         rendition widths, srcset, focal point
 docker/         Postgres and MinIO for development
-docs/           PLAN.md, CUTOVER.md
+docs/           PLAN.md, CUTOVER.md, GIT-WORKFLOW.md
 deploy/         deployment notes
 ```
 
@@ -135,3 +135,28 @@ What actually catches things:
   hour. A build after a contract change otherwise reuses yesterday's payload and either
   renders without the new field or dies on `Cannot read properties of undefined`. It
   looks exactly like a bug in the mapper, and it is not.
+
+## 8. Working together on one repo
+
+Two developers share this repo — one mainly `apps/web`, one mainly `apps/admin` and the
+wiring between them — so the branch discipline is part of the build, not paperwork.
+`docs/GIT-WORKFLOW.md` is the full guide: setup, the daily loop, conflict recipes per
+file, releases, and how to get out of trouble. The rules that bind:
+
+- **`main` is production, `develop` is the latest working code.** Everyone branches from
+  `develop` and merges back into it through a pull request; nobody commits directly to
+  either. `main` moves only by a deliberate release of `develop`, or a `hotfix/*`.
+- **Branch from a freshly pulled `develop`, and rebase onto `origin/develop` daily** —
+  always before opening the PR. `pull.rebase=true`, and `--force-with-lease` on your own
+  branch, never bare `--force`, never a force push to `main` or `develop`.
+- **After every pull, react to what arrived.** `package-lock.json` changed →
+  `npm install`. A new migration → `npm run db:deploy`. `packages/api-contracts` changed
+  → `rm -rf apps/web/.next/cache`, for the reason in §7. Skipping this looks exactly like
+  a bug in your own work.
+- **A change to `packages/*` or `apps/admin/prisma/` is its own small PR, merged first,
+  and announced.** The contract only does its job — both sides failing to compile when
+  they disagree — if both sides are compiling against the same version of it. Never edit
+  a migration that has already been pushed; correct it with a new one.
+- **`npm run typecheck && npm run lint && npm run build:web` before asking for review,**
+  and read the route table. A reviewer cannot see an `ƒ` in a diff.
+- One change per branch, days not weeks, pushed at least daily even when unfinished.
