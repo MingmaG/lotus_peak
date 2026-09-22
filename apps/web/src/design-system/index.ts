@@ -13,6 +13,7 @@ export { Checkbox, type CheckboxProps } from './forms/Checkbox'
 export { Disclosure, PlusMinus, type DisclosureProps } from './primitives/Disclosure'
 
 export { NavBar, type NavBarProps, type NavItem } from './navigation/NavBar'
+export { MenuMap, type MenuMapProps } from './navigation/MenuMap'
 export { Footer, type FooterProps, type FooterColumn } from './navigation/Footer'
 export { Tabs, type TabsProps } from './navigation/Tabs'
 

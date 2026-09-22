@@ -418,3 +418,67 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* ---------------------------------------------------------------------------
+   The menu's map of Bhutan
+
+   `MenuMap` writes these two animations from inline styles, where a keyframe
+   cannot be declared. The drift is a degree and a half either side of rest —
+   reduced motion switches it off in the component rather than here, because it
+   is the only way to stop an infinite animation without leaving it mid-turn.
+   --------------------------------------------------------------------------- */
+
+@keyframes lp-map-fade { from { opacity: 0 } to { opacity: 1 } }
+
+@keyframes lp-map-drift {
+  0% { transform: rotateZ(-1.5deg) }
+  50% { transform: rotateZ(1.5deg) }
+  100% { transform: rotateZ(-1.5deg) }
+}
+
+/* What to do with the map depends on what is pointing at it, not on how wide
+   the screen is: a small laptop still has a cursor to rest, and a large tablet
+   has not. */
+.lp-map-hint-coarse { display: none }
+
+@media (pointer: coarse) {
+  .lp-map-hint-fine { display: none }
+  .lp-map-hint-coarse { display: inline }
+}
+
+/* ---------------------------------------------------------------------------
+   Phones
+   --------------------------------------------------------------------------- */
+
+/* The journey page's sub-nav is seven items in a centred row. On a phone they
+   wrap to four lines, and four lines of sticky chrome beneath a sticky nav
+   leaves a reading window barely taller than a heading. It becomes one line
+   that scrolls sideways instead; `SectionNav` keeps the section being read
+   inside it. */
+@media (max-width: 900px) {
+  .lp-section-nav {
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 28px !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lp-section-nav::-webkit-scrollbar { display: none }
+  .lp-section-nav > button { flex: none; white-space: nowrap }
+}
+
+/* The dignity rail is a caption plate fixed to the bottom-right corner. On a
+   desktop it sits in the margin; on a phone there is no margin, so it stands on
+   top of whatever is being read, on every page, for as long as the visit lasts.
+   The medallion it opens is an ornament, not a route — the same trade as the
+   search field above. */
+@media (max-width: 720px) {
+  .lp-dignity-rail { display: none !important }
+}
+
+/* Footer links are set at reading size in a tight column, which is a 28px
+   target on a screen that is touched rather than pointed at. */
+@media (pointer: coarse) {
+  .lp-footer-cols a { display: inline-block; padding-block: 6px }
+}

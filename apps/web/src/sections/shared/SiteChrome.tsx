@@ -111,7 +111,10 @@ export function SiteChrome({
         />
       </InquiryDrawer>
 
-      <div style={{ position: 'fixed', left: 32, bottom: 32, zIndex: 200, pointerEvents: 'none' }}>
+      {/* Bounded on the right as well as the left: the toast is inline-flex, so
+          on a phone the sentence wraps inside the screen instead of running off
+          it. On a wide screen it still hugs its text in the bottom corner. */}
+      <div style={{ position: 'fixed', left: 32, right: 32, bottom: 32, zIndex: 200, pointerEvents: 'none' }}>
         <Toast open={!!toast} message={toast ?? ''} />
       </div>
     </Ctx.Provider>

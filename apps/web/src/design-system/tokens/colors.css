@@ -14,6 +14,13 @@
 --sky-deep:#15618F;/* type, rules, CTAs on paper — 6.7:1 on white */
 --sky-ink:#0C3E5C;/* dark section grounds */
 --sky-soft:#DCEDFC;
+/* Two further steps of the same blue, for the menu's map of Bhutan:
+   --sky-tint is the alternate district fill that keeps neighbours apart
+   without a second hue, and --sky-mid is the top of the extrusion, which
+   ramps from there down to --sky-deep. Both are the design project's own
+   values; they are tokens here because this app may not inline a colour. */
+--sky-tint:#94CFFE;
+--sky-mid:#50A0DC;
 --sky-wash:#F2F8FD;
 /* Accent — monk robe. Saffron is the single secondary accent. */
 --saffron:#D98A2B;
@@ -61,5 +68,6 @@
 --focus-ring:var(--sky-2);
 --surface-veil:rgba(255,255,255,.72);/* translucent chrome standing over imagery */
 --scrim:rgba(12,62,92,.55);/* modal grounds — lotus sky ink, never pine */
+--glow-veil:drop-shadow(0 1px 1px rgba(255,255,255,.95)) drop-shadow(0 0 7px rgba(255,255,255,.8)) drop-shadow(0 0 18px rgba(255,255,255,.6));/* @kind other — halo for chrome standing on imagery with no plate behind it. A filter, not a text-shadow: the dignity rail's gold rule and its four markers are boxes, and a text-shadow would leave them to vanish on a dark hero while only the caps survived. */
 --protection:linear-gradient(to top,rgba(12,62,92,.58),rgba(12,62,92,0) 60%);/* @kind other */
 }
