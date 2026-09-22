@@ -1,23 +1,43 @@
-import { NotBuiltYet } from '@/components/shared/not-built-yet';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
+
+import { BookingsTable } from '@/components/bookings/bookings-table';
+import { PageHeader } from '@/components/shared/page-header';
+import { Button } from '@/components/ui/button';
+import { can } from '@/lib/auth/permissions';
 import { requirePermission } from '@/lib/auth/session';
+import { db } from '@/lib/db';
 
 export const metadata = { title: 'Bookings' };
 export const dynamic = 'force-dynamic';
 
 export default async function BookingsPage() {
-  await requirePermission('bookings.read');
+  const user = await requirePermission('bookings.read');
+  const canWrite = can(user.permissions, 'bookings.write');
+
+  const trips = await db.trip.findMany({
+    where: { deletedAt: null },
+    orderBy: { sortOrder: 'asc' },
+    select: { id: true, title: true },
+  });
 
   return (
-    <NotBuiltYet
-      title="Bookings"
-      description="A journey somebody has actually committed to, and everything that follows from it."
-      willHold={[
-        "Who is coming, on which departure, and what they have paid",
-        "The itinerary as confirmed, which can differ from the published one",
-        "Permits, visas and the paperwork Bhutan asks for before arrival",
-        "A note trail, so anybody in the office can pick up a conversation"
-]}
-      needs="A Booking table, and a decision about whether a booking is created here or by the traveller on the website."
-    />
+    <>
+      <PageHeader
+        title="Bookings"
+        description="A journey somebody has committed to: who is coming, what it costs, and what they have paid."
+        actions={
+          canWrite ? (
+            <Button asChild size="sm">
+              <Link href="/bookings/new">
+                <Plus className="mr-1.5 size-3.5" />
+                Take a booking
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
+      <BookingsTable trips={trips} canWrite={canWrite} />
+    </>
   );
 }

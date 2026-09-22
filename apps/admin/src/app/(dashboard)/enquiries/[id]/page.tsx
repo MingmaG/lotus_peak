@@ -73,6 +73,7 @@ export default async function EnquiryPage({ params }: { params: Promise<{ id: st
       users={users}
       canWrite={can(user.permissions, 'enquiries.write')}
       canDelete={can(user.permissions, 'enquiries.delete')}
+      canBook={can(user.permissions, 'bookings.write')}
     />
   );
 }

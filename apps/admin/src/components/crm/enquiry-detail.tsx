@@ -1,7 +1,15 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Loader2, Mail, MessageSquarePlus, Phone, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  BookMarked,
+  Loader2,
+  Mail,
+  MessageSquarePlus,
+  Phone,
+  Trash2,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -94,11 +102,14 @@ export function EnquiryDetail({
   users,
   canWrite,
   canDelete,
+  canBook,
 }: {
   enquiry: EnquiryDetailData;
   users: { id: string; name: string }[];
   canWrite: boolean;
   canDelete: boolean;
+  /** `bookings.write`. Reservations has it; an Editor does not. */
+  canBook: boolean;
 }) {
   const router = useRouter();
   const client = useQueryClient();
@@ -163,6 +174,24 @@ export function EnquiryDetail({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/**
+           * Where an enquiry goes when the answer is yes.
+           *
+           * A link rather than a button that creates one: a booking needs a
+           * price and a party size that this enquiry does not have, and a
+           * half-made booking appearing in the list because somebody clicked
+           * to see what it did is worse than one more screen. The booking form
+           * arrives pre-filled, and saving it marks this enquiry converted.
+           */}
+          {canBook && (
+            <Button size="sm" asChild>
+              <Link href={`/bookings/new?enquiry=${enquiry.id}`}>
+                <BookMarked className="size-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Turn into a booking</span>
+              </Link>
+            </Button>
+          )}
+
           <Button variant="outline" size="sm" asChild>
             <a href={mailto}>
               <Mail className="size-4 sm:mr-1.5" />

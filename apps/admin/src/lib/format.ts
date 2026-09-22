@@ -15,6 +15,27 @@ export function currency(amountUsd: number): string {
   }).format(amountUsd);
 }
 
+/**
+ * Money held as minor units: `123450` → `$1,234.50`.
+ *
+ * Separate from `currency()` above, and not folded into it, because the two
+ * take different numbers. The catalogue holds whole dollars and prints them
+ * without a decimal; a booking holds cents and must print both places, since
+ * `$1,234.5` on an invoice is a figure somebody queries.
+ *
+ * The trailing `.00` stays. A column of totals where some have decimals and
+ * some do not is a column that does not line up, and lining up is most of what
+ * a table of money is for.
+ */
+export function money(cents: number, currencyCode = 'USD'): string {
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: currencyCode,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
+}
+
 export function metres(value: number): string {
   return `${new Intl.NumberFormat('en-GB').format(value)} m`;
 }

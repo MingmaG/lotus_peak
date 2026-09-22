@@ -1,13 +1,19 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Send, Users } from 'lucide-react';
+import { Plus, Send, Users } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 import { toast } from 'sonner';
 
 import { DataTable, type Column } from '@/components/shared/data-table';
 import { EmptyState } from '@/components/shared/empty-state';
+import { Button } from '@/components/ui/button';
+import {
+  CustomerSheet,
+  blankCustomer,
+  type CustomerForm,
+} from '@/components/crm/customer-form';
 import {
   Select,
   SelectContent,
@@ -185,11 +191,25 @@ interface Customer {
   country: string | null;
   notes: string | null;
   createdAt: string;
-  _count: { enquiries: number };
+  _count: { enquiries: number; bookings: number };
 }
 
-export function CustomersScreen() {
+/**
+ * Everybody the office keeps a record of.
+ *
+ * Still not created automatically from an enquiry — two enquiries from one
+ * address are often two people at the same organisation, and merging them
+ * silently loses the distinction. What changed is that a booking has to be
+ * invoiced to somebody, so these are now made *before* a booking as well as
+ * after two enquiries turn out to be one person.
+ *
+ * Adding one is a sheet rather than a page: it is a dozen optional fields
+ * around a name and an address, and a whole route for that is a route with a
+ * Back button that loses what was typed.
+ */
+export function CustomersScreen({ canWrite }: { canWrite: boolean }) {
   const { search, page, setParams } = useListParams('/customers');
+  const [editing, setEditing] = React.useState<CustomerForm | null>(null);
 
   const { data, isLoading } = useQuery<{
     items: Customer[];
@@ -220,9 +240,16 @@ export function CustomersScreen() {
       render: (row) => <span className="text-muted-foreground">{row.country ?? '—'}</span>,
     },
     {
+      key: 'bookings',
+      label: 'Bookings',
+      align: 'right',
+      render: (row) => <span className="tabular-nums">{row._count.bookings}</span>,
+    },
+    {
       key: 'enquiries',
       label: 'Enquiries',
       align: 'right',
+      hideBelow: 'md',
       render: (row) => <span className="tabular-nums">{row._count.enquiries}</span>,
     },
     {
@@ -239,25 +266,52 @@ export function CustomersScreen() {
   ];
 
   return (
-    <DataTable
-      rows={data?.items ?? []}
-      columns={columns}
-      rowKey={(row) => row.id}
-      loading={isLoading}
-      empty={
-        <EmptyState
-          icon={Users}
-          title="No customers yet"
-          description="A customer is created from an enquiry when the office decides two enquiries are the same person — which is a judgement, not something to guess from a matching address."
-        />
-      }
-      search={search}
-      onSearch={(value) => setParams({ q: value })}
-      searchPlaceholder="Search by name, address or country…"
-      page={data?.page ?? 1}
-      totalPages={data?.totalPages ?? 1}
-      total={data?.total ?? 0}
-      onPage={(next) => setParams({ page: next })}
-    />
+    <>
+      <DataTable
+        rows={data?.items ?? []}
+        columns={columns}
+        rowKey={(row) => row.id}
+        href={(row) => `/customers/${row.id}`}
+        loading={isLoading}
+        empty={
+          <EmptyState
+            icon={Users}
+            title="No customers yet"
+            description="A customer is who a booking is invoiced to, and who several enquiries turn out to be. Neither is guessed from a matching address — both are somebody's judgement."
+            action={
+              canWrite ? (
+                <Button size="sm" onClick={() => setEditing(blankCustomer())}>
+                  <Plus className="mr-1.5 size-3.5" />
+                  Add a customer
+                </Button>
+              ) : undefined
+            }
+          />
+        }
+        search={search}
+        onSearch={(value) => setParams({ q: value })}
+        searchPlaceholder="Search by name, address or country…"
+        page={data?.page ?? 1}
+        totalPages={data?.totalPages ?? 1}
+        total={data?.total ?? 0}
+        onPage={(next) => setParams({ page: next })}
+        toolbar={
+          canWrite && (data?.items.length ?? 0) > 0 ? (
+            <div className="flex justify-end">
+              <Button size="sm" onClick={() => setEditing(blankCustomer())}>
+                <Plus className="mr-1.5 size-3.5" />
+                Add a customer
+              </Button>
+            </div>
+          ) : undefined
+        }
+      />
+
+      <CustomerSheet
+        form={editing}
+        open={editing !== null}
+        onOpenChange={(open) => !open && setEditing(null)}
+      />
+    </>
   );
 }

@@ -126,6 +126,118 @@ enum EnquirySource {
   WALK_IN
 }
 
+/// How the journey was sold, which is not the same question as how many are
+/// coming.
+///
+/// A party of one on a published departure and a party of one on their own
+/// dates are two different pieces of work for the office, and the difference
+/// is this enum. **Solo and group are not in here** — they are `adults +
+/// children`, derived, and the Bookings screen filters on it. An enum holding
+/// both axes would have a `SOLO_FIXED_DEPARTURE` in it within a month, and a
+/// booking that grew from one traveller to three would have to change kind to
+/// stay true.
+enum BookingKind {
+  /// A place on a dated departure the office published. `departureId` is set.
+  FIXED_DEPARTURE
+  /// This party alone, on dates agreed with them. Most of what Lotus Peak sells.
+  PRIVATE
+  /// A journey built for them. `tripId` is the nearest published one, or none.
+  CUSTOM
+}
+
+/// Where a booking is, as the office would say it.
+///
+/// Deliberately not a payment state. "Confirmed" is a decision somebody makes;
+/// "paid in full" is arithmetic over the payments table, and the two disagree
+/// all the time — a booking is confirmed on a deposit and stays confirmed for
+/// four months while the balance is outstanding. Mixing them into one column
+/// forces a lie in whichever direction the office last needed.
+enum BookingStatus {
+  /// Being put together in the office. Not yet offered to anybody.
+  DRAFT
+  /// Offered and held, waiting on a deposit.
+  PROVISIONAL
+  /// It is happening. Deposit taken, or the office has decided it is.
+  CONFIRMED
+  /// They have travelled.
+  COMPLETED
+  CANCELLED
+}
+
+/// What a line on the bill is for.
+///
+/// A booking's price is a list of lines and not a number, because every quote
+/// this office sends is: the journey per head, the single supplement, the
+/// Sustainable Development Fee, an extra night in Paro. A single `totalCents`
+/// answers "how much" and nothing else, and the first question a traveller
+/// asks about an invoice is what the difference is made of.
+enum BookingItemKind {
+  JOURNEY
+  SUPPLEMENT
+  EXTRA
+  PERMIT
+  FEE
+  DISCOUNT
+  OTHER
+}
+
+/// Which way the money went.
+///
+/// A refund is a `Payment` row with `direction = OUT` rather than a negative
+/// amount. Negative amounts on a ledger make every sum in the application
+/// depend on remembering the sign, and one forgotten `Math.abs` turns a
+/// refunded booking into an overpaid one.
+enum PaymentDirection {
+  IN
+  OUT
+}
+
+enum PaymentKind {
+  DEPOSIT
+  BALANCE
+  FULL
+  EXTRA
+  REFUND
+  ADJUSTMENT
+}
+
+/// A payment exists before it has cleared.
+///
+/// A bank transfer from Europe takes days, and the office needs to see it as
+/// expected-but-not-arrived in between — otherwise the row is either created
+/// early and overstates what is paid, or created late and the balance screen
+/// is wrong for a week.
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+/// How it arrived. Bhutan's list, not Stripe's.
+///
+/// Most of what this office receives is a bank transfer against an invoice;
+/// `CARD` covers the payment link, and `CASH` is what a walk-in hands over at
+/// the office in Thimphu. Nothing here assumes a payment provider, because
+/// there is not one yet — every row on this table is recorded by a person who
+/// has seen the money.
+enum PaymentMethod {
+  BANK_TRANSFER
+  CARD
+  CASH
+  WISE
+  PAYPAL
+  CHEQUE
+  OTHER
+}
+
+enum CouponKind {
+  /// `value` is a percentage, 1–100.
+  PERCENTAGE
+  /// `value` is minor units of `currency`.
+  FIXED_AMOUNT
+}
+
 /// The platforms the footer and the JSON-LD `sameAs` know about.
 ///
 /// An enum, not a free string, because the site picks an icon from it and a
@@ -230,11 +342,11 @@ model User {
   roleId String
   role   Role   @relation(fields: [roleId], references: [id])
 
-  isActive    Boolean   @default(true)
-  lastLoginAt DateTime?
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
   /// Consecutive failures. Cleared on a success; a lock is a count, not a flag,
   /// so the message can say how many attempts remain.
-  failedLogins Int      @default(0)
+  failedLogins Int       @default(0)
   lockedUntil  DateTime?
 
   sessions      Session[]
@@ -245,6 +357,8 @@ model User {
   notes         Note[]
   tasks         Task[]               @relation("TaskOwner")
   authoredPosts Post[]               @relation("PostAuthor")
+  bookings      Booking[]            @relation("BookingAssignee")
+  payments      Payment[]            @relation("PaymentRecordedBy")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -287,17 +401,17 @@ model Role {
 /// asks for, and neither is answerable without one. The access token is short
 /// and stateless; this is what the refresh token points at.
 model Session {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// SHA-256 of the refresh token. The token itself is never stored: a leaked
   /// database should not be a set of working sessions.
-  tokenHash    String   @unique
-  userAgent    String?
-  ipAddress    String?
-  expiresAt    DateTime
-  revokedAt    DateTime?
-  lastSeenAt   DateTime  @default(now())
+  tokenHash  String    @unique
+  userAgent  String?
+  ipAddress  String?
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastSeenAt DateTime  @default(now())
 
   createdAt DateTime @default(now())
 
@@ -328,20 +442,20 @@ model PasswordResetToken {
 /// several kilobytes per save, and the question this table answers is "what
 /// changed", not "what did it look like".
 model ActivityLog {
-  id       String         @id @default(cuid())
-  userId   String?
-  user     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action   ActivityAction
+  id          String         @id @default(cuid())
+  userId      String?
+  user        User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      ActivityAction
   /// `trip`, `page`, `enquiry` — the kind of thing, in the office's words.
-  entity   String
-  entityId String?
+  entity      String
+  entityId    String?
   /// What it was called at the time. A deleted row's name is otherwise lost,
   /// and "deleted trip cm3x9…" is not an audit trail anyone can read.
   entityLabel String?
-  before   Json?
-  after    Json?
-  ipAddress String?
-  userAgent String?
+  before      Json?
+  after       Json?
+  ipAddress   String?
+  userAgent   String?
 
   createdAt DateTime @default(now())
 
@@ -380,17 +494,17 @@ model MediaFolder {
 /// is a decision somebody made rather than a field somebody missed — and the
 /// upload form refuses to close without one or the other.
 model Media {
-  id       String    @id @default(cuid())
-  kind     MediaKind @default(IMAGE)
+  id          String    @id @default(cuid())
+  kind        MediaKind @default(IMAGE)
   /// Storage key, e.g. `media/<id>/original.jpg`. Not a URL: the public origin
   /// is config, so moving from MinIO to a CDN is an env var and not an UPDATE
   /// over every row.
-  storageKey String  @unique
-  filename   String
-  mimeType   String
-  sizeBytes  Int
-  width      Int?
-  height     Int?
+  storageKey  String    @unique
+  filename    String
+  mimeType    String
+  sizeBytes   Int
+  width       Int?
+  height      Int?
   /// Blurred placeholder, base64. Null where it could not be made — a PDF, or
   /// a source Sharp refused.
   blurDataUrl String?
@@ -488,34 +602,34 @@ model MediaRendition {
 /// the cheaper of the two, and Prisma's generated types let the admin panel
 /// share one SEO form across all of them anyway.
 model Trip {
-  id      String @id @default(cuid())
-  slug    String @unique
+  id      String   @id @default(cuid())
+  slug    String   @unique
   title   String
   excerpt String
   type    TripType
 
   /// The line under the title: "A journey of eleven days".
-  journeyLabel String
-  durationDays Int
-  nights       Int
+  journeyLabel    String
+  durationDays    Int
+  nights          Int
   highPointMetres Int
-  difficulty   Difficulty
+  difficulty      Difficulty
   /// The *from* price. Never the price — group size and season move it, and a
   /// single figure presented as final is contradicted by the first quote.
-  priceFromUsd Int
+  priceFromUsd    Int
   /// ISO 4217. Bhutan quotes in dollars and always has.
-  priceCurrency String @default("USD")
+  priceCurrency   String            @default("USD")
   /// The sentence under the price — what it excludes, when it changes.
-  priceNote     String?
+  priceNote       String?
   /// Group pricing: the same journey costs less per head with more people.
-  pricingTiers  TripPricingTier[]
+  pricingTiers    TripPricingTier[]
   /// "Spring and autumn". Prose, because the honest answer is not a range.
-  seasonLabel  String
-  seasonKeys   SeasonKey[] @default([])
+  seasonLabel     String
+  seasonKeys      SeasonKey[]       @default([])
   /// "Two rest days, and nothing scheduled before eight."
-  paceNote     String
-  groupSizeMin Int?
-  groupSizeMax Int?
+  paceNote        String
+  groupSizeMin    Int?
+  groupSizeMax    Int?
 
   /// The opening paragraphs, one row per paragraph in `overview`.
   overview String[] @default([])
@@ -544,7 +658,7 @@ model Trip {
   /// it visits, for the cross-links. The editor builds the first from the
   /// second with one button and lets the office correct it, which is the only
   /// arrangement where both stay true.
-  regions  String[] @default([])
+  regions String[] @default([])
 
   heroId String?
   hero   Media?  @relation("TripHero", fields: [heroId], references: [id], onDelete: SetNull)
@@ -579,16 +693,18 @@ model Trip {
   departures   Departure[]
   reflections  Reflection[]
   enquiries    Enquiry[]
+  bookings     Booking[]
+  couponScopes CouponOnTrip[]
   relatedFrom  TripRelated[]       @relation("RelatedSource")
   relatedTo    TripRelated[]       @relation("RelatedTarget")
   postLinks    PostOnTrip[]
   pageLinks    PageOnTrip[]
 
-  featured  Boolean       @default(false)
-  status    ContentStatus @default(DRAFT)
+  featured     Boolean       @default(false)
+  status       ContentStatus @default(DRAFT)
   publishedAt  DateTime?
   scheduledFor DateTime?
-  sortOrder    Int        @default(0)
+  sortOrder    Int           @default(0)
 
   // --- SEO ---
   metaTitle         String?
@@ -727,7 +843,7 @@ model TripFaqGroup {
   title     String
   /// A sentence under the heading, where the heading is not enough.
   blurb     String?
-  sortOrder Int    @default(0)
+  sortOrder Int     @default(0)
 
   faqs TripFaq[]
 
@@ -749,14 +865,14 @@ model TripPricingTier {
   tripId String
   trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
-  label     String
-  minPeople Int
-  maxPeople Int?
-  priceUsd  Int
+  label       String
+  minPeople   Int
+  maxPeople   Int?
+  priceUsd    Int
   /// Struck through beside the price, for a season's offer.
   wasPriceUsd Int?
-  note      String?
-  sortOrder Int    @default(0)
+  note        String?
+  sortOrder   Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -766,11 +882,11 @@ model TripPricingTier {
 }
 
 model TripGalleryItem {
-  id      String @id @default(cuid())
-  tripId  String
-  trip    Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  mediaId String
-  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  tripId    String
+  trip      Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
   /// CSS aspect ratio for this cell, e.g. `3/4`. Null takes the photograph's
   /// own, snapped to the design's vocabulary.
   ratio     String?
@@ -812,9 +928,9 @@ model Departure {
   tripId String
   trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
-  startDate DateTime
-  endDate   DateTime
-  priceUsd  Int
+  startDate   DateTime
+  endDate     DateTime
+  priceUsd    Int
   placesTotal Int?
   placesLeft  Int?
   status      DepartureStatus @default(OPEN)
@@ -831,6 +947,8 @@ model Departure {
 
   isPublished Boolean @default(true)
 
+  bookings Booking[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -844,8 +962,8 @@ model Departure {
 // =============================================================================
 
 model Destination {
-  id     String @id @default(cuid())
-  slug   String @unique
+  id     String   @id @default(cuid())
+  slug   String   @unique
   name   String
   icon   SiteIcon @default(DZONG)
   /// One line, on the card.
@@ -860,9 +978,9 @@ model Destination {
   latitude       Float?
   longitude      Float?
 
-  trips     TripOnDestination[]
-  sortOrder Int                 @default(0)
-  status    ContentStatus       @default(PUBLISHED)
+  trips       TripOnDestination[]
+  sortOrder   Int                 @default(0)
+  status      ContentStatus       @default(PUBLISHED)
   publishedAt DateTime?
 
   metaTitle         String?
@@ -944,12 +1062,12 @@ enum ActivityKind {
 }
 
 model Activity {
-  id    String   @id @default(cuid())
-  slug  String   @unique
+  id    String       @id @default(cuid())
+  slug  String       @unique
   name  String
   blurb String
   kind  ActivityKind @default(EXPERIENCE)
-  icon  SiteIcon @default(PAVILION)
+  icon  SiteIcon     @default(PAVILION)
 
   imageId String?
   image   Media?  @relation("ActivityImage", fields: [imageId], references: [id], onDelete: SetNull)
@@ -957,9 +1075,9 @@ model Activity {
   /// What the day actually consists of — three to five lines.
   examples String[] @default([])
 
-  trips     ActivityOnTrip[]
-  sortOrder Int              @default(0)
-  status    ContentStatus    @default(PUBLISHED)
+  trips       ActivityOnTrip[]
+  sortOrder   Int              @default(0)
+  status      ContentStatus    @default(PUBLISHED)
   publishedAt DateTime?
 
   metaTitle         String?
@@ -1033,8 +1151,8 @@ model CultureArticle {
   imageId String?
   image   Media?  @relation("CultureImage", fields: [imageId], references: [id], onDelete: SetNull)
 
-  sortOrder Int           @default(0)
-  status    ContentStatus @default(PUBLISHED)
+  sortOrder   Int           @default(0)
+  status      ContentStatus @default(PUBLISHED)
   publishedAt DateTime?
 
   metaTitle         String?
@@ -1063,9 +1181,9 @@ model CultureArticle {
 }
 
 model GalleryImage {
-  id      String @id @default(cuid())
+  id      String  @id @default(cuid())
   mediaId String
-  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  media   Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
   /// The caption the gallery prints. Distinct from the media row's `alt`: one
   /// describes the photograph for somebody who cannot see it, the other is
   /// editorial. "Cham, Paro Tshechu" is a caption, not alt text.
@@ -1169,17 +1287,17 @@ model Person {
 /// reaches every entry that used it — the rule at the top of this file about
 /// never storing a serialised image, kept.
 model Post {
-  id         String @id @default(cuid())
-  slug       String @unique
-  title      String
+  id             String @id @default(cuid())
+  slug           String @unique
+  title          String
   /// The standfirst. Also the default meta description, and the sentence
   /// marked `speakable` in the structured data.
-  standfirst String
+  standfirst     String
   /// Where it is about. "Bumthang", "Paro".
-  region     String
-  body       String @default("")
+  region         String
+  body           String @default("")
   /// Computed on save so both apps print the same number.
-  readingMinutes Int @default(1)
+  readingMinutes Int    @default(1)
 
   heroId String?
   hero   Media?  @relation("PostHero", fields: [heroId], references: [id], onDelete: SetNull)
@@ -1343,11 +1461,11 @@ model Menu {
 /// against the published routes on save, which catches the real failure —
 /// a typo — without pretending the target is always a row.
 model MenuItem {
-  id       String    @id @default(cuid())
+  id       String     @id @default(cuid())
   menuId   String
-  menu     Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  menu     Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
   parentId String?
-  parent   MenuItem? @relation("MenuTree", fields: [parentId], references: [id], onDelete: Cascade)
+  parent   MenuItem?  @relation("MenuTree", fields: [parentId], references: [id], onDelete: Cascade)
   children MenuItem[] @relation("MenuTree")
 
   label      String
@@ -1377,15 +1495,15 @@ model MenuItem {
 /// companies and the bug it produces — a phone number changed in one place —
 /// is invisible until a customer rings the old one.
 model CompanyProfile {
-  id           String @id @default(cuid())
+  id          String  @id @default(cuid())
   /// Always true, and unique. The cheapest singleton Postgres has.
-  isSingleton  Boolean @unique @default(true)
+  isSingleton Boolean @unique @default(true)
 
-  legalName    String
-  name         String
-  tagline      String
-  description  String
-  foundedYear  Int?
+  legalName          String
+  name               String
+  tagline            String
+  description        String
+  foundedYear        Int?
   licenceNumber      String?
   registrationNumber String?
 
@@ -1396,23 +1514,23 @@ model CompanyProfile {
   mark   Media?  @relation("CompanyMark", fields: [markId], references: [id], onDelete: SetNull)
 
   // --- Site chrome the whole site reads ---
-  strapline      String  @default("")
-  footerNote     String  @default("")
+  strapline       String @default("")
+  footerNote      String @default("")
   footerCopyright String @default("© {year} {name}")
-  replyPromise   String  @default("")
+  replyPromise    String @default("")
 
   pledgePercent     Int?
   pledgeBeneficiary String?
   pledgeNote        String?
-  sdfPerNightUsd    Int    @default(100)
+  sdfPerNightUsd    Int     @default(100)
 
   // --- Default SEO ---
-  siteUrl           String  @default("https://lotuspeak.org")
-  seoTitleTemplate  String  @default("%s · Lotus Peak")
-  seoDefaultTitle   String  @default("Lotus Peak")
-  seoDescription    String  @default("")
-  ogImageId         String?
-  ogImage           Media?  @relation("CompanyOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+  siteUrl          String  @default("https://lotuspeak.org")
+  seoTitleTemplate String  @default("%s · Lotus Peak")
+  seoDefaultTitle  String  @default("Lotus Peak")
+  seoDescription   String  @default("")
+  ogImageId        String?
+  ogImage          Media?  @relation("CompanyOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -1455,16 +1573,16 @@ model Address {
 /// first and the footer needs the second, and deriving one from the other
 /// means a formatter that knows Bhutanese numbering.
 model ContactChannel {
-  id        String      @id @default(cuid())
-  kind      ContactKind
-  label     String
-  value     String
-  display   String
-  isPrimary Boolean     @default(false)
+  id             String      @id @default(cuid())
+  kind           ContactKind
+  label          String
+  value          String
+  display        String
+  isPrimary      Boolean     @default(false)
   /// WhatsApp only: what the deep link pre-fills.
   prefillMessage String?
-  sortOrder Int         @default(0)
-  isPublic  Boolean     @default(true)
+  sortOrder      Int         @default(0)
+  isPublic       Boolean     @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1495,14 +1613,14 @@ model SocialLink {
 /// `dayFrom`/`dayTo` are ISO-8601 weekday numbers, 1 = Monday, which is what
 /// `openingHoursSpecification` wants and avoids a translation on the way out.
 model OfficeHours {
-  id      String  @id @default(cuid())
-  dayFrom Int
-  dayTo   Int
-  opens   String?
-  closes  String?
-  closed  Boolean @default(false)
-  note    String?
-  sortOrder Int   @default(0)
+  id        String  @id @default(cuid())
+  dayFrom   Int
+  dayTo     Int
+  opens     String?
+  closes    String?
+  closed    Boolean @default(false)
+  note      String?
+  sortOrder Int     @default(0)
 
   @@map("office_hours")
 }
@@ -1549,18 +1667,18 @@ model Setting {
 // =============================================================================
 
 model Redirect {
-  id        String       @id @default(cuid())
-  source    String       @unique
-  target    String
-  type      RedirectType @default(MOVED_301)
-  isActive  Boolean      @default(true)
-  hitCount  Int          @default(0)
-  lastHitAt DateTime?
-  note      String?
+  id          String       @id @default(cuid())
+  source      String       @unique
+  target      String
+  type        RedirectType @default(MOVED_301)
+  isActive    Boolean      @default(true)
+  hitCount    Int          @default(0)
+  lastHitAt   DateTime?
+  note        String?
   /// Written by a slug change rather than by hand. Shown differently in the
   /// list, and not offered for deletion, because deleting it re-breaks the
   /// link it was created to keep.
-  isAutomatic Boolean    @default(false)
+  isAutomatic Boolean      @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1602,8 +1720,39 @@ model Customer {
   country String?
   notes   String?
 
-  enquiries Enquiry[]
-  noteRows  Note[]
+  /// Where to send an invoice.
+  ///
+  /// Flat columns rather than a join to `Address`: that table is the company's
+  /// own, it is ordered and labelled for a footer with several offices in it,
+  /// and a customer has one billing address or none.
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  region       String?
+  postalCode   String?
+  countryCode  String?
+
+  /// Enough to raise a permit for the lead traveller without telephoning back.
+  /// A traveller on a booking carries their own copy — see `BookingTraveller`,
+  /// and the note there about why this is not read through a join.
+  dateOfBirth    DateTime?
+  nationality    String?
+  passportNumber String?
+  passportExpiry DateTime?
+
+  dietary               String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  /// Consent, recorded rather than assumed. Somebody who booked a journey did
+  /// not thereby ask for the newsletter.
+  marketingOptIn Boolean @default(false)
+
+  enquiries   Enquiry[]
+  noteRows    Note[]
+  bookings    Booking[]
+  travelling  BookingTraveller[]
+  redemptions CouponRedemption[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -1650,7 +1799,7 @@ model Enquiry {
   /// Where it was made, and what brought them. Stored because "which page
   /// produces enquiries" is the one analytics question this office actually
   /// asks, and it is unanswerable afterwards.
-  pagePath  String?
+  pagePath    String?
   utmSource   String?
   utmMedium   String?
   utmCampaign String?
@@ -1660,6 +1809,7 @@ model Enquiry {
   notes    Note[]
   tasks    Task[]
   messages EmailMessage[]
+  bookings Booking[]
 
   respondedAt DateTime?
   closedAt    DateTime?
@@ -1675,13 +1825,15 @@ model Enquiry {
 }
 
 model Note {
-  id     String @id @default(cuid())
-  body   String
+  id   String @id @default(cuid())
+  body String
 
   enquiryId  String?
   enquiry    Enquiry?  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  bookingId  String?
+  booking    Booking?  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   authorId String?
   author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
@@ -1691,6 +1843,7 @@ model Note {
 
   @@index([enquiryId])
   @@index([customerId])
+  @@index([bookingId])
   @@map("notes")
 }
 
@@ -1717,18 +1870,384 @@ model Task {
   @@map("tasks")
 }
 
+// =============================================================================
+// SELLING — bookings, the people on them, the money, the discounts
+// =============================================================================
+//
+// Three conventions this half of the schema holds to, and the reasons:
+//
+//   * **Money is an integer of minor units, and the column says so.** Every
+//     amount here ends in `Cents`. The catalogue quotes whole dollars because
+//     the design prints whole dollars, but a deposit is $1,237.50 and a bank
+//     fee is $14.87, and a `Float` for either is a rounding error that shows
+//     up as a balance of $0.004 nobody can pay off. `currency` rides beside
+//     every amount rather than being assumed.
+//
+//   * **A total is stored, not derived on read.** `subtotalCents`,
+//     `discountCents`, `totalCents` and `paidCents` are written by
+//     `server/services/booking.ts` inside the same transaction as the rows
+//     they summarise. "Show me everybody who still owes money, newest first,
+//     twenty-five to a page" is a query, and a total computed in JavaScript
+//     after the fact cannot be sorted, filtered or paged by Postgres.
+//
+//   * **A booking keeps its own copy of what was agreed.** The price per head,
+//     the coupon's code and the discount it gave are columns on the booking,
+//     not lookups through to the journey and the coupon. Journeys are
+//     repriced every season and coupons expire; an invoice that changes
+//     retrospectively because somebody edited a price list is the failure this
+//     prevents.
+
+/// A journey somebody has actually committed to.
+///
+/// `reference` is the short code the office reads down a telephone —
+/// `LP-B-7QK4` — and it is what a traveller quotes in an email. A cuid is
+/// correct and unsayable, so both exist.
+model Booking {
+  id        String @id @default(cuid())
+  reference String @unique
+
+  kind   BookingKind
+  status BookingStatus @default(DRAFT)
+
+  /// The journey as sold. Nullable, because a `CUSTOM` booking may not match
+  /// any of the published five and pointing it at the nearest one would put a
+  /// wrong itinerary on the confirmation.
+  tripId String?
+  trip   Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+
+  /// Set on a `FIXED_DEPARTURE` booking and null on the rest. `SetNull` rather
+  /// than `Cascade`: deleting a departure must not delete the bookings on it,
+  /// and a booking whose departure vanished still has its dates below.
+  departureId String?
+  departure   Departure? @relation(fields: [departureId], references: [id], onDelete: SetNull)
+
+  /// The dates, copied from the departure when there is one.
+  ///
+  /// Copied rather than joined through, because a private booking has dates
+  /// and no departure, and because a departure that is later moved by two days
+  /// must not silently move a booking that was confirmed on the old ones.
+  startDate DateTime?
+  endDate   DateTime?
+
+  /// Who the office deals with. Required — a booking with nobody to invoice is
+  /// an enquiry, and there is a table for those.
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  /// The enquiry this grew out of, when it grew out of one.
+  enquiryId String?
+  enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+
+  /// The party size, and the only thing that says solo from group.
+  adults   Int @default(1)
+  children Int @default(0)
+
+  travellers BookingTraveller[]
+  items      BookingItem[]
+  payments   Payment[]
+  noteRows   Note[]
+
+  /// ISO 4217, on the booking as well as on every amount, because a refund
+  /// issued in a second currency is a thing that happens.
+  currency String @default("USD")
+
+  /// What was agreed per head. Kept for the quote to be re-explicable later;
+  /// the bill is `items`.
+  pricePerPersonCents Int @default(0)
+
+  subtotalCents Int @default(0)
+  discountCents Int @default(0)
+  totalCents    Int @default(0)
+
+  /// What the office is actually holding: `COMPLETED` payments in, less those
+  /// out. Maintained by `recalculatePaid()`.
+  ///
+  /// **Net, and named so.** It was the gross figure once, with the refunds in
+  /// a column beside it, and the two had to be subtracted at every point of
+  /// use. The list screen's "paid in full" filter is a SQL comparison against
+  /// `totalCents` and cannot do arithmetic across two columns, so it counted a
+  /// booking that had been taken and refunded in full as paid — while the
+  /// badge on the same row, computed in JavaScript from both, read "Refunded".
+  /// One number that is already true is the only arrangement where the filter
+  /// and the badge cannot disagree.
+  netPaidCents  Int @default(0)
+  /// Money that went back out, kept separately. Not for the arithmetic — that
+  /// is done above — but because it is the only thing that tells a booking
+  /// nobody has paid from one that was paid and refunded, and those are very
+  /// different rows to find in a list.
+  refundedCents Int @default(0)
+
+  couponId   String?
+  coupon     Coupon? @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  /// The code as it was at the time. A coupon can be renamed or removed, and
+  /// the invoice still has to say what was taken off and why.
+  couponCode String?
+
+  depositDueCents Int?
+  depositDueAt    DateTime?
+  balanceDueAt    DateTime?
+
+  source     EnquirySource?
+  assigneeId String?
+  assignee   User?          @relation("BookingAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  /// What the traveller asked for — a ground-floor room, no early starts.
+  /// Read out to the guide; not the same thing as the office's own notes.
+  requests      String?
+  /// The office's own. Never printed on anything a traveller sees.
+  internalNotes String?
+
+  confirmedAt        DateTime?
+  cancelledAt        DateTime?
+  completedAt        DateTime?
+  cancellationReason String?
+
+  redemption CouponRedemption?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([customerId])
+  @@index([tripId])
+  @@index([departureId])
+  @@index([startDate])
+  @@index([assigneeId])
+  @@map("bookings")
+}
+
+/// One person travelling.
+///
+/// A row per head rather than a name and a count, because Bhutan asks for a
+/// passport number, a date of birth and a nationality per visitor before it
+/// issues the permit, and "3 adults" cannot be turned into that later without
+/// telephoning them back.
+///
+/// **This is the most sensitive table in the database.** Passport numbers and
+/// dates of birth sit behind `bookings.read`, which the Editor role does not
+/// have and the Viewer role does not have. Nothing here is ever serialised to
+/// `/api/public/site/*` — the website has no credential for this database and
+/// no route that would reach it.
+model BookingTraveller {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  /// The lead traveller is usually, but not always, the person being invoiced.
+  /// A parent books for their family; a company books for its staff.
+  isLead Boolean @default(false)
+
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+
+  dateOfBirth     DateTime?
+  nationality     String?
+  /// As printed in the passport, which is not always first name + last name.
+  passportName    String?
+  passportNumber  String?
+  passportExpiry  DateTime?
+  passportCountry String?
+
+  dietary String?
+  /// Conditions the guide has to know about at 4,000 metres. Free text,
+  /// because a checklist of conditions is a checklist that omits theirs.
+  medical String?
+
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  /// "Twin with Dorji", "single, willing to pay the supplement".
+  roomPreference String?
+  notes          String?
+
+  /// When this traveller is also somebody the office keeps a record of.
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId, sortOrder])
+  @@index([customerId])
+  @@map("booking_travellers")
+}
+
+/// A line on the bill.
+///
+/// `amountCents` is `quantity * unitPriceCents`, written by the server rather
+/// than sent by the client. A client that computes its own line totals is a
+/// client that can be told to compute them differently.
+model BookingItem {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  kind   BookingItemKind @default(EXTRA)
+  label  String
+  detail String?
+
+  quantity       Int @default(1)
+  unitPriceCents Int @default(0)
+  amountCents    Int @default(0)
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId, sortOrder])
+  @@map("booking_items")
+}
+
+/// Money that moved.
+///
+/// Every row is recorded by a person who has seen it — there is no payment
+/// provider yet, and this table does not assume one arrives. `providerRef`
+/// exists for the day one does, and until then it holds the bank's own
+/// reference, which is what reconciling a statement actually needs.
+///
+/// Deleting a payment is soft. A ledger that can lose a row is not a ledger,
+/// and a mis-keyed amount is corrected by voiding and re-entering so that both
+/// facts stay visible.
+model Payment {
+  id        String  @id @default(cuid())
+  reference String  @unique
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  direction PaymentDirection @default(IN)
+  kind      PaymentKind      @default(DEPOSIT)
+  status    PaymentStatus    @default(COMPLETED)
+  method    PaymentMethod    @default(BANK_TRANSFER)
+
+  /// Always positive. `direction` carries the sign; see `PaymentDirection`.
+  amountCents Int
+  currency    String @default("USD")
+  /// What the bank or the card processor took. Recorded because the booking is
+  /// paid when the traveller sent the full amount, not when the office
+  /// received it net of a fee — and somebody has to be able to see the
+  /// difference rather than chase $14 that was never missing.
+  feeCents    Int    @default(0)
+
+  /// The bank's reference, or the provider's, for reconciling a statement.
+  providerRef String?
+  paidAt      DateTime @default(now())
+  notes       String?
+
+  recordedById String?
+  recordedBy   User?   @relation("PaymentRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([bookingId, paidAt])
+  @@index([status, paidAt])
+  @@index([paidAt])
+  @@map("payments")
+}
+
+/// A discount, and the rules about who may use it.
+///
+/// `redeemedCount` is a column and not a `_count` of the redemptions, because
+/// "has this run out" is asked while a booking is being priced — under the
+/// same transaction that is about to increment it — and a count read through a
+/// join lets two simultaneous bookings both take the last one.
+model Coupon {
+  id          String  @id @default(cuid())
+  /// Stored upper-case. Travellers type them in any case and a coupon that
+  /// works in one and not the other is a support email.
+  code        String  @unique
+  description String?
+
+  kind     CouponKind @default(PERCENTAGE)
+  /// A percentage 1–100, or minor units — `kind` says which.
+  value    Int
+  currency String     @default("USD")
+
+  minSpendCents    Int?
+  /// Caps a percentage. "20% off, up to $500" is how this office actually
+  /// writes an offer, and without this the 20% is unbounded on a trek.
+  maxDiscountCents Int?
+
+  startsAt DateTime?
+  endsAt   DateTime?
+
+  maxRedemptions Int?
+  maxPerCustomer Int?
+  redeemedCount  Int  @default(0)
+
+  /// Empty means every journey. A join rather than an array of slugs, because
+  /// a foreign key cannot point at a journey that has been deleted.
+  trips CouponOnTrip[]
+
+  isActive Boolean @default(true)
+
+  bookings    Booking[]
+  redemptions CouponRedemption[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([code])
+  @@map("coupons")
+}
+
+model CouponOnTrip {
+  couponId String
+  coupon   Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  tripId   String
+  trip     Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@id([couponId, tripId])
+  @@index([tripId])
+  @@map("coupon_on_trips")
+}
+
+/// One use of one coupon, on one booking.
+///
+/// Unique on `bookingId`: a booking takes one coupon. Stacking two is a
+/// pricing conversation the office has never had, and allowing it in the
+/// schema means every total has to explain which order they applied in.
+model CouponRedemption {
+  id        String  @id @default(cuid())
+  couponId  String
+  coupon    Coupon  @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  /// What it actually took off, in minor units. Not recomputable later: the
+  /// coupon's rules change, and this is the figure on the invoice.
+  amountCents Int
+
+  createdAt DateTime @default(now())
+
+  @@index([couponId])
+  @@index([customerId])
+  @@map("coupon_redemptions")
+}
+
 model NewsletterSubscriber {
-  id      String           @id @default(cuid())
-  email   String           @unique
-  name    String?
-  status  SubscriberStatus @default(PENDING)
-  source  String?
+  id               String           @id @default(cuid())
+  email            String           @unique
+  name             String?
+  status           SubscriberStatus @default(PENDING)
+  source           String?
   /// Double opt-in. The row exists before the address is proved.
   confirmTokenHash String?
   confirmedAt      DateTime?
   unsubscribedAt   DateTime?
   /// Signed into every unsubscribe link, so one click works without a login.
-  unsubscribeToken String  @unique
+  unsubscribeToken String           @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
