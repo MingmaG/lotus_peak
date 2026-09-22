@@ -1,0 +1,37 @@
+{
+  "name": "@lotuspeak/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 6010",
+    "build": "next build",
+    "start": "next start --port 6010",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "assets:build": "npm run images:build && npm run fonts:build",
+    "images:build": "node scripts/build-images.mjs",
+    "fonts:build": "node scripts/build-fonts.mjs",
+    "assets:check": "node scripts/check-assets.mjs"
+  },
+  "dependencies": {
+    "@lotuspeak/api-contracts": "*",
+    "@lotuspeak/media": "*",
+    "@lotuspeak/seo": "*",
+    "@lotuspeak/video": "*",
+    "next": "15.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "15.5.4",
+    "sharp": "^0.35.4",
+    "subset-font": "^2.7.0",
+    "typescript": "^5.7.3"
+  }
+}

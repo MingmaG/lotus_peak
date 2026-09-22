@@ -1,0 +1,16 @@
+# <type>(<scope>): <subject>          ← imperative, ≤72 chars, no full stop
+#
+# Why this change is needed. The diff already shows what changed — this is
+# for whoever reads it in six months. Wrap at 72 characters.
+#
+# Closes #
+#
+# Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+#
+# ---------------------------------------------------------------------------
+# type:  feat fix refactor perf docs style test build ci chore revert
+# scope: repo db auth api core seo ui shell admin web preview services
+#        storage media content email setup deps
+#
+# Breaking change? Use `type(scope)!:` or a `BREAKING CHANGE:` footer.
+# ---------------------------------------------------------------------------

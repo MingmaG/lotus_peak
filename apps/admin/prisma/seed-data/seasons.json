@@ -1,0 +1,42 @@
+[
+  {
+    "key": "spring",
+    "monthsLabel": "Mar – May",
+    "name": "Spring",
+    "headline": "Clear skies and festivals",
+    "summary": "Rhododendrons in the forests above Paro. Tshechus in the dzong courtyards. The high passes open again.",
+    "detail": "Spring arrives in early March and the valleys warm quickly, from around 6 °C at midday at the start of the season to 15–20 °C by May. Nights stay cool, near freezing in March and around 9 °C by May. The mountains hold their snow until late spring, and rain builds slowly, from four wet days in March to nine in May. Paro Tshechu falls in this window, as do Shabdrung Kuchoe in late April and Lord Buddha’s Parinirvana at the end of May.",
+    "image": "/assets/imagery/season-spring.jpg",
+    "order": 1
+  },
+  {
+    "key": "summer",
+    "monthsLabel": "Jun – Aug",
+    "name": "Summer",
+    "headline": "Green and quiet",
+    "summary": "The monsoon softens everything. Valleys are at their greenest and the trails are ours alone.",
+    "detail": "The monsoon runs from June to August. In the central valleys days sit at 21–22 °C and nights around 13–14 °C, with rain on most days and July the wettest month. The south is hot and humid; the high country stays cool. Rice terraces are at their greenest, rivers run full, and the trails are almost empty. The birth anniversary of Guru Rinpoche in late June and the First Sermon of Lord Buddha in mid-July are the season’s observances.",
+    "image": "/assets/imagery/season-summer.jpg",
+    "order": 2
+  },
+  {
+    "key": "autumn",
+    "monthsLabel": "Sep – Nov",
+    "name": "Autumn",
+    "headline": "The clearest light",
+    "summary": "Harvest in the fields, Jomolhari sharp against the sky. The season for the long walk.",
+    "detail": "September still carries the tail of the monsoon, then the sky clears. October brings 19 °C days, cold 7 °C nights and only a handful of wet days; November is drier still, with almost no rain and nights near freezing. The high peaks stand sharp against blue sky, which makes this the season for Jomolhari. Thimphu Tshechu in mid-September, Blessed Rainy Day, the Descending Day of Lord Buddha and National Day preparations fill the calendar.",
+    "image": "/assets/imagery/season-autumn.jpg",
+    "order": 3
+  },
+  {
+    "key": "winter",
+    "monthsLabel": "Dec – Feb",
+    "name": "Winter",
+    "headline": "The cranes return",
+    "summary": "Black-necked cranes winter in Phobjikha. Cold mornings, still air, and empty temples.",
+    "detail": "Winter is sunny and dry. Days reach 11–12 °C in the western valleys, nights fall to around -2 °C, and rain is rare. Snow closes stretches of the east–west highway, so this is the time for Paro, Thimphu, Punakha, Wangdue and Haa. Black-necked cranes settle in Phobjikha, and the temples are quiet. National Day on 17 December, Nyilo at the solstice, the Traditional Day of Offering in January and Losar in February mark the season.",
+    "image": "/assets/imagery/season-winter.jpg",
+    "order": 4
+  }
+]

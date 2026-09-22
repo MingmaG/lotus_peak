@@ -1,8 +1,0 @@
-html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-body{margin:0;background-color:var(--surface-page);background-image:repeating-linear-gradient(0deg,rgba(31,29,26,.028) 0 1px,transparent 1px 7px),repeating-linear-gradient(90deg,rgba(31,29,26,.022) 0 1px,transparent 1px 7px),radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.55),transparent 65%);background-attachment:fixed;color:var(--text-body);font-family:var(--font-sans-body);font-size:var(--text-body-size);line-height:var(--leading-body);font-weight:var(--weight-body)}
-h1,h2,h3,h4{font-family:var(--font-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);margin:0;line-height:var(--leading-heading);text-wrap:pretty}
-p{margin:0;text-wrap:pretty}
-a{color:var(--text-accent);text-decoration:none;text-underline-offset:.2em;transition:color var(--dur-quick) var(--ease-breath)}
-a:hover{color:var(--maroon-2);text-decoration:underline}
-img{display:block;max-width:100%}
-:focus-visible{outline:2px solid var(--focus-ring);outline-offset:3px}

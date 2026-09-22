@@ -1,0 +1,420 @@
+@import url("../src/design-system/tokens/fonts.css");
+@import url("../src/design-system/tokens/colors.css");
+@import url("../src/design-system/tokens/typography.css");
+@import url("../src/design-system/tokens/spacing.css");
+@import url("../src/design-system/tokens/motion.css");
+@import url("../src/design-system/tokens/base.css");
+@import url("../src/motion/motion.css");
+
+:root {
+  /* Written at runtime by NavBar (audit B8). The initial value matches the
+     unscrolled desktop nav so the server-rendered heroes sit correctly. */
+  --nav-h: 88px;
+}
+
+*, *::before, *::after { box-sizing: border-box }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 14px 20px;
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.skip-link:focus { left: 0 }
+
+/* Section grids collapse to one column on narrow screens. The prototype is
+   desktop-only; these are the responsive rules it never had. */
+@media (max-width: 900px) {
+  .lp-split,
+  .lp-two-col,
+  .lp-article { grid-template-columns: minmax(0, 1fr) !important; direction: ltr !important }
+  .lp-season { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-trip-grid { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-three-col { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-facts { grid-template-columns: 1fr 1fr !important }
+}
+/* Gallery: a column layout so the photographs keep their own proportions.
+   The Reveal wrappers carry `break-inside: avoid` at their call site. */
+.lp-gallery { column-count: 3; column-gap: var(--space-6) }
+@media (max-width: 1100px) { .lp-gallery { column-count: 2 } }
+@media (max-width: 700px) { .lp-gallery { column-count: 1 } }
+
+/* The reference pages drop their sticky contents column on narrow screens,
+   where a list above the prose is only a second thing to scroll past. */
+@media (max-width: 900px) {
+  .lp-info { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-info-nav { display: none !important }
+}
+
+/* Fact rows in a journal entry stack on narrow screens. */
+@media (max-width: 620px) {
+  .lp-facts-row { grid-template-columns: minmax(0, 1fr) !important; gap: 4px !important }
+}
+
+@media (max-width: 620px) {
+  .lp-form-row { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-footer-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important }
+}
+
+/* The navigation's search field is a fixed 200px sitting beside the brand and
+   the menu button. Below about 720px the three of them are wider than the
+   viewport, and the whole site scrolled sideways by 174px on a 390px phone —
+   on every page, because it is in the shared chrome.
+
+   It is hidden rather than shrunk: a search box narrow enough to fit beside a
+   menu button is a search box too narrow to type a destination into, and the
+   menu panel already carries the navigation on a phone. */
+@media (max-width: 720px) {
+  .lp-nav-search-wrap { display: none !important }
+}
+
+/* Below 380px the brand and the Menu button are together wider than the
+   screen — an iPhone SE is 320px, and the page scrolled sideways on it.
+   The wordmark loses two points and its letter-spacing, and the gutter
+   halves. Nothing else changes: this is the width at which the design has to
+   give something up, and the two it gives up are the two nobody notices. */
+@media (max-width: 380px) {
+  :root { --gutter: 1rem }
+  .lp-nav-brand { gap: 8px !important }
+  .lp-nav-wordmark { font-size: 1.125rem !important; letter-spacing: 0.02em !important }
+}
+
+/* ---------------------------------------------------------------------------
+   Prose from the editor
+   --------------------------------------------------------------------------- */
+
+/**
+ * The body of a `prose` band.
+ *
+ * These pages used to map over an array of paragraphs and `{ list }` objects,
+ * with the spacing and the gold middot written as inline styles on each one.
+ * The content is one HTML string now — which is what an editor typing into a
+ * box produces — so the same treatment is expressed here as rules, and the
+ * rendered result is unchanged.
+ */
+.lp-info-prose > * {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: var(--leading-body);
+}
+
+.lp-info-prose > * + * {
+  margin-top: 18px;
+}
+
+.lp-info-prose ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.lp-info-prose li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 14px;
+}
+
+.lp-info-prose li::before {
+  content: '·';
+  color: var(--gold);
+}
+
+.lp-info-prose a {
+  color: inherit;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 4px;
+}
+
+/**
+ * The same, for a `prose` band on a page rendered through `PageBands` — which
+ * has no sticky contents column and sets its own measure.
+ */
+.lp-prose > * {
+  margin: 0;
+  line-height: var(--leading-body);
+}
+
+.lp-prose > * + * {
+  margin-top: 18px;
+}
+
+.lp-prose ul,
+.lp-prose ol {
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.lp-prose a {
+  color: inherit;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   The rest of what a rich-text body can now hold.
+
+   The office writes these fields in a full editor — headings at three sizes,
+   quotes, code, photographs, films and tables — so the site has to draw all of
+   them. Every value here is a token; the rule in apps/web/CLAUDE.md about never
+   hardcoding a size or a colour applies to prose as much as to a component.
+
+   `.lp-prose-compact` is the same body inside something that already sets its
+   own type: an itinerary day, an answer under a question. It keeps the lists
+   and the links and gives up the article-sized headings and margins.
+   --------------------------------------------------------------------------- */
+
+.lp-prose :is(h2, h3, h4) {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  max-width: 24ch;
+}
+
+.lp-prose h2 { font-size: var(--text-h3); margin-top: 44px }
+.lp-prose h3 { font-size: var(--text-h4); margin-top: 36px }
+
+.lp-prose h4 {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 32px;
+}
+
+.lp-prose :is(h2, h3, h4):first-child { margin-top: 0 }
+
+.lp-prose blockquote {
+  border-left: 1px solid var(--gold);
+  padding-left: 22px;
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+  color: var(--text-muted);
+}
+
+.lp-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--paper-2);
+  border-radius: var(--radius-xs);
+  padding: 0.1em 0.35em;
+}
+
+.lp-prose pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  background: var(--paper-2);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  overflow-x: auto;
+}
+
+.lp-prose pre code { background: none; padding: 0 }
+
+.lp-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border-hairline);
+  margin-top: 36px;
+}
+
+.lp-prose img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+}
+
+/* --- a photograph, with what the office wrote about it --------------------- */
+
+/* `renderRichText` rebuilds every in-body photograph as one of these, so the
+   caption below it is the office's own sentence rather than the alt text
+   doubling as one. The figure breaks out of the measure a little: a photograph
+   set to the width of a column of text reads as an afterthought, and the text
+   measure is narrower than the column it sits in. */
+.lp-prose figure.lp-figure {
+  margin: var(--space-7) 0;
+  max-width: var(--container-text);
+}
+
+.lp-prose figure.lp-figure > img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+/* Only when the office chose a crop; otherwise the photograph's own shape. */
+.lp-prose figure.lp-figure[style*='aspect-ratio'] > img {
+  height: 100%;
+}
+
+.lp-prose figure figcaption {
+  margin-top: 12px;
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+  color: var(--text-muted);
+  max-width: var(--measure-narrow);
+}
+
+/* A film is the same figure with the façade in place of the photograph. */
+.lp-prose figure.lp-figure-film .video-facade {
+  margin: 0;
+}
+
+/* Two photographs in a row should not be two separate islands. */
+.lp-prose figure.lp-figure + figure.lp-figure {
+  margin-top: var(--space-5);
+}
+
+/* A table wider than the measure has nothing to scroll inside and pushes the
+   whole page out sideways on a phone — the one layout fault that makes a page
+   unreadable rather than untidy. `renderRichText` wraps every table in this. */
+.lp-prose .table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lp-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+  text-align: left;
+}
+
+.lp-prose :is(th, td) {
+  border-bottom: 1px solid var(--border-hairline);
+  padding: 10px 14px 10px 0;
+  vertical-align: top;
+}
+
+.lp-prose th {
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  font-size: var(--text-label);
+  color: var(--text-muted);
+}
+
+/* --- a film, before anybody has asked for it ------------------------------- */
+
+.lp-prose .video-facade {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--pine);
+}
+
+.lp-prose .video-facade-link {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-decoration: none;
+}
+
+.lp-prose .video-facade-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+  margin: 0;
+}
+
+.lp-prose .video-facade-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.35));
+}
+
+.lp-prose .video-facade-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 66px;
+  height: 66px;
+  margin: -33px 0 0 -33px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.92);
+  transition: transform var(--dur-quick) var(--ease-inhale);
+}
+
+/* The triangle, drawn rather than shipped as an icon. */
+.lp-prose .video-facade-play::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 54%;
+  transform: translate(-50%, -50%);
+  border-style: solid;
+  border-width: 11px 0 11px 18px;
+  border-color: transparent transparent transparent var(--ink);
+}
+
+.lp-prose .video-facade-link:hover .video-facade-play,
+.lp-prose .video-facade-link:focus-visible .video-facade-play {
+  transform: scale(1.06);
+}
+
+/* Once the script has swapped the player in. */
+.lp-prose .video-facade-player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* --- inside something that sets its own type ------------------------------ */
+
+.lp-prose-compact :is(h2, h3, h4) {
+  font-size: var(--text-body);
+  font-weight: 500;
+  margin-top: 22px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: inherit;
+}
+
+.lp-prose-compact > * + * { margin-top: 12px }
+.lp-prose-compact figure.lp-figure { margin: 16px 0 }
+.lp-prose-compact blockquote { font-size: inherit; line-height: inherit }
+
+/* The journeys index filters in the browser so the page can stay static.
+   `TripFilter` writes the active type onto the grid and these hide the rest;
+   with no JavaScript the attribute stays `all` and every journey is shown,
+   which is the right answer to "what journeys are there".
+
+   One rule per type, each hiding what does not match, rather than a blanket
+   hide with exceptions — `[data-trip-filter]:not([data-trip-filter="all"]) >
+   [data-trip-type]` carries three attribute selectors and out-specifies any
+   two-attribute rule trying to show one again, so the exceptions never won. */
+[data-trip-filter="mindfulness"] > [data-trip-type]:not([data-trip-type="mindfulness"]),
+[data-trip-filter="meditation"]  > [data-trip-type]:not([data-trip-type="meditation"]),
+[data-trip-filter="festival"]    > [data-trip-type]:not([data-trip-type="festival"]),
+[data-trip-filter="trekking"]    > [data-trip-type]:not([data-trip-type="trekking"]) {
+  display: none;
+}
+
+/* Visually hidden, still announced. Used by the film façade's link, whose
+   visible content is a picture and a triangle. */
+.lp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

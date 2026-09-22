@@ -1,0 +1,20 @@
+{
+  "id": 35,
+  "type": "page",
+  "slug": "blog",
+  "url": "https://lotuspeak.org/blog/",
+  "title": "Blog",
+  "date": "2025-07-08T04:11:23",
+  "modified": "2025-07-08T04:11:23",
+  "excerpt": "",
+  "featured_image": null,
+  "featured_media_id": 0,
+  "seo": {
+    "title": "Blog - Lotus Peak",
+    "description": null,
+    "og_image": []
+  },
+  "content_html": "",
+  "content_markdown": "",
+  "images": []
+}

@@ -1,0 +1,262 @@
+{
+  "/assets/illustrations/druk-dragon-mural.jpg": {
+    "alt": "A druk, the thunder dragon, painted in blue and coral on a monastery wall",
+    "width": 480,
+    "height": 639
+  },
+  "/assets/illustrations/four-harmonious-friends.jpg": {
+    "alt": "The four harmonious friends: bird, hare, monkey and elephant standing one upon the other beneath a fruiting tree",
+    "width": 342,
+    "height": 500
+  },
+  "/assets/imagery/alo.webp": {
+    "alt": "An atsara in a painted mask resting his hands on the head of a small monk during a tshechu",
+    "width": 683,
+    "height": 1024
+  },
+  "/assets/imagery/archery.webp": {
+    "alt": "An archer in gho at full draw with a bamboo bow, the arrow already away against a wooded ridge",
+    "width": 612,
+    "height": 408
+  },
+  "/assets/imagery/bell-and-drum.webp": {
+    "alt": "Singing bowls and a frame drum set out on grass among yellow flowers",
+    "width": 612,
+    "height": 408
+  },
+  "/assets/imagery/buddha-dordenma.webp": {
+    "alt": "The gilded Buddha Dordenma seated above Thimphu at the head of an empty plaza, in early light",
+    "width": 1020,
+    "height": 361
+  },
+  "/assets/imagery/cham-dancer.webp": {
+    "alt": "A line of young dancers in striped ghos waiting at the edge of the dzong courtyard, the crowd banked behind them",
+    "width": 1500,
+    "height": 1000
+  },
+  "/assets/imagery/cham-masked-dance.webp": {
+    "alt": "A cham dancer in a snow-lion mask and brocade, arms spread mid-turn, before a densely seated tshechu crowd",
+    "width": 1500,
+    "height": 1000
+  },
+  "/assets/imagery/chimi-lhakhang.webp": {
+    "alt": "Chimi Lhakhang on its hillock in the Punakha valley, prayer wheels set in rows into the whitewashed wall",
+    "width": 1360,
+    "height": 1020
+  },
+  "/assets/imagery/cuisine.webp": {
+    "alt": "A Bhutanese meal laid out in brass bowls — red rice, curries and ezay — on a restaurant table",
+    "width": 1500,
+    "height": 1000
+  },
+  "/assets/imagery/dochula-pass.webp": {
+    "alt": "The 108 Druk Wangyal chortens ranked along the ridge at Dochula, in mist at first light",
+    "width": 1080,
+    "height": 720
+  },
+  "/assets/imagery/foggy-valley.jpg": {
+    "alt": "A valley floor under frost and morning mist, a small temple standing among bare winter fields",
+    "width": 612,
+    "height": 408
+  },
+  "/assets/imagery/gangtey-goenpa.webp": {
+    "alt": "Gangtey Goenpa above its village, gold roofs and carved timber galleries under low cloud",
+    "width": 1360,
+    "height": 1020
+  },
+  "/assets/imagery/gelongs-walking.webp": {
+    "alt": "Two monks in red robes crossing the painted courtyard gallery of Punakha Dzong",
+    "width": 612,
+    "height": 392
+  },
+  "/assets/imagery/guided-principle.webp": {
+    "alt": "Two men in gho crossing a dzong courtyard towards a painted temple doorway",
+    "width": 408,
+    "height": 612
+  },
+  "/assets/imagery/jakar-dzong.webp": {
+    "alt": "Jakar Dzong on its ridge above the Choekhor valley, whitewashed walls and red roofs below a wall of pine forest",
+    "width": 680,
+    "height": 453
+  },
+  "/assets/imagery/jomolhari-trek.webp": {
+    "alt": "Snow peaks above a belt of fir and blue pine, seen from the trail below Jomolhari",
+    "width": 612,
+    "height": 408
+  },
+  "/assets/imagery/khadar-lama.webp": {
+    "alt": "A monk carrying a yellow khadar between tall prayer flags at a hillside ceremony",
+    "width": 1024,
+    "height": 768
+  },
+  "/assets/imagery/khuru.webp": {
+    "alt": "Khuru darts, weighted and flighted with folded paper, standing point-down in a wooden board",
+    "width": 400,
+    "height": 600
+  },
+  "/assets/imagery/konchogsum-lhakhang.webp": {
+    "alt": "The painted facade of Könchogsum Lhakhang, gold and vermilion woodwork above a stone forecourt",
+    "width": 900,
+    "height": 502
+  },
+  "/assets/imagery/kurjey-lhakhang.webp": {
+    "alt": "Kurjey Lhakhang in Bumthang, painted timber windows across whitewashed walls, with white chortens on the swept forecourt",
+    "width": 1360,
+    "height": 1020
+  },
+  "/assets/imagery/lam-with-sculpture.webp": {
+    "alt": "A sculptor shaping a clay figure with a wooden tool while a Lam watches from behind",
+    "width": 810,
+    "height": 1080
+  },
+  "/assets/imagery/mask-dance.webp": {
+    "alt": "A cham dancer in a wrathful red mask and heavy brocade robe, turning mid-step in the dzong courtyard",
+    "width": 768,
+    "height": 1024
+  },
+  "/assets/imagery/meditation.webp": {
+    "alt": "A woman sitting cross-legged on a rock at sunrise, hands resting one in the other",
+    "width": 1147,
+    "height": 1500
+  },
+  "/assets/imagery/memorial-chorten.webp": {
+    "alt": "The National Memorial Chorten in Thimphu, white with a gold spire, below forested ridges",
+    "width": 1024,
+    "height": 585
+  },
+  "/assets/imagery/paro-airport-view.webp": {
+    "alt": "Paro airport on the valley floor, its terminal roofed in the traditional style, with the dzong on the slope above",
+    "width": 940,
+    "height": 512
+  },
+  "/assets/imagery/paro-dzong.jpg": {
+    "alt": "Rinpung Dzong above the Paro valley with Ta Dzong on the ridge behind it and fresh snow on the peaks",
+    "width": 1080,
+    "height": 810
+  },
+  "/assets/imagery/peace.webp": {
+    "alt": "A traveller sitting on a rock above a forested valley, watching cloud move along the ridge below",
+    "width": 768,
+    "height": 1024
+  },
+  "/assets/imagery/phobjikha-valley.webp": {
+    "alt": "The open floor of the Phobjikha valley, fields and scattered farmhouses below long forested ridges",
+    "width": 1360,
+    "height": 1020
+  },
+  "/assets/imagery/punakha-dzong-bridge.webp": {
+    "alt": "The roofed cantilever bridge over the Mo Chhu, with the towers of Punakha Dzong behind it",
+    "width": 1920,
+    "height": 1440
+  },
+  "/assets/imagery/punakha-foggy-dzong.webp": {
+    "alt": "Punakha Dzong at first light, its gold-tipped roofs above a valley filled with mist",
+    "width": 1024,
+    "height": 683
+  },
+  "/assets/imagery/reciting-gelongs.webp": {
+    "alt": "Young monks seated on mats in a temple hall, reading from loose-leaf texts",
+    "width": 1024,
+    "height": 576
+  },
+  "/assets/imagery/season-autumn.jpg": {
+    "alt": "A dzong above the river in autumn, with turning trees and dry stone banks",
+    "width": 500,
+    "height": 281
+  },
+  "/assets/imagery/season-spring.jpg": {
+    "alt": "A whitewashed prayer tower on a green hillside, with ridge behind ridge into the distance",
+    "width": 500,
+    "height": 281
+  },
+  "/assets/imagery/season-summer.jpg": {
+    "alt": "Punakha Dzong between its two rivers in summer, the valley green under heavy cloud",
+    "width": 500,
+    "height": 282
+  },
+  "/assets/imagery/season-winter.jpg": {
+    "alt": "Paro Dzong on the valley floor beneath snow-covered peaks in clear winter air",
+    "width": 500,
+    "height": 333
+  },
+  "/assets/imagery/simtokha-dzong.webp": {
+    "alt": "Simtokha Dzong on a low ridge south of Thimphu, its utse tower rising above whitewashed walls and painted window frames",
+    "width": 1360,
+    "height": 907
+  },
+  "/assets/imagery/takin-preserve.webp": {
+    "alt": "Takin grazing among blue pines in the Motithang preserve above Thimphu",
+    "width": 700,
+    "height": 346
+  },
+  "/assets/imagery/taktshang.webp": {
+    "alt": "Taktshang monastery on the granite cliff above the Paro valley, white walls and red roofs among pine forest",
+    "width": 1024,
+    "height": 683
+  },
+  "/assets/imagery/tamshing-lhakhang.webp": {
+    "alt": "Tamshing Lhakhang above the Bumthang valley, its gold spire and yellow roof among village rooftops",
+    "width": 1024,
+    "height": 575
+  },
+  "/assets/imagery/tashichho-dzong.jpg": {
+    "alt": "Tashichho Dzong in Thimphu, its whitewashed length and gold-roofed towers below a wooded hillside",
+    "width": 2400,
+    "height": 1229
+  },
+  "/assets/imagery/thangkas.webp": {
+    "alt": "Thangkas, tassels and folded silks hanging in a market stall, lit warm from within",
+    "width": 1000,
+    "height": 1500
+  },
+  "/assets/imagery/tharpaling.webp": {
+    "alt": "Tharpaling Monastery built tight against a mossy cliff, gold finials above white and ochre walls, a path climbing to the door",
+    "width": 1360,
+    "height": 907
+  },
+  "/assets/imagery/thimphu-dzong.webp": {
+    "alt": "Tashichho Dzong across ripening rice terraces in the Thimphu valley, with Buddha Dordenma small on the far ridge",
+    "width": 1500,
+    "height": 1000
+  },
+  "/assets/imagery/thimphu-valley.jpg": {
+    "alt": "Thimphu spread along its valley, seen through a hillside of weathered prayer flags",
+    "width": 1080,
+    "height": 710
+  },
+  "/assets/imagery/traditional-dress.jpg": {
+    "alt": "Two boys in gho, and three girls in kira standing before a row of prayer wheels",
+    "width": 735,
+    "height": 490
+  },
+  "/assets/imagery/travel-with-heart.webp": {
+    "alt": "A rainbow over the forested ridge above a Bhutanese village, cattle grazing in the foreground",
+    "width": 768,
+    "height": 1024
+  },
+  "/assets/imagery/travellers-hike.webp": {
+    "alt": "Four travellers walking up a grassy ridge with poles, a monastery in the mist in the valley below",
+    "width": 810,
+    "height": 840
+  },
+  "/assets/imagery/trongsa-dzong.webp": {
+    "alt": "Trongsa Dzong on its ridge above the Mangde Chhu, ridge behind ridge fading into blue haze",
+    "width": 1360,
+    "height": 906
+  },
+  "/assets/imagery/tshechu-crowd.webp": {
+    "alt": "A tshechu crowd seated close together in gho and kira, watching the dances",
+    "width": 612,
+    "height": 408
+  },
+  "/assets/imagery/uphill.jpg": {
+    "alt": "A line of prayer flags and a small gold-roofed shrine on a grassy spur, snow peaks beyond",
+    "width": 1080,
+    "height": 720
+  },
+  "/assets/textures/kera-full.jpg": {
+    "alt": "A kera, the woven belt that fastens the kira, its plain orange ground giving way to bands of pattern",
+    "width": 1500,
+    "height": 1000
+  }
+}

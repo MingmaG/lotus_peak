@@ -1,58 +1,110 @@
-# Lotus Peak
+# Lotus Peak Tours & Travel
 
-The Lotus Peak Tours & Travel website — Next.js 15, App Router, TypeScript.
+Two applications and four shared packages. `apps/web` is the public website;
+`apps/admin` is the panel the Thimphu office runs it from. Everything a visitor
+reads — every journey, price, paragraph, photograph, phone number and menu item
+— is a row somebody can edit, and there is no content in the website's source.
 
-Built from the Claude design-system project "Bhutan Sanctuary"
-(`60f3a02b-9cc7-43ff-8aed-3458ffd6d9e3`).
+```
+apps/web      the marketing site          :6010
+apps/admin    the admin panel + the API   :6011
+packages/     api-contracts, seo, email, media
+docker/       Postgres :6012, MinIO :6013 (console :6014)
+```
+
+## Getting it running
+
+You need Docker and Node 20+.
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000
-npm run build && npm start
-npm run typecheck
-npm run assets:check # which brand assets are still placeholders
+cp apps/admin/.env.example apps/admin/.env
+cp apps/web/.env.example apps/web/.env
+bash scripts/generate-secrets.sh        # prints the four secrets; paste them in
+npm run db:up                           # Postgres and MinIO
+npm run db:deploy                       # migrations
+npm run db:seed                         # the real site's content
+npm run dev
 ```
 
-## Where things are
+The website is on <http://localhost:6010> and the panel on
+<http://localhost:6011>. The seed makes one account, `owner@lotuspeak.local`,
+with the password from `SEED_OWNER_PASSWORD` (default `Owner@12345` — change it
+before anything is reachable from outside your machine).
 
-| Path | What |
+`npm run db:seed` skips the AVIF and JPEG renditions so that a first run takes a
+minute rather than ten; `npm run media:rebuild -w @lotuspeak/admin` fills them
+in when you want to look at real image loading.
+
+Three of the four secrets are shared between the two apps and must match:
+`SITE_REVALIDATE_SECRET` ↔ `REVALIDATE_SECRET`, and `PREVIEW_SECRET` on both
+sides. A mismatch does not raise anything — publishing simply stops reaching the
+website until the hourly refresh catches up, which is a bad afternoon.
+
+## How the two halves meet
+
+The website holds **no database credential**. It reads `/api/public/site/*` from
+the admin panel over HTTP, which is what makes it deployable as a static site
+next to a panel that lives somewhere else entirely, and what stops a bug in a
+marketing page from being able to read the enquiry table.
+
+```
+        publish ──HMAC──▶ POST /api/revalidate ──▶ revalidateTag()
+       ┌─────────┐                                 ┌──────────┐
+       │  admin  │ ◀── GET /api/public/site/* ──── │   web    │
+       │  :6011  │ ──── POST /api/public/enquiries │  :6010   │
+       └─────────┘                                 └──────────┘
+            │                                           ▲
+       Postgres :6012                            visitors, crawlers
+```
+
+Publishing anything sends a signed invalidation naming the tags that changed,
+so a corrected price is live in about a second. `CONTENT_REVALIDATE_SECONDS`
+(an hour) is the backstop for a push that never arrived, not the mechanism.
+
+Because the website asks the panel for its journey and journal slugs at build
+time, **the admin panel must be running when the website builds.**
+
+## Everything is prerendered
+
+Every page of the website is static — `○` or `●` in the build output, never
+`ƒ`. That is not an optimisation, it is the deliverable: a travel site is read
+by people on hotel wifi in Paro and by crawlers that do not wait. Anything that
+turns a route dynamic is a regression, and `npm run build:web` is where you find
+out. `docs/CUTOVER.md` describes the two occasions this was broken by accident
+and how each was caught.
+
+## Commands
+
+| | |
 | --- | --- |
-| `app/` | Routes. Thin — no business logic |
-| `src/design-system/` | Tokens and the 20 components, ported 1:1 from the design project |
-| `src/motion/` | The effects: Reveal, Parallax, Band, Split, Strip, Dignities, ShadowArt |
-| `src/sections/` | Page sections composed from the two above |
-| `src/content/` | Domain types, `ContentRepository`, the file provider |
-| `docs/specs/` | The build specification |
-| `docs/audit/` | What the prototype got wrong, and what was done about it |
-| `design-source/` | Reference snapshot. Never imported at runtime |
+| `npm run dev` | both apps, with the database brought up first |
+| `npm run build` | admin then web — in that order, because web reads admin |
+| `npm run typecheck` / `npm run lint` | both workspaces |
+| `npm run db:up` / `db:down` | the Docker services |
+| `npm run db:reset` | throws the volume away and re-seeds. Destructive |
+| `npm run db:migrate` | a new migration, after editing `schema.prisma` |
+| `npm run db:studio` | Prisma Studio |
 
-## Two things are outstanding
+## Where to read next
 
-**1. Brand assets are not exported yet.** Fonts, photography, illustrations, icons,
-ornaments and textures still live only in the design project. Until they are exported into
-`public/assets/`, `app/assets/[...path]/route.ts` serves tinted SVG placeholders at the right
-shapes — so every layout, aspect ratio, mask and parallax crop is already correct, and the
-real art drops straight in over them. Files in `public/` are served ahead of routes, so no
-code changes when they land. Run `npm run assets:check` to see what is still missing, and
-delete that route once nothing is.
+| | |
+| --- | --- |
+| `docs/PLAN.md` | what was built, in the order it was built |
+| `docs/CUTOVER.md` | moving the content into the database, and the seven defects that only a prerendered-HTML diff could find |
+| `deploy/README.md` | putting it somewhere |
+| `CLAUDE.md` | the rules that hold across both apps |
+| `apps/web/CLAUDE.md` | the design system's own non-negotiables |
 
-Fonts return 404 rather than a placeholder, so `@font-face` falls back to the system stack
-instead of rendering tofu.
+## Ports
 
-**2. Three itineraries need sign-off.** The design project only has day-by-day content for
-the sacred-valleys journey; the prototype silently shows it under all four titles. The
-itineraries, highlights, inclusions and FAQ for `meditation`, `festival` and `jomolhari` in
-`src/content/data/trips.ts` were drafted from each journey's own description, region list,
-length and altitude. **They are plausible, not authoritative** — Lotus Peak must check them
-before launch.
+Chosen to sit away from the usual 3000/5432/9000 so this can run beside other
+projects. All four are in `docker/docker-compose.yml` and the two `.env` files.
 
-## Backend and CMS
-
-There is none yet, by design. Content is TypeScript modules read through a
-`ContentRepository`, so pages never touch a data source directly. Adding Postgres, Payload or
-Sanity later is one adapter in `src/content/providers/` and one case in the factory — no page,
-section or component changes. `docs/specs/05-data-layer.md` and `06-cms-and-admin.md` describe
-exactly how.
-
-Enquiries currently POST to `/api/enquiries`, which validates, rate-limits, checks a honeypot
-and hands the record to the provider, which logs it. The mail adapter is phase 5.
+| | |
+| --- | --- |
+| 6010 | website |
+| 6011 | admin panel and the public API |
+| 6012 | Postgres |
+| 6013 | MinIO (S3) |
+| 6014 | MinIO console — `minioadmin` / `minioadmin` |

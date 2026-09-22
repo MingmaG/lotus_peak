@@ -1,0 +1,171 @@
+{
+  "id": 2973,
+  "type": "trip",
+  "slug": "jomolhari-trekking-journey-into-joyful-heights",
+  "url": "https://lotuspeak.org/trip/jomolhari-trekking-journey-into-joyful-heights/",
+  "title": "Jomolhari Trekking- Journey into Joyful Heights",
+  "date": "2026-03-01T14:16:15",
+  "modified": "2026-03-21T08:30:16",
+  "excerpt": "",
+  "featured_image": "https://lotuspeak.org/wp-content/uploads/2026/03/m-and-s.webp",
+  "featured_media_id": 3629,
+  "seo": {
+    "title": "Jomolhari Trekking- Journey into Joyful Heights - Lotus Peak",
+    "description": "Experience Jomolhari Trekking in Bhutan — mindful Himalayan journeys through snow peaks, serene valleys, and sacred mountains. Discover peace, adventure, and joy.",
+    "og_image": [
+      "https://lotuspeak.org/wp-content/uploads/2026/03/m-and-s.webp"
+    ]
+  },
+  "content_html": "",
+  "content_markdown": "",
+  "code": "JK-01",
+  "price": 7000,
+  "sale_price": 0,
+  "has_sale": false,
+  "currency": {
+    "code": "USD",
+    "symbol": "&#36;"
+  },
+  "duration": {
+    "days": 15,
+    "nights": 15,
+    "duration_unit": "days",
+    "duration_type": "days"
+  },
+  "min_pax": 10,
+  "max_pax": "",
+  "group_size": "No",
+  "is_featured": false,
+  "available_times": {
+    "type": "default",
+    "items": [
+      "2021-1-01",
+      "2021-2-01",
+      "2021-3-01",
+      "2021-4-01",
+      "2021-5-01",
+      "2021-6-01",
+      "2021-7-01",
+      "2021-8-01",
+      "2021-9-01",
+      "2021-10-01",
+      "2021-11-01",
+      "2021-12-01"
+    ]
+  },
+  "destination": [
+    20,
+    37,
+    38
+  ],
+  "activities": [
+    19,
+    22
+  ],
+  "trip_types": [
+    44
+  ],
+  "difficulty": [
+    7
+  ],
+  "description": "*An excellent choice for a moderate high-altitude Himalayan adventure*\n\n\n\nThis program combines acclimatization in Paro, the classic **Mount Jomolhari Trek**, and cultural highlights in Thimphu and Punakha.",
+  "cost_includes": "Pick-up or Drop-off service from and to Airport(in our own vehicle)\nTransportation to and from!!\nFood all along the trip(Breakfast, Lunch, Dinner and a cup of coffee or tea) and accommodations during the trip in hotels with family environment\nTransportation, food, accommodation and insurance of Guide during the trip\nDown jacket, all-season sleeping bag, duffel bag and trekking map(in case if you don’t have your own. Down jacket, sleeping bag and duffel bag must be returned after completion of the trip)\nFirst Aid Medical Kit(Your guide will carry the Medical Kit but we also advise to bring yourself for your own use, as far as possible)\nAll the required permits and paperwork within bhutan",
+  "cost_excludes": "International Airfare\nVisa Charges\nHotel Expenses\nYour travel and medical insurance\nPersonal Expenses such as shopping, bar bills, hot shower, telephone, laundry, titbits etc\nFood and accommodations in Kathmandu\nServices not mentioned or not promised by the agent/agency\nEmergency expenses such as expenses on chartered helicopter.",
+  "itineraries": [
+    {
+      "title": "ARRIVE PARO",
+      "content_html": "<!-- wp:paragraph -->\n<p>Arrive at <strong>Paro</strong>. The flight into Paro offers spectacular Himalayan views.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Meet &amp; greet at airport</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Visit <strong>National Museum of Bhutan</strong></li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Visit <strong>Rinpung Dzong</strong></li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Walk across the traditional cantilever bridge<br>Overnight in Paro (Hotel)</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "Arrive at **Paro**. The flight into Paro offers spectacular Himalayan views.\n\n\n\n* Meet & greet at airport\n* Visit **National Museum of Bhutan**\n* Visit **Rinpung Dzong**\n* Walk across the traditional cantilever bridge  \n  Overnight in Paro (Hotel)"
+    },
+    {
+      "title": "PARO – TAKTSANG HIKE (Acclimatization)",
+      "content_html": "<!-- wp:paragraph -->\n<p>Hike to <strong>Tiger’s Nest Monastery</strong> (3,120m).</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>4–5 hours round trip</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Tea stop viewpoint</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Visit <strong>Drukgyel Dzong</strong></li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Clear-day views of Mount Jomolhari<br>Overnight in Paro</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "Hike to **Tiger’s Nest Monastery** (3,120m).\n\n\n\n* 4–5 hours round trip\n* Tea stop viewpoint\n* Visit **Drukgyel Dzong**\n* Clear-day views of Mount Jomolhari  \n  Overnight in Paro"
+    },
+    {
+      "title": "CHELE LA PASS ACCLIMATIZATION",
+      "content_html": "<!-- wp:paragraph -->\n<p>Drive to <strong>Chele La Pass</strong> (3,988m).</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Short acclimatization hikes</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Visit <strong>Kila Gompa</strong><br>Overnight in Paro</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "Drive to **Chele La Pass** (3,988m).\n\n\n\n* Short acclimatization hikes\n* Visit **Kila Gompa**  \n  Overnight in Paro"
+    },
+    {
+      "title": "PARO – SHANA – SOI THANGTHANGKHA",
+      "content_html": "<!-- wp:paragraph -->\n<p><strong>Distance:</strong> 17–19 km | 5–8 hrs | Camp: 3,680m</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Drive 2 hrs to Shana</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Trek along Pa Chu river</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Pine &amp; rhododendron forests<br>Overnight Camp</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "**Distance:** 17–19 km | 5–8 hrs | Camp: 3,680m\n\n\n\n* Drive 2 hrs to Shana\n* Trek along Pa Chu river\n* Pine & rhododendron forests  \n  Overnight Camp"
+    },
+    {
+      "title": "SOI THANGTHANGKHA – JANGOTHANG",
+      "content_html": "<!-- wp:paragraph -->\n<p><strong>19 km | 6–7 hrs | 4,040m</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Army checkpoint</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Yak herder camps</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>First dramatic close views of Mount Jomolhari<br>Overnight Camp</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "**19 km | 6–7 hrs | 4,040m**\n\n\n\n* Army checkpoint\n* Yak herder camps\n* First dramatic close views of Mount Jomolhari  \n  Overnight Camp"
+    },
+    {
+      "title": "ACCLIMATIZATION – JANGOTHANG",
+      "content_html": "<!-- wp:paragraph -->\n<p>Optional hikes:</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Tsophu sacred lakes</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Base views toward Jichu Drake</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Explore yak pastures<br>Overnight Camp</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "Optional hikes:\n\n\n\n* Tsophu sacred lakes\n* Base views toward Jichu Drake\n* Explore yak pastures  \n  Overnight Camp"
+    },
+    {
+      "title": "JANGOTHANG – LINGSHI",
+      "content_html": "<!-- wp:paragraph -->\n<p><strong>19 km | 7–8 hrs | Camp: 3,915m</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Cross <strong>Nyile La Pass</strong></li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Panoramic glacier views</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>View of <strong>Lingshi Dzong</strong><br>Overnight Camp</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "**19 km | 7–8 hrs | Camp: 3,915m**\n\n\n\n* Cross **Nyile La Pass**\n* Panoramic glacier views\n* View of **Lingshi Dzong**  \n  Overnight Camp"
+    },
+    {
+      "title": "REST DAY – LINGSHI",
+      "content_html": "<!-- wp:paragraph -->\n<p>Excursion toward Jichu Drake base (4,500m)</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>Explore village life</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>Visit school (if open)<br>Overnight Camp</p>\n<!-- /wp:paragraph -->",
+      "content_markdown": "Excursion toward Jichu Drake base (4,500m)\n\n\n\nExplore village life\n\n\n\nVisit school (if open)  \nOvernight Camp"
+    },
+    {
+      "title": "LINGSHI – SHODU",
+      "content_html": "<!-- wp:paragraph -->\n<p><strong>6–7 hrs | Camp: 3,815m</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Cross <strong>Yeli La Pass</strong></li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Highest point of trek (4,820m)</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Views of Gangchenta &amp; Masagang<br>Overnight Camp</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "**6–7 hrs | Camp: 3,815m**\n\n\n\n* Cross **Yeli La Pass**\n* Highest point of trek (4,820m)\n* Views of Gangchenta & Masagang  \n  Overnight Camp"
+    },
+    {
+      "title": "SHODU – BARSHONG",
+      "content_html": "<!-- wp:paragraph -->\n<p><strong>16–17 km | 6–7 hrs | 3,600m</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Follow Thimphu Chu river</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Rhododendron &amp; juniper forests</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Ruins of Barshong Dzong<br>Overnight Camp</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "**16–17 km | 6–7 hrs | 3,600m**\n\n\n\n* Follow Thimphu Chu river\n* Rhododendron & juniper forests\n* Ruins of Barshong Dzong  \n  Overnight Camp"
+    },
+    {
+      "title": "BARSHONG – DODENA – THIMPHU",
+      "content_html": "<!-- wp:paragraph -->\n<p><strong>15 km | 5–6 hrs</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Descend through alpine forest</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Reach Dodena roadhead</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Drive to <strong>Thimphu</strong><br>Overnight Hotel</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "**15 km | 5–6 hrs**\n\n\n\n* Descend through alpine forest\n* Reach Dodena roadhead\n* Drive to **Thimphu**  \n  Overnight Hotel"
+    },
+    {
+      "title": "THIMPHU SIGHTSEEING",
+      "content_html": "<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li><strong>National Memorial Chorten</strong></li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li><strong>Tashichho Dzong</strong></li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Weekend market (if applicable)<br>Overnight Thimphu</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "* **National Memorial Chorten**\n* **Tashichho Dzong**\n* Weekend market (if applicable)  \n  Overnight Thimphu"
+    },
+    {
+      "title": "THIMPHU – PUNAKHA",
+      "content_html": "<!-- wp:paragraph -->\n<p>Drive via <strong>Dochula Pass</strong>.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>108 chortens</li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Visit <strong>Punakha Dzong</strong></li>\n<!-- /wp:list-item -->\n\n<!-- wp:list-item -->\n<li>Walk to <strong>Chimi Lhakhang</strong><br>Overnight Punakha</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->",
+      "content_markdown": "Drive via **Dochula Pass**.\n\n\n\n* 108 chortens\n* Visit **Punakha Dzong**\n* Walk to **Chimi Lhakhang**  \n  Overnight Punakha"
+    },
+    {
+      "title": "PUNAKHA – PARO",
+      "content_html": "<!-- wp:paragraph -->\n<p>Optional Khamsum Yulley hike<br>Drive back to Paro<br>Overnight Paro</p>\n<!-- /wp:paragraph -->",
+      "content_markdown": "Optional Khamsum Yulley hike  \nDrive back to Paro  \nOvernight Paro"
+    },
+    {
+      "title": "DEPART PARO",
+      "content_html": "<!-- wp:paragraph -->\n<p>Transfer to airport<br><em>Tashi Delek!</em></p>\n<!-- /wp:paragraph -->",
+      "content_markdown": "Transfer to airport  \n*Tashi Delek!*"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "Where is the best place to take a vacation?",
+      "answer": "Bhutan is full of breathtaking spots, and the “best” place really depends on what kind of experience you’re looking for—spiritual, nature, adventure, or cultural immersion. Here’s a breakdown of the top destinations:\n\n\n\n### **1. Paro**\n\n\n\n* **Why go:** Home to Bhutan’s only international airport, Paro is the gateway to the country and packed with iconic sites.\n* **Highlights:**\n  + **Taktsang Monastery (Tiger’s Nest):** The most famous Himalayan monastery perched on a cliff.\n  + **Paro Dzong:** A stunning fortress with impressive architecture.\n  + **Dungtse & Kichu Lhakhang:** Ancient temples with rich history.\n* **Best for:** First-time visitors, photographers, and spiritual seekers.\n\n\n\n### **2. Thimphu**\n\n\n\n* **Why go:** Bhutan’s modern capital offers a mix of tradition and contemporary life.\n* **Highlights:**\n  + **Buddha Dordenma:** Giant Buddha statue overlooking the valley.\n  + **Tashichho Dzong:** Administrative and religious center.\n  + **Weekend markets & local crafts:** For souvenirs and cultural experience.\n* **Best for:** Culture lovers, city explorers, and family vacations.\n\n\n\n### **3. Bumthang**\n\n\n\n**Best for:** Spiritual journeys, trekking, and cultural immersion.\n\n\n\n**Why go:** Bhutan’s spiritual heartland, rich in monasteries and culture.\n\n\n\n**Highlights:**\n\n\n\n**Jakar Dzong, Kurje Lhakhang, Tamshing Lhakhang:** Ancient temples and dzongs.\n\n\n\n**Sacred lakes & trekking trails:** Membar Tso and natural scenery."
+    },
+    {
+      "question": "Why Bhutan and Lotus Peak Tour & Travel?",
+      "answer": "🌄 **Experience Bhutan’s Unique Charm**\n\n\n\nBhutan, often referred to as the \"Land of the Thunder Dragon,\" offers a rare blend of natural beauty, rich culture, and spiritual serenity. Here's why it's a must-visit destination:\n\n\n\n**Commitment to Sustainability**: Bhutan is the only carbon-negative country in the world, emphasizing environmental conservation and sustainable tourism.\n\n\n\n**Stunning Landscapes**: From the iconic **Paro Taktsang (Tiger’s Nest)** perched on a cliff to the serene **Phobjikha Valley**, Bhutan's landscapes are breathtaking.\n\n\n\n**Rich Cultural Heritage**: Explore ancient temples, majestic dzongs, and vibrant festivals that showcase Bhutan's deep-rooted traditions."
+    }
+  ],
+  "packages_ids": {
+    "0": 2990,
+    "1": 2991,
+    "3": 2992,
+    "4": 2993,
+    "5": 2994
+  },
+  "images": [
+    "https://lotuspeak.org/wp-content/uploads/2026/03/m-and-s.webp"
+  ]
+}

@@ -1,151 +1,162 @@
-# Lotus Peak — project rules
+# Lotus Peak — working rules
 
-Marketing site for **Lotus Peak Tours & Travel**, a Bhutanese company running small-group
-mindfulness, meditation, festival and trekking journeys.
+A monorepo for **Lotus Peak Tours & Travel**, a Bhutanese company running small-group
+mindfulness, meditation, festival and trekking journeys. `apps/web` is the public
+website, `apps/admin` is the panel the office runs it from.
 
-The visual design is already finished and lives in a Claude design-system project
-(`60f3a02b-9cc7-43ff-8aed-3458ffd6d9e3`, "Bhutan Sanctuary"). This repo is the
-**production Next.js implementation** of that design. Read `docs/specs/` before writing code.
+Read `README.md` first for how to start it, and `apps/web/CLAUDE.md` before touching
+anything a visitor looks at — the visual design is approved and its rules live there.
 
 ---
 
-## 1. Non-negotiables
+## 1. The three that are not negotiable
 
-These come from the design system's own rules. Breaking one is a bug, not a style choice.
+**Nothing a visitor reads is in the source.** Every journey, price, itinerary day,
+paragraph, photograph, phone number, address, social link and menu entry is a row the
+office can edit. If you are about to type a company detail into a component, stop: it
+belongs in `CompanyProfile`, `ContactChannel`, `SocialLink` or `Setting`, and it is
+already there. Three hardcoded copies of the phone number were removed once; do not add
+a fourth.
 
-- **Grounds are white.** Page and section backgrounds are `#FFFFFF` (`--paper`) or
-  `#F7F7F6` (`--paper-2`). Never cream, beige or warm-tinted grounds (`#EFE8DD`, `#F7F3EC`).
-  Dark sections use `--pine` / `--pine-2`.
-- **No Claude/Anthropic brand colours, type or visual language** anywhere in this project.
-- **One typeface**: Commissioner, self-hosted, weights 100–900. No second family, no
-  Google Fonts CDN.
-- **Saffron (`--saffron`) is the single CTA colour**, at most one filled button per section.
-  Outline and ghost carry everything else.
-- **Never hardcode a colour, size, duration or easing.** Everything goes through the CSS
-  custom properties in `src/design-system/tokens/`. If a value you need is not a token,
-  add a token — do not inline a hex or a `ms`.
-- **Motion mimics breath, never urgency.** Durations are long (`--dur-reveal: 1.8s`,
-  `--dur-breath: 8s`). Never add bounce, spring overshoot, or anything under `--dur-quick`.
-- **`prefers-reduced-motion` is honoured by every effect**, in CSS *and* in JS. Any hook that
-  writes `transform` on scroll must bail out when the query matches.
-- **No star ratings, no urgency badges, no countdowns, no "only 2 left".** Testimonials are
-  `Reflection` components — a quote and a quiet attribution.
+**The website has no database credential, and must never be given one.** It reads
+`/api/public/site/*` over HTTP. That boundary is what lets the site deploy as static
+files beside a panel that lives somewhere else, and it is what stops a bug in a
+marketing page from being able to read the enquiry table. Never import `@prisma/client`,
+`@/lib/db` or anything under `apps/admin/src/server/` from `apps/web`.
 
-## 2. Stack
+**Every page of the website is prerendered.** `npm run build:web` marks each route `○`,
+`●` or `ƒ`. An `ƒ` is a regression and the build is where you find out — not a code
+review. `force-dynamic` on `not-found.tsx` once turned eleven static routes dynamic,
+which no amount of reading the diff would have shown. If a page needs a request, it
+almost certainly needs middleware or a client component instead.
 
-| Concern | Choice | Why |
-| --- | --- | --- |
-| Framework | Next.js 15, App Router, React 19, TypeScript `strict` | RSC for content pages, islands for effects |
-| Styling | CSS custom properties + inline style objects | Ported 1:1 from the design project, whose hover states are JS-state-driven; Tailwind would add a translation layer that drifts |
-| Motion | Hand-written hooks over `IntersectionObserver` + one shared rAF broker | The prototype's effects are cheap and specific; a general animation library would not reproduce them and would cost more |
-| Content | Provider-agnostic repository (`src/content`) | See §4 |
-| Admin | Pluggable; Payload CMS mounted at `/admin` is the default | See §4 |
-| Validation | Zod at every provider boundary | Content from a CMS is untrusted input |
-| Email | Adapter interface, Resend adapter by default | Enquiries are the only conversion path |
-
-Package manager is **pnpm**. Node 20+.
-
-## 3. Layout
+## 2. Layout
 
 ```
-app/                      routes only — thin, no business logic
-  (site)/                 public marketing site
-  (admin)/                CMS admin, when the Payload provider is active
-  api/                    enquiry intake, revalidation webhooks
-src/
-  design-system/          tokens + presentational components (ported 1:1 from the design project)
-  sections/               page sections composed from design-system + motion
-  motion/                 the effects system — Reveal, Parallax, Band, Strip, Split, Dignities
-  content/                schema, repository interface, provider adapters, factory
-  lib/                    env, seo, images, mail, analytics
-content/                  seed data for the file provider
-docs/specs/               the build specification — authoritative
-docs/audit/               findings carried over from the prototype
-design-source/            imported reference from the design project (do not import at runtime)
+apps/web        the site. Routes in app/, everything else in src/
+apps/admin      the panel, the API the site reads, and Prisma
+packages/
+  api-contracts types only — the shape of what crosses the HTTP boundary
+  seo           one JSON-LD @graph per page, llms.txt
+  email         the transactional templates, as table HTML
+  media         rendition widths, srcset, focal point
+docker/         Postgres and MinIO for development
+docs/           PLAN.md, CUTOVER.md, GIT-WORKFLOW.md
+deploy/         deployment notes
 ```
 
-**`design-source/` is reference material, never a build input.** Nothing under `app/` or
-`src/` may import from it.
+`packages/api-contracts` is the contract between the two apps. When a field changes
+shape, change it there first — both sides then fail to compile, which is the point.
+`adults` was written out by hand on both sides once, drifted to `string` on one of them,
+and every enquiry carrying a party size was silently refused.
 
-## 4. The two axes of pluggability
+## 3. Data
 
-The whole point of the architecture. Read `docs/specs/05-data-layer.md` and
-`docs/specs/06-cms-and-admin.md` before touching either.
+Prisma, Postgres, migrations checked in. `apps/admin/prisma/schema.prisma` is the only
+schema.
 
-**Database-agnostic.** Pages never touch a database. They call
-`getContent()` → a `ContentRepository`. Swapping Postgres for MongoDB, or a
-file-based seed for a hosted CMS, is one env var and one adapter file. Adapters map their
-own shape into the domain types in `src/content/schema/` and validate with Zod on the way
-out. No provider type ever leaks past `src/content/providers/`.
+- A schema change is a migration (`npm run db:migrate`), never `db:push` on anything
+  but a scratch database.
+- `Json` columns — a journal body, a page's sections — are parsed by Zod on the way in
+  **and** on the way out (`src/server/schema/blocks.ts`). Postgres will not do it for
+  you, and a malformed block must render as nothing rather than take a published page
+  down.
+- Stored shapes reference media by id; wire shapes carry the serialised image. Never
+  store a serialised image — correcting one piece of alt text would mean rewriting every
+  row that used the photograph.
+- Deletes are soft (`deletedAt`) wherever the office might want the row back. Sessions
+  are revoked, not deleted: "where am I signed in" is a question about history too.
 
-**CMS-agnostic.** The admin panel is an opt-in surface, not a dependency. Payload is the
-default because it runs inside this Next app and carries its own database adapters
-(Postgres / MongoDB / SQLite), which satisfies both axes at once — but `SanityProvider`,
-`StrapiProvider` and `DirectusProvider` are equally first-class and must stay buildable.
+## 4. Auth and permissions
 
-Rules:
-- Never `import` a CMS SDK outside `src/content/providers/<name>/`.
-- Never reference `process.env` outside `src/lib/env.ts`.
-- Every new provider implements the **whole** `ContentRepository` interface or fails at
-  construction — no partial providers with silent `undefined` returns.
-- Adding a field means: schema → every provider → seed data → the component. In that order.
+Two JWT secrets, not one. The access token is stateless and lasts fifteen minutes; the
+refresh token is checked against a `Session` row and lasts thirty days. That fifteen
+minutes is the longest a deactivated account, a changed role or a revoked session can
+lag.
 
-## 5. Effects
+- Permissions are `<resource>.<action>` strings on the role, carried in the token, and
+  checked with `can()`, which understands implication.
+- The middleware is a gate, not an authoriser: it runs on the edge, has no Prisma, and
+  only decides whether a request may reach a route at all. Permission checks belong in
+  the route, where the row can be read.
+- **`refresh()` writes a cookie, so it may only be called from a route handler or a
+  server action.** A Server Component that writes a cookie throws and takes the page
+  with it. `hasRefreshCookie()` is the read-only half.
 
-`src/motion/` is the heart of the site and the part most likely to be quietly broken.
-`docs/specs/03-motion-and-effects.md` is the contract; `docs/audit/effects-integration.md`
-lists what was already wrong in the prototype and must not be reproduced.
+## 5. The seam between publishing and the site
 
-Standing rules:
+Publishing sends a signed invalidation (`x-lotuspeak-signature`) naming the tags that
+changed. `CONTENT_REVALIDATE_SECONDS` is the backstop for a push that never arrived, not
+the mechanism.
 
-- **Never ship a `Reveal` that renders `opacity: 0` on the server.** The prototype does, which
-  makes the whole page invisible without JS and to crawlers that do not run it. Entrance
-  animation is opt-in via a `motion-ready` class set on `<html>` after hydration; the
-  no-JS state is the finished state.
-- **One scroll broker.** `useScrollBroker` owns the single `scroll` listener and the single
-  `requestAnimationFrame` loop; `Parallax`, `Strip`, `Dignities` and the section spy all
-  subscribe to it. Do not add a bare `window.addEventListener('scroll', …)`.
-- **Effects are client components; content is not.** Keep `"use client"` on the motion
-  wrapper, not on the page that uses it, so trip copy still renders on the server.
-- `Dignities` is a single page-wide fixed layer rendered once in the site layout — never
-  per page, never more than one.
-- Section motif art (`ShadowArt`) and the page-wide `Dignities` layer must never both be
-  visible in the same viewport. That is why the prototype retired `Shadow`; when you
-  reinstate motifs, pick one system per section and say which in the component.
+- A revalidation must never fail a save. The office correcting a price should not see an
+  error because the website is restarting.
+- **Do not memoise content on a module-scope closure in `apps/web`.** It outlives the
+  request, so publishing stops reaching the site while every cache header still says it
+  worked. This has happened.
+- Preview is a short-lived, path-scoped signed token. It is not "draft mode on".
 
-## 6. Content and voice
+## 6. Verifying
 
-Copy is part of the design. When you write or edit user-facing text:
+`npm run typecheck && npm run lint` is the floor, and it is not evidence that anything
+works. A build succeeds with an empty journeys index, a missing paragraph and
+`undefined` where a price was.
 
-- Plain, calm, specific. Short sentences. No marketing superlatives.
-- British spelling ("travellers", "programme", "honour").
-- Prices as `US$ 4,500`. Altitudes as `3,120 m`. Durations as `11 days`.
-- Bhutanese terms are used unglossed where the context carries them (dzong, tshechu, kira,
-  gho, thongdrel, Lam, Rinpoche, Jomzo, Zorig Chusum) and explained in a `Tooltip` where
-  they are not (SDF).
-- Real contact details: `+975 17984485`, `info@lotuspeak.org`.
+What actually catches things:
 
-## 7. Working agreements
+- **Prerendered-HTML diffing** (`apps/web/scripts/compare-html.mjs`). Capture the
+  rendered text before a change that moves data, compare after. Seven defects were found
+  this way and none of them was visible in the code — see `docs/CUTOVER.md`.
+- **The browser**, for anything with a form in it. `curl` said the enquiry API was fine
+  while the form was announcing "Sent" over a 500 and clearing what the traveller had
+  written.
+- **The route table** from `npm run build:web`, for the static-rendering invariant.
+- Real horizontal scrollability (`window.scrollTo(9999, y)`) for responsive checks.
+  `scrollWidth - clientWidth` measures the scrollbar and will lie to you.
 
-- **Port one component at a time**, verify it against the design project, then move on.
-  Do not bulk-convert the prototype JSX.
-- When the design and this repo disagree, **the design project wins** — fetch the current
-  file rather than trusting `design-source/`, which is a snapshot.
-- Run `pnpm typecheck && pnpm lint && pnpm test` before declaring anything done.
-- Every new route needs `generateMetadata`, an entry in the sitemap, and a reduced-motion
-  pass.
-- Images go through `next/image` with explicit `width`/`height` and a real `alt`
-  (decorative ones get `alt=""` and `aria-hidden`).
-- Do not add a dependency for something a 30-line hook does.
+## 7. Conventions
 
-## 8. Commands
+- Conventional Commits; `git config commit.template .gitmessage` gives you the types and
+  scopes. Commit messages explain *why*, and a fix names the failure it prevents.
+- Comments explain decisions, not mechanics. If a line looks wrong and isn't, say why —
+  that is what most of the comments in this repo are for.
+- British spelling in anything a person reads, including the admin panel.
+- In the admin panel, `src/lib/env.ts` is the only place `process.env` is read, and it
+  refuses a `change-me` secret in production. On the website, a value read in more than
+  one place belongs in `src/lib/env.ts`; one read once, where it means something, does
+  not. The layout read `SITE_URL` — the admin panel's variable name, unset on this side
+  — for a while, and fell through to the production domain, so every Open Graph URL in
+  development pointed at the live site and nothing failed.
+- Do not add a dependency for something a thirty-line module does.
+- Restart the dev servers after a build: `next build` clears `.next` underneath them and
+  they start 404ing their own chunks.
+- **Clear `apps/web/.next/cache` after changing the API's shape.** Next keeps fetch
+  responses on disk across builds, keyed by URL, for `CONTENT_REVALIDATE_SECONDS` — an
+  hour. A build after a contract change otherwise reuses yesterday's payload and either
+  renders without the new field or dies on `Cannot read properties of undefined`. It
+  looks exactly like a bug in the mapper, and it is not.
 
-```
-pnpm dev            # next dev
-pnpm build          # next build
-pnpm typecheck      # tsc --noEmit
-pnpm lint           # eslint
-pnpm test           # vitest
-pnpm test:e2e       # playwright, includes the reduced-motion + no-JS suites
-pnpm content:seed   # load content/ seed data into the active provider
-```
+## 8. Working together on one repo
+
+Two developers share this repo — one mainly `apps/web`, one mainly `apps/admin` and the
+wiring between them — so the branch discipline is part of the build, not paperwork.
+`docs/GIT-WORKFLOW.md` is the full guide: setup, the daily loop, conflict recipes per
+file, releases, and how to get out of trouble. The rules that bind:
+
+- **`main` is production, `develop` is the latest working code.** Everyone branches from
+  `develop` and merges back into it through a pull request; nobody commits directly to
+  either. `main` moves only by a deliberate release of `develop`, or a `hotfix/*`.
+- **Branch from a freshly pulled `develop`, and rebase onto `origin/develop` daily** —
+  always before opening the PR. `pull.rebase=true`, and `--force-with-lease` on your own
+  branch, never bare `--force`, never a force push to `main` or `develop`.
+- **After every pull, react to what arrived.** `package-lock.json` changed →
+  `npm install`. A new migration → `npm run db:deploy`. `packages/api-contracts` changed
+  → `rm -rf apps/web/.next/cache`, for the reason in §7. Skipping this looks exactly like
+  a bug in your own work.
+- **A change to `packages/*` or `apps/admin/prisma/` is its own small PR, merged first,
+  and announced.** The contract only does its job — both sides failing to compile when
+  they disagree — if both sides are compiling against the same version of it. Never edit
+  a migration that has already been pushed; correct it with a new one.
+- **`npm run typecheck && npm run lint && npm run build:web` before asking for review,**
+  and read the route table. A reviewer cannot see an `ƒ` in a diff.
+- One change per branch, days not weeks, pushed at least daily even when unfinished.

@@ -1,0 +1,28 @@
+:root{
+/* Motion mimics breath, never urgency */
+--ease-breath:cubic-bezier(.4,0,.2,1);
+--ease-drift:cubic-bezier(.25,.46,.45,.94);
+--ease-settle:cubic-bezier(.16,1,.3,1);
+--ease-inhale:cubic-bezier(.37,0,.63,1);
+--dur-quick:.3s;
+--dur-slow:.7s;
+--dur-reveal:1.8s;
+--dur-breath:8s;
+--dur-mist:24s;
+/* The dignity rail and its dialog.
+   The rail turns slowly — a medallion lighting up is a change of chapter, not a
+   response to a click — so it has its own --dur-turn, matching the 1.2s the
+   design gives the markers. The dialog's entrance and exit are mirrored so the
+   panel never snaps: the scrim veils, the panel rises after a beat, and on the
+   way out the panel leaves first while the scrim holds a moment longer.
+   Dignities reads these back to time the unmount, which is why they are tokens
+   and not numbers in the component. */
+--dur-turn:1.2s;
+--dur-veil:1.1s;
+--dur-rise:1.6s;
+--dur-drift:2.6s;
+--delay-rise:.15s;
+--delay-drift:.45s;
+--delay-veil-out:.65s;
+}
+@media (prefers-reduced-motion:reduce){:root{--dur-quick:0s;--dur-slow:0s;--dur-reveal:0s;--dur-breath:0s;--dur-mist:0s;--dur-turn:0s;--dur-veil:0s;--dur-rise:0s;--dur-drift:0s;--delay-rise:0s;--delay-drift:0s;--delay-veil-out:0s}}

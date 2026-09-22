@@ -1,0 +1,27 @@
+[
+  {
+    "id": "penjor-bumthang",
+    "quote": "More than a tour. Every moment felt intentional. From the monasteries to the valleys, I felt connected to Bhutan and to my own quiet.",
+    "name": "Penjor",
+    "detail": "Bumthang, 2026",
+    "featured": true,
+    "order": 1
+  },
+  {
+    "id": "traveller-valleys",
+    "quote": "Our Lam stopped us on the pass and we sat for twenty minutes. Nothing was said. It is the part I remember.",
+    "name": "A traveller",
+    "detail": "Sacred valleys, spring 2026",
+    "tripSlug": "valleys",
+    "featured": true,
+    "order": 2
+  },
+  {
+    "id": "penjor-about",
+    "quote": "Traveling with Lotus Peak was more than a tour. It was a life-changing experience. Every moment felt intentional and deeply meaningful.",
+    "name": "Penjor",
+    "detail": "Bumthang, 2026",
+    "featured": false,
+    "order": 3
+  }
+]

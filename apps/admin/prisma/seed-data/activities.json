@@ -1,0 +1,60 @@
+[
+  {
+    "slug": "cultural-and-historical",
+    "name": "Cultural and historical",
+    "blurb": "Dzongs, temples, festivals and the thirteen arts, seen where they are still in use.",
+    "icon": "dzong-long",
+    "image": "/assets/imagery/cham-masked-dance.webp",
+    "examples": [
+      "Cham dances in a dzong courtyard at a tshechu",
+      "Temples from the eighth century onwards, most of them still working",
+      "The National Museum in the old watchtower at Paro",
+      "Jomzo, weaving and the other of the thirteen arts, watched at the bench"
+    ],
+    "tripSlugs": [
+      "tshechu",
+      "festival",
+      "valleys",
+      "meditation"
+    ],
+    "order": 1
+  },
+  {
+    "slug": "mindfulness-and-retreat",
+    "name": "Mindfulness and retreat",
+    "blurb": "Sitting practice each day, and teaching from the Lams and Rinpoches at the monasteries we visit.",
+    "icon": "buddha",
+    "image": "/assets/imagery/meditation.webp",
+    "examples": [
+      "Short sitting practice written into each day, including the drives",
+      "Teaching from resident Lams at Kharchu, Tharpaling and Gangtey",
+      "Evening prayers with the monk body, where we are welcome",
+      "Silent mornings, for anyone who wants them"
+    ],
+    "tripSlugs": [
+      "meditation",
+      "valleys",
+      "tshechu"
+    ],
+    "order": 2
+  },
+  {
+    "slug": "nature-and-walking",
+    "name": "Nature and walking",
+    "blurb": "From an afternoon on a valley floor to fifteen days under Jomolhari.",
+    "icon": "pavilion",
+    "image": "/assets/imagery/jomolhari-trek.webp",
+    "examples": [
+      "The climb to Taktsang, 900 m up and back in a morning",
+      "The Phobjikha nature trail, level, and the cranes in winter",
+      "The Jomolhari route, with two rest days and a pass at 4,930 m",
+      "Blue sheep, takin, and yak camps on the high ground"
+    ],
+    "tripSlugs": [
+      "jomolhari",
+      "valleys",
+      "tshechu"
+    ],
+    "order": 3
+  }
+]

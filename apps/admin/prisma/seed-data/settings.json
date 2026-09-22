@@ -1,0 +1,124 @@
+{
+  "brand": "Lotus Peak",
+  "line": "Small-group journeys in Bhutan.",
+  "nav": [
+    {
+      "label": "Our trips",
+      "href": "/trips"
+    },
+    {
+      "label": "Where we go",
+      "href": "/destinations"
+    },
+    {
+      "label": "Culture",
+      "href": "/culture"
+    },
+    {
+      "label": "Journal",
+      "href": "/journal"
+    },
+    {
+      "label": "About",
+      "href": "/about"
+    },
+    {
+      "label": "Contact",
+      "href": "/contact"
+    }
+  ],
+  "navCta": {
+    "label": "Explore trips",
+    "href": "/trips"
+  },
+  "footer": {
+    "columns": [
+      {
+        "title": "Journeys",
+        "links": [
+          {
+            "label": "Our trips",
+            "href": "/trips"
+          },
+          {
+            "label": "Paro Tshechu",
+            "href": "/trips/tshechu"
+          },
+          {
+            "label": "Sacred valleys",
+            "href": "/trips/valleys"
+          },
+          {
+            "label": "Jomolhari trek",
+            "href": "/trips/jomolhari"
+          },
+          {
+            "label": "What you can do",
+            "href": "/activities"
+          }
+        ]
+      },
+      {
+        "title": "Bhutan",
+        "links": [
+          {
+            "label": "Where we go",
+            "href": "/destinations"
+          },
+          {
+            "label": "Culture & traditions",
+            "href": "/culture"
+          },
+          {
+            "label": "Journal",
+            "href": "/journal"
+          },
+          {
+            "label": "Gallery",
+            "href": "/gallery"
+          },
+          {
+            "label": "When to come",
+            "href": "/#seasons"
+          }
+        ]
+      },
+      {
+        "title": "Practical",
+        "links": [
+          {
+            "label": "Enquiry form",
+            "href": "/contact"
+          },
+          {
+            "label": "Travellers’ information",
+            "href": "/travellers-information"
+          },
+          {
+            "label": "About Lotus Peak",
+            "href": "/about"
+          },
+          {
+            "label": "Terms & conditions",
+            "href": "/terms"
+          }
+        ]
+      }
+    ],
+    "note": "Lotus Peak Tours & Travel · Thimphu, Bhutan · +975 17984485"
+  },
+  "contact": {
+    "phone": "+975 17984485",
+    "email": "info@lotuspeak.org",
+    "replyPromise": "Personally, within two days"
+  },
+  "pledge": {
+    "percent": 30,
+    "beneficiary": "Osel Ling Perila Goenpa"
+  },
+  "sdfPerNightUsd": 100,
+  "defaultSeo": {
+    "title": "Lotus Peak",
+    "description": "Mindful journeys through Bhutan, led slowly, with monks and Lams, and days written in for doing nothing."
+  }
+}

@@ -1,0 +1,63 @@
+:root{
+/* Base — premium white, stone, wood. Never cream/beige page grounds. */
+--paper:#FFFFFF;
+--paper-2:#F7F7F6;
+--paper-3:#ECECEA;
+--stone-1:#8A857C;
+--stone-2:#5E5A53;
+--wood:#4B3A2F;
+--ink:#1F1D1A;
+--white:#FFFFFF;
+/* Accent — lotus sky: the brand mark's blue, now the lead colour */
+--sky:#7AC2FE;/* the logo blue, as supplied — fills and large shapes only, never type */
+--sky-2:#4FA5EC;
+--sky-deep:#15618F;/* type, rules, CTAs on paper — 6.7:1 on white */
+--sky-ink:#0C3E5C;/* dark section grounds */
+--sky-soft:#DCEDFC;
+--sky-wash:#F2F8FD;
+/* Accent — monk robe. Saffron is the single secondary accent. */
+--saffron:#D98A2B;
+--saffron-2:#E8A23C;
+--saffron-soft:#F3DDBC;
+--maroon:#7A1F2B;
+--maroon-2:#5E1620;
+/* Accent — Himalayan */
+--pine:#2F4032;
+--pine-2:#1F2B22;
+--pine-soft:#D6DCD3;
+--slate:#4A5A66;
+--slate-soft:#D9DEE2;
+/* Gold leaf — thin lines only */
+--gold:#B9975B;
+--gold-soft:#E6D8B8;
+/* Prayer flag sequence — easter egg only */
+--flag-blue:#4C78A8;
+--flag-white:#F4F4F2;
+--flag-red:#B8433D;
+--flag-green:#4E7D5B;
+--flag-yellow:#E0B23F;
+/* Semantic */
+--surface-page:var(--paper);
+--surface-raised:var(--white);
+--surface-sunken:var(--paper-2);
+--surface-ground:var(--sky-ink);
+--surface-ground-deep:#08293D;
+--surface-tint:var(--sky-wash);
+--text-body:var(--ink);
+--text-muted:var(--stone-2);
+--text-faint:var(--stone-1);
+--text-on-ground:var(--paper);
+--text-accent:var(--sky-deep);
+--border-hairline:rgba(31,29,26,.12);
+--border-strong:rgba(31,29,26,.32);
+--border-gold:var(--gold);
+--border-sky:var(--sky-soft);
+--cta-bg:var(--sky-deep);
+--cta-bg-hover:#0F4E75;
+--cta-fg:var(--white);
+--cta-2-bg:var(--saffron);
+--cta-2-bg-hover:#C97A20;
+--cta-2-fg:var(--ink);
+--focus-ring:var(--sky-2);
+--protection:linear-gradient(to top,rgba(12,62,92,.58),rgba(12,62,92,0) 60%);/* @kind other */
+}
