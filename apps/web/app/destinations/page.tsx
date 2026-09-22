@@ -1,9 +1,8 @@
 import { JsonLd } from '@/seo/JsonLd'
-import { graphForPage } from '@/seo/graph'
-import { Prose } from '@/components/site/Prose'
+import { graphForIndex } from '@/seo/graph'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Eyebrow, SiteIcon } from '@/design-system'
+import { Button, Eyebrow, SiteIcon } from '@/design-system'
 import { getContent } from '@/content'
 import { fmt } from '@/content/types'
 import { IMG, altFor } from '@/lib/assets'
@@ -26,6 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
   title: 'Where we go',
   description:
     'Paro, Thimphu, Punakha, Bumthang, Trongsa and Phobjikha — the six valleys our journeys move through, and what is in each of them.',
+  alternates: { canonical: '/destinations' },
   openGraph: { images: ogImage(IMG.paroDzong) },
   }
 
@@ -46,8 +46,11 @@ export default async function DestinationsPage() {
   const page = await getContent().pages.byPath('/destinations')
   const settings = await getContent().settings.get()
   const content = getContent()
-  const [destinations, trips] = await Promise.all([content.destinations.list(), content.trips.list()])
+  const [all, trips] = await Promise.all([content.destinations.list(), content.trips.list()])
   const bySlug = new Map(trips.map((t) => [t.slug, t]))
+  /* The valleys. Each one's places are listed under it and have pages of
+     their own beneath its page. */
+  const destinations = all.filter((d) => d.parentSlug === null)
 
   return (
     <main>
@@ -56,11 +59,12 @@ export default async function DestinationsPage() {
           sits in the trail, and who publishes it. `extra` is whatever the
           office added on the SEO tab. */}
       <JsonLd
-        graph={await graphForPage({
+        graph={await graphForIndex({
           path: '/destinations',
           title: page?.seo.title ?? page?.title ?? 'Where we go',
           description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
           crumbs: [{ name: 'Where we go', path: '/destinations' }],
+          items: all.map((d) => ({ path: d.path, name: d.name })),
           extra: page?.seo.schemaJson,
         })}
       />
@@ -160,7 +164,11 @@ export default async function DestinationsPage() {
                 <div style={{ direction: 'ltr' }}>
                   <Reveal delay={240}>
                     <SiteIcon name={destination.icon} size={40} color="var(--maroon)" />
-                    <h2 style={{ fontSize: 'var(--text-h1)', marginTop: 20 }}>{destination.name}</h2>
+                    <h2 style={{ fontSize: 'var(--text-h1)', marginTop: 20 }}>
+                      <Link href={destination.path} style={{ color: 'inherit', textDecoration: 'none' }}>
+                        {destination.name}
+                      </Link>
+                    </h2>
                   </Reveal>
                   <Reveal delay={480}>
                     <p
@@ -172,9 +180,46 @@ export default async function DestinationsPage() {
                         lineHeight: 'var(--leading-lead)',
                       }}
                     >
-                      <Prose html={destination.detail} compact />
+                      {destination.standfirst || destination.blurb}
                     </p>
                   </Reveal>
+
+                  {destination.places.length > 0 && (
+                    <Reveal delay={560}>
+                      <div style={{ marginTop: 'var(--space-6)' }}>
+                        <Eyebrow tone="muted">Places in {destination.name}</Eyebrow>
+                        <ul
+                          style={{
+                            listStyle: 'none',
+                            margin: '16px 0 0',
+                            padding: 0,
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 12,
+                          }}
+                        >
+                          {destination.places.map((place) => (
+                            <li key={place.slug}>
+                              <Link
+                                href={place.path}
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '8px 16px',
+                                  border: '1px solid var(--border-gold)',
+                                  borderRadius: 'var(--radius-pill)',
+                                  textDecoration: 'none',
+                                  color: 'inherit',
+                                  fontSize: 'var(--text-small)',
+                                }}
+                              >
+                                {place.title}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </Reveal>
+                  )}
 
                   {journeys.length > 0 && (
                     <Reveal delay={640}>
@@ -204,6 +249,14 @@ export default async function DestinationsPage() {
                       </div>
                     </Reveal>
                   )}
+
+                  <Reveal delay={720}>
+                    <div style={{ marginTop: 'var(--space-6)' }}>
+                      <Button href={destination.path} variant="outline" size="sm">
+                        About {destination.name}
+                      </Button>
+                    </div>
+                  </Reveal>
                 </div>
               </article>
             )

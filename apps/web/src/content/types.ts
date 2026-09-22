@@ -1,4 +1,8 @@
+import type { JournalCategory } from '@lotuspeak/api-contracts'
+
 import type { SiteIconName } from '@/design-system'
+
+export type { JournalCategory }
 
 export type TripType = 'mindfulness' | 'meditation' | 'festival' | 'trekking'
 export type Difficulty = 'Gentle' | 'Moderate' | 'Demanding'
@@ -92,18 +96,73 @@ export type FaqGroup = {
   items: { question: string; answer: string }[]
 }
 
+/* ---------------------------------------------------------------------------
+   Where we go, Culture, Journal
+
+   Three sections that do not overlap. A valley or a place inside one is a
+   destination; what makes Bhutan Bhutan is culture; a dated story is the
+   journal's. Each has a page, and each links to the other two rather than
+   describing them again. `path` travels on every record because a place's
+   address is made of two slugs and the panel is the one that spells it.
+   --------------------------------------------------------------------------- */
+
+/** Enough to link to a page. */
+export type PageRef = { slug: string; title: string; path: string }
+
+/**
+ * A record's SEO tab, as a page's metadata needs it.
+ *
+ * Every field is the office's override or null; `entityMetadata` in
+ * `src/lib/seo.ts` resolves each against the record's own title, standfirst
+ * and photograph.
+ */
+export type EntitySeo = {
+  title: string | null
+  description: string | null
+  canonical: string | null
+  noIndex: boolean
+  noFollow: boolean
+  ogTitle: string | null
+  ogDescription: string | null
+  ogImage: string | null
+  keywords: string[]
+  /** Hand-written JSON-LD from the SEO tab. See the note on `SitePage.seo`. */
+  schemaJson?: unknown
+  updatedAt: string | null
+}
+
+/** A valley, or — with `parentSlug` — a place inside one, as a card draws it. */
 export type Destination = {
   slug: string
   name: string
+  path: string
+  parentSlug: string | null
   icon: SiteIconName
+  /** One line. "Taktsang, Kichu and Dungtse Lhakhang". */
   blurb: string
-  /** A paragraph for the destinations index. The blurb is the one-line form. */
-  detail: string
+  /** The sentence under the title. */
+  standfirst: string
   image: string
   imageAlt?: ImageAlt
-  /** Journeys that go there, in the order they should be offered. */
+  /** Journeys that go there, in the order they should be offered. A place's are its valley's. */
   tripSlugs: string[]
+  /** A valley's places. Empty on a place. */
+  places: PageRef[]
+  altitudeMetres: number | null
+  latitude: number | null
+  longitude: number | null
   order: number
+}
+
+/** A destination's own page. */
+export type DestinationPage = Destination & {
+  /** Sanitised HTML. */
+  body: string
+  parent: PageRef | null
+  placeCards: Destination[]
+  culture: CultureArticle[]
+  posts: Post[]
+  seo: EntitySeo
 }
 
 export type Activity = {
@@ -120,37 +179,41 @@ export type Activity = {
 }
 
 /**
- * A journal entry.
+ * A journal entry, as a card draws it.
  *
- * The body is a list of typed blocks rather than a markdown string. The entries
- * came out of WordPress as markdown, but rendering markdown at runtime would
- * mean a parser, a sanitiser and a set of prose styles that drift from the
- * design system. Blocks are validated by the compiler, render through the same
- * components as the rest of the site, and map cleanly onto a CMS rich-text
- * field when one arrives (docs/specs/04-content-model.md).
+ * `category` is which of the four shelves it sits on; `places` is what it is
+ * about, as links. The old `region` string was both at once, and it was how
+ * the journal came to be a list of places.
  */
 export type Post = {
   slug: string
   title: string
+  path: string
   standfirst: string
-  /** See the note on `schemaJson` below. */
-  schemaJson?: unknown
   /** ISO date, for `dateTime` and for sorting. `order` is the editorial order. */
   date: string
-  region: string
+  category: JournalCategory
+  places: PageRef[]
   heroImage: string
   heroAlt?: ImageAlt
+  readingMinutes: number
+  order: number
+}
+
+/** A journal entry's own page. */
+export type PostPage = Post & {
   /**
-   * The entry, as sanitised HTML.
-   *
-   * Was an array of typed blocks the page drew as React. It is one rich-text
-   * document now — the same shape as every other long-form field on this site
-   * — and it arrives here already through `renderStoredRichText`, which is
-   * what makes it safe for `Prose` to set as inner HTML. See
+   * The entry, as sanitised HTML — already through `renderStoredRichText`,
+   * which is what makes it safe for `Prose` to set as inner HTML. See
    * `src/lib/rich-text.ts`.
    */
   body: string
-  order: number
+  author: { name: string; role: string | null } | null
+  tags: string[]
+  relatedTripSlugs: string[]
+  destinations: Destination[]
+  culture: CultureArticle[]
+  seo: EntitySeo
 }
 
 export type GalleryImage = {
@@ -174,14 +237,26 @@ export type Season = {
   order: number
 }
 
+/** A culture piece, as a card draws it. */
 export type CultureArticle = {
   slug: string
   title: string
-  body: string
+  path: string
+  standfirst: string
   icon: SiteIconName
   image: string
   imageAlt?: ImageAlt
   order: number
+}
+
+/** A culture piece's own page. */
+export type CulturePage = CultureArticle & {
+  /** Sanitised HTML. */
+  body: string
+  /** Where to see it. */
+  destinations: Destination[]
+  posts: Post[]
+  seo: EntitySeo
 }
 
 export type Reflection = {

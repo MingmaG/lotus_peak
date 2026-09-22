@@ -13,22 +13,17 @@ import {
   TRAVELLER_SECTIONS,
   type InfoSection,
 } from '../data/pages'
-import { ACTIVITIES, CULTURE, DESTINATIONS, GALLERY, REFLECTIONS, SEASONS, SETTINGS } from '../data/site'
-import { blocksToHtml, type SeedPost } from '../data/post-body'
-import { POSTS } from '../data/posts'
+import { ACTIVITIES, GALLERY, REFLECTIONS, SEASONS, SETTINGS } from '../data/site'
+import {
+  fileCultureList,
+  fileCulturePage,
+  fileDestinationList,
+  fileDestinationPage,
+  filePosts,
+} from './file-sections'
 import { TRIPS } from '../data/trips'
 import type { ContentRepository, EnquiryInput } from '../repository'
-import type {
-  Activity,
-  CultureArticle,
-  Destination,
-  GalleryImage,
-  PageBand,
-  Post,
-  Season,
-  SitePage,
-  Trip,
-} from '../types'
+import type { Activity, GalleryImage, PageBand, Season, SitePage, Trip } from '../types'
 
 const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order
 
@@ -51,18 +46,8 @@ const withAlt = {
       ([src, ratio, width]) => [src, ratio, width, altFor(src)] as [string, string?, string?, string?],
     ),
   }),
-  /* The body is converted here rather than in the module that holds it: the
-     descriptions live in `src/lib/assets.ts`, which is a server module, and
-     joining them to the photographs is exactly what this object is for. */
-  post: (post: SeedPost): Post => ({
-    ...post,
-    heroAlt: altFor(post.heroImage),
-    body: blocksToHtml(post.body, altFor),
-  }),
-  destination: (row: Destination): Destination => ({ ...row, imageAlt: altFor(row.image) }),
   activity: (row: Activity): Activity => ({ ...row, imageAlt: altFor(row.image) }),
   season: (row: Season): Season => ({ ...row, imageAlt: altFor(row.image) }),
-  culture: (row: CultureArticle): CultureArticle => ({ ...row, imageAlt: altFor(row.image) }),
   gallery: (row: GalleryImage): GalleryImage => ({ ...row, alt: altFor(row.src) }),
 }
 
@@ -255,16 +240,13 @@ function fileLlmsInput() {
     siteUrl: SITE_URL,
     site: fileSite(),
     trips: fileTripSummaries(),
-    posts: [...POSTS].sort(byOrder).map((post) => ({
+    posts: filePosts().map((post) => ({
       slug: post.slug,
       title: post.title,
       standfirst: post.standfirst,
     })),
-    destinations: [...DESTINATIONS].sort(byOrder).map((row) => ({
-      slug: row.slug,
-      name: row.name,
-      blurb: row.blurb,
-    })),
+    destinations: fileDestinationList(),
+    culture: fileCultureList(),
     pages: FILE_PAGES.filter((page) => page.priority >= 0.5).map((page) => ({
       path: page.path,
       title: page.path === '/' ? 'Home' : page.path.replace('/', '').replace(/-/g, ' '),
@@ -323,44 +305,61 @@ function fileLlmsFullInput() {
       featured: false,
       seo: FILE_SEO,
     })),
-    posts: [...POSTS].sort(byOrder).map((post) => ({
-      slug: post.slug,
-      title: post.title,
-      standfirst: post.standfirst,
-      date: post.date,
-      region: post.region,
-      heroImage: fileImage(post.heroImage),
-      body: blocksToHtml(post.body, altFor),
-      author: null,
-      tags: [],
-      relatedTripSlugs: [],
-      readingMinutes: 1,
-      seo: FILE_SEO,
-    })),
-    destinations: [...DESTINATIONS].sort(byOrder).map((row) => ({
-      slug: row.slug,
-      name: row.name,
-      icon: row.icon,
-      blurb: row.blurb,
-      detail: renderStoredRichText(row.detail),
-      image: fileImage(row.image),
-      tripSlugs: row.tripSlugs,
-      altitudeMetres: null,
-      latitude: null,
-      longitude: null,
-      seo: FILE_SEO,
-    })),
-    culture: [...CULTURE].sort(byOrder).map((row) => ({
-      slug: row.slug,
-      title: row.title,
-      body: renderStoredRichText(row.body),
-      icon: row.icon,
-      image: fileImage(row.image),
-      seo: FILE_SEO,
-    })),
+    /* The journal is empty here; see `filePosts`. */
+    posts: [],
+    destinations: fileDestinationList().flatMap((row) => {
+      const page = fileDestinationPage(row.slug)
+      return page ? [toApiDestination(page)] : []
+    }),
+    culture: fileCultureList().flatMap((row) => {
+      const page = fileCulturePage(row.slug)
+      return page
+        ? [
+            {
+              slug: page.slug,
+              title: page.title,
+              path: page.path,
+              standfirst: page.standfirst,
+              icon: page.icon,
+              image: fileImage(page.image),
+              body: page.body,
+              destinations: [],
+              posts: [],
+              seo: FILE_SEO,
+            },
+          ]
+        : []
+    }),
   }
 }
 
+/** A destination page in the wire shape, for `llms-full.txt`. */
+function toApiDestination(page: NonNullable<ReturnType<typeof fileDestinationPage>>) {
+  const summary = (row: typeof page | (typeof page.placeCards)[number]) => ({
+    slug: row.slug,
+    name: row.name,
+    path: row.path,
+    parentSlug: row.parentSlug,
+    icon: row.icon,
+    blurb: row.blurb,
+    standfirst: row.standfirst,
+    image: fileImage(row.image),
+    tripSlugs: row.tripSlugs,
+    altitudeMetres: row.altitudeMetres,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    places: row.places,
+  })
+  return {
+    ...summary(page),
+    body: page.body,
+    parent: page.parent,
+    placeCards: page.placeCards.map(summary),
+    culture: [],
+    posts: [],
+    seo: FILE_SEO,
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Editorial pages                                                            */
@@ -479,27 +478,26 @@ export function createFileProvider(): ContentRepository {
     },
 
     posts: {
-      async list({ limit, exclude } = {}) {
-        let out = [...POSTS].sort(byOrder)
+      async list({ limit, exclude, category } = {}) {
+        let out = filePosts()
         if (exclude) out = out.filter((p) => p.slug !== exclude)
-        return (limit ? out.slice(0, limit) : out).map(withAlt.post)
+        if (category) out = out.filter((p) => p.category === category)
+        return limit ? out.slice(0, limit) : out
       },
-      async bySlug(slug) {
-        const post = POSTS.find((p) => p.slug === slug)
-        return post ? withAlt.post(post) : null
+      async bySlug() {
+        return null
       },
       async slugs() {
-        return [...POSTS].sort(byOrder).map((p) => p.slug)
+        return filePosts().map((p) => p.slug)
       },
     },
 
     destinations: {
       async list() {
-        return [...DESTINATIONS].sort(byOrder).map(withAlt.destination)
+        return fileDestinationList()
       },
       async bySlug(slug) {
-        const row = DESTINATIONS.find((d) => d.slug === slug)
-        return row ? withAlt.destination(row) : null
+        return fileDestinationPage(slug)
       },
     },
 
@@ -524,11 +522,10 @@ export function createFileProvider(): ContentRepository {
 
     culture: {
       async list() {
-        return [...CULTURE].sort(byOrder).map(withAlt.culture)
+        return fileCultureList()
       },
       async bySlug(slug) {
-        const row = CULTURE.find((c) => c.slug === slug)
-        return row ? withAlt.culture(row) : null
+        return fileCulturePage(slug)
       },
     },
 
@@ -552,22 +549,24 @@ export function createFileProvider(): ContentRepository {
      */
     discovery: {
       async sitemap() {
-        const [trips, posts] = await Promise.all([
-          [...TRIPS].sort(byOrder),
-          [...POSTS].sort(byOrder),
-        ])
         const now = new Date().toISOString()
         return [
           ...FILE_PAGES.map((page) => ({ ...page, lastModified: now })),
-          ...trips.map((trip) => ({
+          ...[...TRIPS].sort(byOrder).map((trip) => ({
             path: `/trips/${trip.slug}`,
             lastModified: now,
             changeFrequency: 'weekly' as const,
             priority: 0.8,
           })),
-          ...posts.map((post) => ({
-            path: `/journal/${post.slug}`,
-            lastModified: `${post.date}T00:00:00.000Z`,
+          ...fileDestinationList().map((row) => ({
+            path: row.path,
+            lastModified: now,
+            changeFrequency: 'monthly' as const,
+            priority: row.parentSlug ? 0.6 : 0.7,
+          })),
+          ...fileCultureList().map((row) => ({
+            path: row.path,
+            lastModified: now,
             changeFrequency: 'monthly' as const,
             priority: 0.6,
           })),
@@ -634,9 +633,10 @@ export function createFileProvider(): ContentRepository {
     },
 
     async health() {
+      const places = fileDestinationList()
       return {
-        ok: TRIPS.length > 0 && POSTS.length > 0,
-        detail: `${TRIPS.length} journeys, ${POSTS.length} journal entries`,
+        ok: TRIPS.length > 0 && places.length > 0,
+        detail: `${TRIPS.length} journeys, ${places.length} places`,
       }
     },
   }

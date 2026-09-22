@@ -3,7 +3,9 @@ import 'server-only'
 import type {
   ApiActivity,
   ApiCultureArticle,
+  ApiCultureSummary,
   ApiDestination,
+  ApiDestinationSummary,
   ApiEnquiryResult,
   ApiGalleryImage,
   ApiPage,
@@ -29,7 +31,9 @@ import type { Activity, CultureArticle, Destination, GalleryImage, Post, Reflect
 import {
   toActivity,
   toCultureArticle,
+  toCulturePage,
   toDestination,
+  toDestinationPage,
   toGalleryImage,
   toPage,
   toPerson,
@@ -122,10 +126,10 @@ export function createApiProvider(): ContentRepository {
     },
 
     posts: {
-      async list({ limit, exclude } = {}) {
+      async list({ limit, exclude, category } = {}) {
         const rows = await fetchContent<ApiPostSummary[]>('/api/public/site/journal', {
           tags: [REVALIDATE_TAGS.journal],
-          query: { limit, exclude },
+          query: { limit, exclude, category },
         })
         return rows.map(toPostSummary)
       },
@@ -133,7 +137,9 @@ export function createApiProvider(): ContentRepository {
       async bySlug(slug) {
         const post = await fetchContentOrNull<ApiPost>(
           `/api/public/site/journal/${encodeURIComponent(slug)}`,
-          { tags: [REVALIDATE_TAGS.journal] },
+          /* Tagged with the two sections it links to as well: renaming a
+             place changes the line of places on the entry. */
+          { tags: [REVALIDATE_TAGS.journal, REVALIDATE_TAGS.destinations, REVALIDATE_TAGS.culture] },
         )
         return post ? toPost(post) : null
       },
@@ -152,9 +158,18 @@ export function createApiProvider(): ContentRepository {
         return destinations.map(toDestination)
       },
       async bySlug(slug) {
-        const { destinations } = await getCatalogue()
-        const found = destinations.find((row) => row.slug === slug)
-        return found ? toDestination(found, destinations.indexOf(found)) : null
+        const row = await fetchContentOrNull<ApiDestination>(
+          `/api/public/site/destinations/${encodeURIComponent(slug)}`,
+          {
+            tags: [
+              REVALIDATE_TAGS.destinations,
+              REVALIDATE_TAGS.culture,
+              REVALIDATE_TAGS.journal,
+              REVALIDATE_TAGS.trips,
+            ],
+          },
+        )
+        return row ? toDestinationPage(row) : null
       },
     },
 
@@ -186,9 +201,11 @@ export function createApiProvider(): ContentRepository {
         return culture.map(toCultureArticle)
       },
       async bySlug(slug) {
-        const { culture } = await getCatalogue()
-        const found = culture.find((row) => row.slug === slug)
-        return found ? toCultureArticle(found, culture.indexOf(found)) : null
+        const row = await fetchContentOrNull<ApiCultureArticle>(
+          `/api/public/site/culture/${encodeURIComponent(slug)}`,
+          { tags: [REVALIDATE_TAGS.culture, REVALIDATE_TAGS.destinations, REVALIDATE_TAGS.journal] },
+        )
+        return row ? toCulturePage(row) : null
       },
     },
 
@@ -319,10 +336,10 @@ export function createApiProvider(): ContentRepository {
 }
 
 interface Catalogue {
-  destinations: ApiDestination[]
+  destinations: ApiDestinationSummary[]
   activities: ApiActivity[]
   seasons: ApiSeason[]
-  culture: ApiCultureArticle[]
+  culture: ApiCultureSummary[]
   gallery: ApiGalleryImage[]
   reflections: ApiReflection[]
   people: ApiPerson[]

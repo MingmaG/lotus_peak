@@ -9,7 +9,27 @@ import type {
   SiteSettings,
 } from '../types'
 
-export const DESTINATIONS: Destination[] = [
+/**
+ * The valleys, as this folder writes them: one paragraph each.
+ *
+ * The file provider splits `detail` into a standfirst and the start of a body
+ * exactly as the migration `20260923090000_where_we_go_culture_and_journal`
+ * split the database's, and adds the places — see `where-we-go.ts` — so both
+ * providers hand out the same pages.
+ */
+export type SeedDestination = Pick<
+  Destination,
+  'slug' | 'name' | 'icon' | 'blurb' | 'image' | 'tripSlugs' | 'order'
+> & { detail: string }
+
+/** A culture piece as this folder writes it: one paragraph, and where to see it. */
+export type SeedCulture = Pick<CultureArticle, 'slug' | 'title' | 'icon' | 'image' | 'order'> & {
+  body: string
+  /** Destination slugs. */
+  destinations: string[]
+}
+
+export const DESTINATIONS: SeedDestination[] = [
   {
     slug: 'paro',
     name: 'Paro',
@@ -216,7 +236,7 @@ export const SEASONS: Season[] = [
   },
 ]
 
-export const CULTURE: CultureArticle[] = [
+export const CULTURE: SeedCulture[] = [
   {
     slug: 'tshechu',
     title: 'Tshechu',
@@ -224,6 +244,7 @@ export const CULTURE: CultureArticle[] = [
     icon: 'chorten',
     image: IMG.chamMaskedDance,
     order: 1,
+    destinations: ['paro', 'thimphu'],
   },
   {
     slug: 'dzongs',
@@ -232,6 +253,7 @@ export const CULTURE: CultureArticle[] = [
     icon: 'dzong-long',
     image: IMG.tashichho,
     order: 2,
+    destinations: ['punakha-dzong', 'trongsa-dzong'],
   },
   {
     slug: 'textiles',
@@ -240,6 +262,7 @@ export const CULTURE: CultureArticle[] = [
     icon: 'pavilion',
     image: IMG.kera,
     order: 3,
+    destinations: [],
   },
   {
     slug: 'jomzo',
@@ -248,6 +271,7 @@ export const CULTURE: CultureArticle[] = [
     icon: 'buddha',
     image: IMG.jomzo,
     order: 4,
+    destinations: [],
   },
   {
     slug: 'gross-national-happiness',
@@ -256,6 +280,7 @@ export const CULTURE: CultureArticle[] = [
     icon: 'monastery',
     image: IMG.rainbow,
     order: 5,
+    destinations: [],
   },
   {
     slug: 'kira-and-gho',
@@ -264,6 +289,7 @@ export const CULTURE: CultureArticle[] = [
     icon: 'stupa',
     image: IMG.dress,
     order: 6,
+    destinations: [],
   },
   {
     slug: 'archery',
@@ -272,6 +298,7 @@ export const CULTURE: CultureArticle[] = [
     icon: 'pavilion',
     image: IMG.archery,
     order: 7,
+    destinations: [],
   },
   {
     slug: 'food',
@@ -280,6 +307,7 @@ export const CULTURE: CultureArticle[] = [
     icon: 'chorten',
     image: IMG.cuisine,
     order: 8,
+    destinations: [],
   },
 ]
 

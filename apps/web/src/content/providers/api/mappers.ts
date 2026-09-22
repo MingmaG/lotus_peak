@@ -5,7 +5,10 @@ import type {
   ApiPageSection,
   ApiPerson,
   ApiCultureArticle,
+  ApiCultureSummary,
   ApiDestination,
+  ApiDestinationSummary,
+  ApiSeo,
   ApiGalleryImage,
   ApiImage,
   ApiPost,
@@ -23,11 +26,15 @@ import { registerMedia } from '@/lib/assets'
 import type {
   Activity,
   CultureArticle,
+  CulturePage,
   Destination,
+  DestinationPage,
+  EntitySeo,
   GalleryImage,
   PageBand,
   Person,
   Post,
+  PostPage,
   SitePage,
   Reflection,
   Season,
@@ -212,33 +219,59 @@ export function toTrip(row: ApiTrip): Trip {
 /*  Journal                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export function toPostSummary(row: ApiPostSummary, index: number): Post {
+/** A record's SEO tab, narrowed to what a page's metadata reads. */
+export function toSeo(seo: ApiSeo): EntitySeo {
+  return {
+    title: seo.metaTitle,
+    description: seo.metaDescription,
+    canonical: seo.canonicalUrl,
+    noIndex: seo.noIndex,
+    noFollow: seo.noFollow,
+    ogTitle: seo.ogTitle,
+    ogDescription: seo.ogDescription,
+    ogImage: seo.ogImage ? imagePath(seo.ogImage) : null,
+    keywords: seo.keywords,
+    schemaJson: seo.schemaJson ?? undefined,
+    updatedAt: seo.updatedAt,
+  }
+}
+
+export function toPostSummary(row: ApiPostSummary, index = 0): Post {
   return {
     slug: row.slug,
     title: row.title,
+    path: row.path,
     standfirst: row.standfirst,
     date: row.date.slice(0, 10),
-    region: row.region,
+    category: row.category,
+    places: row.places,
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    /* A summary carries no body; the index page prints the standfirst. */
-    body: '',
+    readingMinutes: row.readingMinutes,
     order: index,
   }
 }
 
-export function toPost(row: ApiPost): Post {
+export function toPost(row: ApiPost): PostPage {
   return {
-    schemaJson: row.seo?.schemaJson ?? undefined,
     slug: row.slug,
     title: row.title,
+    path: `/journal/${row.slug}`,
     standfirst: row.standfirst,
     date: row.date.slice(0, 10),
-    region: row.region,
+    category: row.category,
+    places: row.destinations.map((d) => ({ slug: d.slug, title: d.name, path: d.path })),
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    body: renderStoredRichText(row.body),
+    readingMinutes: row.readingMinutes,
     order: 0,
+    body: renderStoredRichText(row.body),
+    author: row.author ? { name: row.author.name, role: row.author.role } : null,
+    tags: row.tags,
+    relatedTripSlugs: row.relatedTripSlugs,
+    destinations: row.destinations.map((d, i) => toDestination(d, i)),
+    culture: row.culture.map((c, i) => toCultureArticle(c, i)),
+    seo: toSeo(row.seo),
   }
 }
 
@@ -246,17 +279,35 @@ export function toPost(row: ApiPost): Post {
 /*  The rest of the catalogue                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function toDestination(row: ApiDestination, index = 0): Destination {
+export function toDestination(row: ApiDestinationSummary, index = 0): Destination {
   return {
     slug: row.slug,
     name: row.name,
+    path: row.path,
+    parentSlug: row.parentSlug,
     icon: row.icon ?? ICON_FALLBACK,
     blurb: row.blurb,
-    detail: renderStoredRichText(row.detail),
+    standfirst: row.standfirst,
     image: imagePath(row.image),
     imageAlt: row.image?.alt,
     tripSlugs: row.tripSlugs,
+    places: row.places,
+    altitudeMetres: row.altitudeMetres,
+    latitude: row.latitude,
+    longitude: row.longitude,
     order: index,
+  }
+}
+
+export function toDestinationPage(row: ApiDestination): DestinationPage {
+  return {
+    ...toDestination(row),
+    body: renderStoredRichText(row.body),
+    parent: row.parent,
+    placeCards: row.placeCards.map((place, i) => toDestination(place, i)),
+    culture: row.culture.map((c, i) => toCultureArticle(c, i)),
+    posts: row.posts.map((p, i) => toPostSummary(p, i)),
+    seo: toSeo(row.seo),
   }
 }
 
@@ -304,15 +355,26 @@ export function toSeason(row: ApiSeason, index = 0): Season {
  * there was one. Both are what the office wrote, and both have to draw as
  * prose.
  */
-export function toCultureArticle(row: ApiCultureArticle, index = 0): CultureArticle {
+export function toCultureArticle(row: ApiCultureSummary, index = 0): CultureArticle {
   return {
     slug: row.slug,
     title: row.title,
-    body: renderStoredRichText(row.body),
+    path: row.path,
+    standfirst: row.standfirst,
     icon: row.icon ?? ICON_FALLBACK,
     image: imagePath(row.image),
     imageAlt: row.image?.alt,
     order: index,
+  }
+}
+
+export function toCulturePage(row: ApiCultureArticle): CulturePage {
+  return {
+    ...toCultureArticle(row),
+    body: renderStoredRichText(row.body),
+    destinations: row.destinations.map((d, i) => toDestination(d, i)),
+    posts: row.posts.map((p, i) => toPostSummary(p, i)),
+    seo: toSeo(row.seo),
   }
 }
 
