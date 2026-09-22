@@ -128,8 +128,11 @@ What actually catches things:
   — for a while, and fell through to the production domain, so every Open Graph URL in
   development pointed at the live site and nothing failed.
 - Do not add a dependency for something a thirty-line module does.
-- Restart the dev servers after a build: `next build` clears `.next` underneath them and
-  they start 404ing their own chunks.
+- **Stop the dev servers before a build, and restart them after.** `next build` writes
+  into the same `.next` a running `next dev` owns. Afterwards they 404 their own chunks;
+  worse, a build run underneath a live dev server leaves a `.next` that is half of each,
+  and the panel then answers 500 to every route it has to compile. That reads as a
+  broken journal entry or a bad seed, and it is neither — it is the build you just ran.
 - **Clear `apps/web/.next/cache` after changing the API's shape.** Next keeps fetch
   responses on disk across builds, keyed by URL, for `CONTENT_REVALIDATE_SECONDS` — an
   hour. A build after a contract change otherwise reuses yesterday's payload and either
@@ -139,24 +142,69 @@ What actually catches things:
 ## 8. Working together on one repo
 
 Two developers share this repo — one mainly `apps/web`, one mainly `apps/admin` and the
-wiring between them — so the branch discipline is part of the build, not paperwork.
-`docs/GIT-WORKFLOW.md` is the full guide: setup, the daily loop, conflict recipes per
-file, releases, and how to get out of trouble. The rules that bind:
+wiring between them. `main` is production, what the server runs. `develop` is the latest
+working code: everyone branches from it and merges back into it through a pull request,
+and nobody commits directly to either. `docs/GIT-WORKFLOW.md` is the long form — setup,
+a conflict recipe per file, releases, hotfixes, recovery. This section is the part you
+need in your hands while working, and it applies to work done from here too: a change
+starts on a branch off `develop`, not on `develop`.
 
-- **`main` is production, `develop` is the latest working code.** Everyone branches from
-  `develop` and merges back into it through a pull request; nobody commits directly to
-  either. `main` moves only by a deliberate release of `develop`, or a `hotfix/*`.
-- **Branch from a freshly pulled `develop`, and rebase onto `origin/develop` daily** —
-  always before opening the PR. `pull.rebase=true`, and `--force-with-lease` on your own
-  branch, never bare `--force`, never a force push to `main` or `develop`.
-- **After every pull, react to what arrived.** `package-lock.json` changed →
-  `npm install`. A new migration → `npm run db:deploy`. `packages/api-contracts` changed
-  → `rm -rf apps/web/.next/cache`, for the reason in §7. Skipping this looks exactly like
-  a bug in your own work.
-- **A change to `packages/*` or `apps/admin/prisma/` is its own small PR, merged first,
-  and announced.** The contract only does its job — both sides failing to compile when
-  they disagree — if both sides are compiling against the same version of it. Never edit
-  a migration that has already been pushed; correct it with a new one.
-- **`npm run typecheck && npm run lint && npm run build:web` before asking for review,**
-  and read the route table. A reviewer cannot see an `ƒ` in a diff.
-- One change per branch, days not weeks, pushed at least daily even when unfinished.
+### Every change, start to finish
+
+```bash
+git checkout develop && git pull        # 1. start from the latest develop, always
+git diff --stat HEAD@{1} HEAD           # 2. see what arrived, then react to it (below)
+
+git checkout -b feature/what-it-is      # 3. one change per branch, days not weeks
+#    work: commit small, write the why, push at least daily
+
+git fetch origin && git rebase origin/develop    # 4. daily, and always before the PR
+git push --force-with-lease             #    only if you had already pushed
+
+npm run typecheck && npm run lint       # 5. the floor
+npm run build:web                       #    and read the route table
+
+gh pr create --base develop --fill      # 6. --base develop. GitHub still defaults to main
+
+git checkout develop && git pull        # 7. after it merges
+git branch -d feature/what-it-is
+```
+
+A one-day-old branch rebases in silence; a ten-day-old branch is a negotiation. Step 4 is
+the habit that prevents more merge pain than everything else here. `--force-with-lease`,
+never bare `--force`, and never a force push to `develop` or `main`.
+
+### Step 2, in full — what a pull obliges you to do
+
+| What the pull touched | What you run |
+| --- | --- |
+| `package-lock.json`, any `package.json` | `npm install` |
+| `apps/admin/prisma/migrations/` | `npm run db:deploy` |
+| `apps/admin/prisma/schema.prisma` | `npm run db:generate` |
+| `packages/api-contracts/` | `rm -rf apps/web/.next/cache` — §7 says why |
+
+Skipping this looks exactly like a bug in your own work, and none of the four failures
+name themselves.
+
+### Where the two of you actually collide
+
+- **A change to `packages/*`, `apps/admin/prisma/` or the root `package.json` is its own
+  small PR, merged into `develop` first, and announced.** The contract only does its job
+  — both apps failing to compile when they disagree — if both are compiling against the
+  same version of it. Then branch the work that depends on it from the `develop` that
+  already has it.
+- **Never edit a migration that is already on `develop`.** It has run on someone else's
+  database. Correct it with a new one.
+- **The admin developer will touch `apps/web` to wire the site to the panel.** That is
+  expected; say so in the PR title (`feat(web): read journeys from the panel`) so the web
+  developer knows to look.
+- A conflict is not an error, and `git rebase --abort` returns you exactly where you
+  were. `package-lock.json` is never hand-merged: take `develop`'s copy, `npm install`,
+  carry on.
+
+### Releasing
+
+`main` moves only by a deliberate release — a PR from `develop` into `main`, both of you
+looking at it, `typecheck`, `lint` and **both** builds green first, then a tag. A
+`hotfix/*` branches from `main`, and after it merges you merge `main` back into
+`develop`, or the next release quietly reverts the fix. §6 of the guide has the commands.
