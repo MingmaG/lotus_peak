@@ -246,7 +246,10 @@ export async function getSite(): Promise<ApiSite> {
     .map((menu) => ({
       title: menu.name,
       links: menu.items.filter((item) => !item.parentId).map(toNavLink(menu.items)),
-    }));
+    }))
+    /* An emptied column is how the office takes one away; a heading over
+       nothing is not a column. */
+    .filter((column) => column.links.length > 0);
 
   const setting = (key: string): string | null => {
     const value = settings.find((row) => row.key === key)?.value;
@@ -312,6 +315,19 @@ export async function getSite(): Promise<ApiSite> {
       columns: footerColumns,
       note: company.footerNote,
       copyright: company.footerCopyright,
+      credit: company.footerCreditName
+        ? {
+            label: company.footerCreditLabel,
+            name: company.footerCreditName,
+            url: company.footerCreditUrl || null,
+          }
+        : null,
+      show: {
+        links: company.footerShowLinks,
+        address: company.footerShowAddress,
+        contacts: company.footerShowContacts,
+        socials: company.footerShowSocials,
+      },
     },
     replyPromise: company.replyPromise,
     pledge:
@@ -406,11 +422,13 @@ const TRIP_INCLUDE = {
 
 export async function listTrips(options?: {
   type?: ApiTrip['type'];
+  featured?: boolean;
   limit?: number;
 }): Promise<ApiTripSummary[]> {
   const rows = await db.trip.findMany({
     where: {
       ...PUBLISHED,
+      ...(options?.featured !== undefined ? { featured: options.featured } : {}),
       ...(options?.type
         ? { type: Object.entries(TRIP_TYPE).find(([, v]) => v === options.type)?.[0] as TripType }
         : {}),

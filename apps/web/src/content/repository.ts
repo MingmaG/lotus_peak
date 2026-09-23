@@ -87,7 +87,8 @@ export interface ContentRepository {
   readonly name: string
 
   trips: {
-    list(opts?: { type?: TripType; limit?: number }): Promise<Trip[]>
+    /** `featured` filters on the office's "Feature this journey" switch. */
+    list(opts?: { type?: TripType; featured?: boolean; limit?: number }): Promise<Trip[]>
     bySlug(slug: string): Promise<Trip | null>
     slugs(): Promise<string[]>
   }

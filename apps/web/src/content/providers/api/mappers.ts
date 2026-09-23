@@ -1,6 +1,8 @@
 import { renderStoredRichText } from '@/lib/rich-text'
 import type {
   ApiActivity,
+  ApiAddress,
+  ApiContactChannel,
   ApiPage,
   ApiPageSection,
   ApiPerson,
@@ -25,6 +27,7 @@ import { registerMedia } from '@/lib/assets'
 
 import type {
   Activity,
+  ContactLine,
   CultureArticle,
   CulturePage,
   Destination,
@@ -43,6 +46,7 @@ import type {
   Trip,
   TripSections,
 } from '../../types'
+import { fillCopyright } from '../../types'
 
 /**
  * Wire shapes → this site's domain types.
@@ -438,22 +442,27 @@ export function toSettings(site: ApiSite): SiteSettings {
     nav: site.nav.map((link) => ({ label: link.label, href: link.href })),
     navCta: site.navCta ?? { label: 'Explore trips', href: '/trips' },
     footer: {
-      columns: site.footer.columns.map((column) => ({
-        title: column.title,
-        links: column.links.map((link) => ({ label: link.label, href: link.href })),
-      })),
-      /**
-       * The footer note, with the company's own contact line appended.
-       *
-       * The design's note reads "Lotus Peak Tours & Travel · Thimphu, Bhutan ·
-       * +975 17984485" — three facts, two of which are the company record. The
-       * stored note holds the first two and the telephone number is joined on
-       * here, so changing the number in one screen changes it in the footer
-       * too. Typing it into the note as well is exactly what the Company
-       * screen exists to stop.
-       */
-      note: [site.footer.note, phone?.display].filter(Boolean).join(' · '),
+      columns: site.footer.columns
+        .map((column) => ({
+          title: column.title,
+          links: column.links.map((link) => ({ label: link.label, href: link.href })),
+        }))
+        .filter((column) => column.links.length > 0),
+      note: site.footer.note || site.company.tagline,
+      copyright: fillCopyright(site.footer.copyright, site.company.name),
+      credit: site.footer.credit,
+      show: site.footer.show,
     },
+    address: {
+      lines: addressLines(site.company.address),
+      mapUrl: site.company.address.mapUrl,
+    },
+    contacts: site.company.contacts.map(toContactLine),
+    socials: site.company.socials.map((social) => ({
+      platform: social.platform,
+      label: social.label,
+      url: social.url,
+    })),
     contact: {
       phone: phone?.display ?? '',
       email: email?.value ?? '',
@@ -468,6 +477,54 @@ export function toSettings(site: ApiSite): SiteSettings {
       title: site.defaultSeo.defaultTitle,
       description: site.defaultSeo.description,
     },
+  }
+}
+
+/**
+ * The address as the footer prints it: the street lines, then the town with
+ * its region and postcode, then the country.
+ *
+ * `line1` is often just the town — "Thimphu" — and printing the locality under
+ * it as well read "Thimphu / Thimphu, Bhutan". A part already said on an
+ * earlier line is not said again.
+ */
+export function addressLines(address: ApiAddress): string[] {
+  const said: string[] = []
+  const fresh = (part: string | null | undefined): part is string => {
+    const value = part?.trim()
+    if (!value) return false
+    const seen = said.some((line) => line.toLowerCase().includes(value.toLowerCase()))
+    said.push(value)
+    return !seen
+  }
+
+  const street = [address.line1, address.line2].filter(fresh)
+  const town = [address.locality, address.region, address.postalCode].filter(fresh).join(', ')
+  const country = fresh(address.country) ? address.country : ''
+  const last = [town, country].filter(Boolean).join(', ')
+
+  return [...street, last].filter(Boolean)
+}
+
+function toContactLine(contact: ApiContactChannel): ContactLine {
+  switch (contact.kind) {
+    case 'PHONE':
+    case 'MOBILE':
+      return { kind: 'phone', label: contact.label, display: contact.display, href: `tel:${contact.value}` }
+    case 'EMAIL':
+      return { kind: 'email', label: contact.label, display: contact.display, href: `mailto:${contact.value}` }
+    case 'WHATSAPP': {
+      /* wa.me takes digits only; `value` is stored as `+97517984485`. */
+      const text = contact.prefillMessage ? `?text=${encodeURIComponent(contact.prefillMessage)}` : ''
+      return {
+        kind: 'whatsapp',
+        label: contact.label,
+        display: contact.display,
+        href: `https://wa.me/${contact.value.replace(/\D/g, '')}${text}`,
+      }
+    }
+    case 'FAX':
+      return { kind: 'fax', label: contact.label, display: contact.display, href: null }
   }
 }
 

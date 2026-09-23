@@ -275,9 +275,14 @@ export interface ApiSite {
   navCta: { label: string; href: string } | null;
   footer: {
     columns: ApiFooterColumn[];
+    /** The short introduction under the company's name. Empty: the tagline. */
     note: string;
     /** `© {year} {name}` — the tokens are substituted by the website. */
     copyright: string;
+    /** "Website by Trailma", the name linked. Null when the office named nobody. */
+    credit: { label: string; name: string; url: string | null } | null;
+    /** Which parts draw. Each is also left out when it has nothing in it. */
+    show: { links: boolean; address: boolean; contacts: boolean; socials: boolean };
   };
   /** "Personally, within two days". Shown beside the enquiry form. */
   replyPromise: string;

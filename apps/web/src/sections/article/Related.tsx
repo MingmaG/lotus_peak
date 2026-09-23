@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { Divider, Eyebrow } from '@/design-system'
+import { Button, Divider, Eyebrow } from '@/design-system'
 import { fmt, type Trip } from '@/content/types'
 import { Reveal } from '@/motion'
 
@@ -14,10 +14,13 @@ import { Reveal } from '@/motion'
 export function RelatedBand({
   title,
   lead,
+  more,
   children,
 }: {
   title: string
   lead?: string
+  /** A way on to the whole section, under the cards. */
+  more?: { href: string; label: string }
   children: ReactNode
 }) {
   return (
@@ -41,6 +44,15 @@ export function RelatedBand({
             )}
           </Reveal>
           {children}
+          {more && (
+            <Reveal delay={400}>
+              <div style={{ marginTop: 'var(--space-8)' }}>
+                <Button variant="ghost" href={more.href}>
+                  {more.label} →
+                </Button>
+              </div>
+            </Reveal>
+          )}
         </div>
       </div>
     </section>

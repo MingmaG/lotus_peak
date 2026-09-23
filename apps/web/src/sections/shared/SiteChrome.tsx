@@ -78,7 +78,8 @@ export function SiteChrome({
     { label: 'Not sure yet', value: 'unsure' },
   ]
 
-  const columns: FooterColumn[] = settings.footer.columns
+  const { footer } = settings
+  const columns: FooterColumn[] = footer.show.links ? footer.columns : []
 
   return (
     <Ctx.Provider value={ctx}>
@@ -100,7 +101,17 @@ export function SiteChrome({
         {children}
       </div>
 
-      <Footer brand={settings.brand} line={settings.line} columns={columns} note={settings.footer.note} />
+      <Footer
+        brand={settings.brand}
+        line={footer.note}
+        columns={columns}
+        address={footer.show.address ? settings.address.lines : []}
+        mapUrl={settings.address.mapUrl}
+        contacts={footer.show.contacts ? settings.contacts : []}
+        socials={footer.show.socials ? settings.socials : []}
+        copyright={footer.copyright}
+        credit={footer.credit}
+      />
 
       <InquiryDrawer
         open={drawerOpen}

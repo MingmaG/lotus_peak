@@ -8,6 +8,7 @@ import type {
   Season,
   SiteSettings,
 } from '../types'
+import { fillCopyright } from '../types'
 
 /**
  * The valleys, as this folder writes them: one paragraph each.
@@ -386,8 +387,23 @@ export const SETTINGS: SiteSettings = {
         ],
       },
     ],
-    note: 'Lotus Peak Tours & Travel · Thimphu, Bhutan · +975 17984485',
+    note: 'A small Bhutanese company. Journeys led slowly, with monks and Lams, and time written in to do nothing.',
+    copyright: fillCopyright('© {year} {name}', 'Lotus Peak'),
+    credit: { label: 'Website by', name: 'Trailma', url: 'https://trailma.com' },
+    show: { links: true, address: true, contacts: true, socials: true },
   },
+  address: { lines: ['Thimphu, Bhutan'], mapUrl: null },
+  contacts: [
+    { kind: 'phone', label: 'Telephone', display: '+975 17984485', href: 'tel:+97517984485' },
+    { kind: 'email', label: 'Email', display: 'info@lotuspeak.org', href: 'mailto:info@lotuspeak.org' },
+  ],
+  socials: [
+    {
+      platform: 'FACEBOOK',
+      label: 'Lotus Peak Tours & Travel',
+      url: 'https://www.facebook.com/profile.php?id=61588546391091',
+    },
+  ],
   contact: {
     phone: '+975 17984485',
     email: 'info@lotuspeak.org',

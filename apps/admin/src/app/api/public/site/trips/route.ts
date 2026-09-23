@@ -21,10 +21,12 @@ export const GET = publicRoute('/api/public/site/trips', async (request: NextReq
 
   const type = params.get('type');
   const limit = Number(params.get('limit'));
+  const featured = params.get('featured');
 
   return ok(
     await listTrips({
       type: type ? (type as ApiTrip['type']) : undefined,
+      featured: featured === '1' ? true : featured === '0' ? false : undefined,
       limit: Number.isFinite(limit) && limit > 0 ? limit : undefined,
     }),
   );

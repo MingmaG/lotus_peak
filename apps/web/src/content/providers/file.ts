@@ -165,7 +165,7 @@ function fileSite(): ApiSite {
       logo: null,
       markLogo: null,
       address: {
-        line1: 'Thimphu',
+        line1: s.address.lines[0] ?? 'Thimphu',
         line2: null,
         locality: 'Thimphu',
         region: null,
@@ -194,7 +194,7 @@ function fileSite(): ApiSite {
           prefillMessage: null,
         },
       ],
-      socials: [],
+      socials: s.socials.map((social) => ({ ...social, handle: null })),
       officeHours: [],
     },
     nav: s.nav.map((link) => ({ ...link, external: false, children: [] })),
@@ -206,6 +206,8 @@ function fileSite(): ApiSite {
       })),
       note: s.footer.note,
       copyright: '© {year} {name}',
+      credit: s.footer.credit,
+      show: s.footer.show,
     },
     replyPromise: s.contact.replyPromise,
     pledge: { percent: s.pledge.percent, beneficiary: s.pledge.beneficiary, note: null },
@@ -506,9 +508,13 @@ export function createFileProvider(): ContentRepository {
     name: 'file',
 
     trips: {
-      async list({ type, limit } = {}) {
+      async list({ type, featured, limit } = {}) {
         let out = [...TRIPS].sort(byOrder)
         if (type) out = out.filter((t) => t.type === type)
+        /* The fixture marks no journey as featured, so asking for them gets
+           none — and the home page's fall-back to catalogue order is what the
+           fixture exercises. */
+        if (featured) out = []
         return (limit ? out.slice(0, limit) : out).map(withAlt.trip)
       },
       async bySlug(slug) {

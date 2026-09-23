@@ -101,10 +101,10 @@ export function createApiProvider(): ContentRepository {
     name: 'api',
 
     trips: {
-      async list({ type, limit } = {}) {
+      async list({ type, featured, limit } = {}) {
         const rows = await fetchContent<ApiTripSummary[]>('/api/public/site/trips', {
           tags: [REVALIDATE_TAGS.trips],
-          query: { type, limit },
+          query: { type, limit, featured: featured === undefined ? undefined : featured ? 1 : 0 },
         })
         return rows.map(toTripSummary)
       },

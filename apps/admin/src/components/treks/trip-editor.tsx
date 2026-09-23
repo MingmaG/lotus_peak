@@ -456,8 +456,8 @@ export function TripEditor({
               <label htmlFor="featured" className="text-sm">
                 Feature this journey
                 <span className="mt-0.5 block text-xs text-muted-foreground">
-                  Marks it on the cards. Does not change which journeys the home page
-                  shows — that is the first four in catalogue order.
+                  The home page shows the first four featured journeys, in catalogue
+                  order. With none featured, it shows the first four in the catalogue.
                 </span>
               </label>
             </div>

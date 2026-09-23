@@ -22,8 +22,9 @@ import { graphForPage } from "@/seo/graph";
 
 export default async function HomePage() {
     const content = getContent();
-    const [trips, destinations, seasons, reflections, settings, page] =
+    const [featured, catalogue, destinations, seasons, reflections, settings, page] =
         await Promise.all([
+            content.trips.list({ featured: true, limit: 4 }),
             content.trips.list({ limit: 4 }),
             content.destinations.list(),
             content.seasons.list(),
@@ -31,6 +32,11 @@ export default async function HomePage() {
             content.settings.get(),
             content.pages.byPath("/"),
         ]);
+
+    /* The journeys the office marked "Feature this journey", in catalogue
+     order. With none marked the band still has something in it: the first
+     four, which is what it showed before the switch meant anything here. */
+    const trips = featured.length > 0 ? featured : catalogue;
 
     /* The three purposes, from the home page's row. The band that renders them
      is the design's own; only the words moved. */

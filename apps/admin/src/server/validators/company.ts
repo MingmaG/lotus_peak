@@ -109,6 +109,13 @@ export const companySchema = z.object({
   strapline: z.string().max(200).default(''),
   footerNote: z.string().max(300).default(''),
   footerCopyright: z.string().max(200).default('© {year} {name}'),
+  footerCreditLabel: z.string().max(60).default(''),
+  footerCreditName: z.string().max(80).default(''),
+  footerCreditUrl: z.string().url('That is not a web address.').max(300).or(z.literal('')).default(''),
+  footerShowLinks: z.boolean().default(true),
+  footerShowAddress: z.boolean().default(true),
+  footerShowContacts: z.boolean().default(true),
+  footerShowSocials: z.boolean().default(true),
   replyPromise: z.string().max(200).default(''),
 
   pledgePercent: z.number().int().min(0).max(100).nullable().optional(),
