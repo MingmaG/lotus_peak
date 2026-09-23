@@ -89,6 +89,11 @@ function entranceDelay(d: string): string {
   return `${(0.1 + (x / 792) * 1.2).toFixed(2)}s`
 }
 
+/** A name with its case and accents taken off, for matching the map to the office's destinations. */
+function plain(name: string): string {
+  return name.normalize('NFD').replace(/\p{M}/gu, '').trim().toLowerCase()
+}
+
 /** The JSON is ours, not the API's, so this guards a bad build rather than a bad payload. */
 function isDistrict(v: unknown): v is District {
   const d = v as District
@@ -110,8 +115,15 @@ export type MenuMapProps = {
   drift?: boolean
   /** Show the eleven labelled places. */
   pins?: boolean
+  /**
+   * The site's own destinations. A place or district whose name matches one
+   * leads to its page; the rest fall through to `onSelect` without an `href`.
+   */
+  destinations?: { name: string; path: string }[]
+  /** The page being read. The place whose destination it is — or is inside — stays lit. */
+  current?: string
   /** Fired when a district or a place is chosen — not when one is dragged. */
-  onSelect?: (place: { id: string; name: string }) => void
+  onSelect?: (place: { id: string; name: string; href?: string }) => void
   style?: CSSProperties
 }
 
@@ -139,6 +151,8 @@ export function MenuMap({
   settleAfter = 3000,
   drift = true,
   pins = true,
+  destinations = [],
+  current,
   onSelect,
   style,
 }: MenuMapProps) {
@@ -218,6 +232,26 @@ export function MenuMap({
 
   const activeDistrict = districts.find((d) => d.id === active)
 
+  /* The map's names are the country's and the destinations' are the office's,
+     so they are matched by name, loosely: case and accents aside, "Könchogsum"
+     is "Konchogsum". A labelled place is tried by its label first — Mongar's
+     district is spelt "Monggar" in the outlines — then by its district. */
+  const pathByName = new Map(destinations.map((d) => [plain(d.name), d.path]))
+  const hrefFor = (id: string): string | undefined => {
+    for (const name of [PLACES.find((p) => p.id === id)?.name, districts.find((d) => d.id === id)?.name]) {
+      const path = name ? pathByName.get(plain(name)) : undefined
+      if (path) return path
+    }
+    return undefined
+  }
+  const here = current
+    ? [...PLACES.map((p) => p.id), ...districts.map((d) => d.id)].find((id) => {
+        const path = hrefFor(id)
+        return !!path && (current === path || current.startsWith(`${path}/`))
+      })
+    : undefined
+  const lit = (id: string) => active === id || here === id
+
   const hover = useCallback(
     (id: string) => {
       if (drag || id === active) return
@@ -230,12 +264,11 @@ export function MenuMap({
 
   const choose = (place: { id: string; name: string }) => {
     if (turned.current) return
-    onSelect?.(place)
+    onSelect?.({ ...place, href: hrefFor(place.id) })
   }
 
   const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return
-    e.currentTarget.setPointerCapture(e.pointerId)
     turned.current = false
     /* A finger has no position until it lands, and the synthesised mouseover
        that follows is what raises the tooltip — without this it would be
@@ -251,8 +284,18 @@ export function MenuMap({
     if (!drag) return
     const dx = e.clientX - drag.x
     const dy = e.clientY - drag.y
-    if (Math.abs(dx) > DRAG_SLOP || Math.abs(dy) > DRAG_SLOP) turned.current = true
-    setRot({ rz: drag.rz + dx * 0.25, rx: Math.max(10, Math.min(75, drag.rx - dy * 0.25)) })
+    /* The pointer is captured only once the press has become a turn. Captured
+       on the way down, the click that follows a plain press is dispatched to
+       this frame instead of to the place or district under it, and choosing
+       one on the map never did anything. */
+    if (!turned.current && (Math.abs(dx) > DRAG_SLOP || Math.abs(dy) > DRAG_SLOP)) {
+      turned.current = true
+      e.currentTarget.setPointerCapture(e.pointerId)
+    }
+    /* Subtracted, not added: a positive rotateZ is clockwise, which carries the
+       near half of the tilted country — the half a visitor is looking at —
+       the opposite way to the pointer. Dragging left must turn the map left. */
+    setRot({ rz: drag.rz - dx * 0.25, rx: Math.max(10, Math.min(75, drag.rx - dy * 0.25)) })
   }
 
   /* Letting go returns it to the resting pose — rx null hands the tilt back to
@@ -422,9 +465,9 @@ export function MenuMap({
                 key={d.id}
                 d={d.d}
                 data-id={d.id}
-                fill={active === d.id ? 'var(--sky-deep)' : i % 2 ? 'var(--sky-tint)' : 'var(--sky)'}
+                fill={lit(d.id) ? 'var(--sky-deep)' : i % 2 ? 'var(--sky-tint)' : 'var(--sky)'}
                 stroke="var(--white)"
-                strokeWidth={active === d.id ? 1.4 : 1}
+                strokeWidth={lit(d.id) ? 1.4 : 1}
                 strokeLinejoin="round"
                 onClick={() => choose(d)}
                 style={{ transition: 'fill var(--dur-quick) var(--ease-breath)', ...fade(d.delay) }}
@@ -477,6 +520,7 @@ export function MenuMap({
                         onMouseEnter={() => hover(p.id)}
                         onMouseLeave={leave}
                         onClick={() => choose({ id: p.id, name: p.name })}
+                        aria-current={here === p.id ? 'page' : undefined}
                         style={{
                           position: 'absolute',
                           left: 0,
@@ -516,7 +560,7 @@ export function MenuMap({
                             letterSpacing: '.14em',
                             textTransform: 'uppercase',
                             lineHeight: 1.2,
-                            color: active === p.id ? 'var(--sky-deep)' : 'var(--maroon)',
+                            color: lit(p.id) ? 'var(--sky-deep)' : 'var(--maroon)',
                             transition: 'color var(--dur-quick) var(--ease-breath)',
                           }}
                         >

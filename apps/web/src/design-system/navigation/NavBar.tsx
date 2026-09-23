@@ -31,6 +31,10 @@ export type NavBarProps = {
    * office edits rather than a path written into the navigation.
    */
   mapHref?: string
+  /** The destinations the map's places lead to, when one has a page. */
+  mapDestinations?: { name: string; path: string }[]
+  /** The page being read, so the map can light the place it is about. */
+  pathname?: string
 }
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
@@ -56,6 +60,8 @@ export function NavBar({
   searchPlaceholder = 'Search',
   map = true,
   mapHref,
+  mapDestinations,
+  pathname,
 }: NavBarProps) {
   const router = useRouter()
   const [scrolled, setScrolled] = useState(false)
@@ -97,6 +103,20 @@ export function NavBar({
     }
     const t = setTimeout(() => setShown(false), 700)
     return () => clearTimeout(t)
+  }, [open])
+
+  /* The page under an open menu must not scroll. Without this a wheel or a
+     swipe that reaches the end of the panel carries on into the page, and every
+     parallax layer and reveal behind the paper keeps moving. `scrollbar-gutter:
+     stable` on <html> keeps the width from jumping when the bar goes. */
+  useEffect(() => {
+    if (!open) return
+    const root = document.documentElement
+    const was = root.style.overflow
+    root.style.overflow = 'hidden'
+    return () => {
+      root.style.overflow = was
+    }
   }, [open])
 
   useEffect(() => {
@@ -335,6 +355,7 @@ export function NavBar({
             zIndex: 1,
             height: 'calc(100svh - 100%)',
             overflowY: 'auto',
+            overscrollBehavior: 'contain',
             padding: 'var(--space-8) var(--gutter) var(--space-9)',
             color: 'var(--ink)',
             boxSizing: 'border-box',
@@ -413,9 +434,12 @@ export function NavBar({
                 }}
               >
                 <MenuMap
-                  onSelect={() => {
+                  destinations={mapDestinations}
+                  current={pathname}
+                  onSelect={(place) => {
                     setOpen(false)
-                    if (mapTarget) router.push(mapTarget)
+                    const to = place.href ?? mapTarget
+                    if (to) router.push(to)
                   }}
                   style={{ width: '100%', maxWidth: 820, margin: '0 auto' }}
                 />

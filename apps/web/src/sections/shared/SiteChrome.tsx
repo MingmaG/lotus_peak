@@ -16,7 +16,7 @@ import {
 } from '@/design-system'
 import { Dignities, Halo } from '@/motion'
 import { sendEnquiry } from '@/lib/send-enquiry'
-import type { SiteSettings, Trip } from '@/content/types'
+import type { Destination, SiteSettings, Trip } from '@/content/types'
 
 type DrawerCtx = {
   open: (tripSlug?: string) => void
@@ -49,10 +49,13 @@ const INVERSE = (path: string) =>
 export function SiteChrome({
   settings,
   trips,
+  destinations,
   children,
 }: {
   settings: SiteSettings
   trips: Pick<Trip, 'slug' | 'title' | 'durationDays'>[]
+  /** The valleys, for the menu map's places to lead to. */
+  destinations: Pick<Destination, 'name' | 'path'>[]
   children: ReactNode
 }) {
   const pathname = usePathname()
@@ -97,6 +100,8 @@ export function SiteChrome({
         active={active}
         cta={settings.navCta}
         inverse={INVERSE(pathname)}
+        mapDestinations={destinations}
+        pathname={pathname}
       />
 
       <div
