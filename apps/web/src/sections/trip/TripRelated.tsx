@@ -21,7 +21,7 @@ export function TripRelated({ trip }: { trip: Trip }) {
   return (
     <>
       {sections.destinations && trip.destinations.length > 0 && (
-        <RelatedBand title="Where you will go">
+        <RelatedBand title="Where you will go" more={{ href: '/destinations', label: 'View more destinations' }}>
           <CardGrid>
             {trip.destinations.map((place) => (
               <PageCard
@@ -38,7 +38,7 @@ export function TripRelated({ trip }: { trip: Trip }) {
       )}
 
       {sections.culture && trip.culture.length > 0 && (
-        <RelatedBand title="Culture on the way">
+        <RelatedBand title="Culture on the way" more={{ href: '/culture', label: 'Know more about the culture' }}>
           <CardGrid>
             {trip.culture.map((article) => (
               <PageCard
@@ -56,7 +56,7 @@ export function TripRelated({ trip }: { trip: Trip }) {
       )}
 
       {sections.journal && trip.posts.length > 0 && (
-        <RelatedBand title="From the journal">
+        <RelatedBand title="From the journal" more={{ href: '/journal', label: 'Read the whole journal' }}>
           <CardGrid>
             {trip.posts.map((post) => (
               <PageCard
@@ -74,7 +74,7 @@ export function TripRelated({ trip }: { trip: Trip }) {
       )}
 
       {sections.related && trip.related.length > 0 && (
-        <RelatedBand title="Other journeys">
+        <RelatedBand title="Other journeys" more={{ href: '/trips', label: 'View more trips' }}>
           <div
             style={{
               display: 'grid',

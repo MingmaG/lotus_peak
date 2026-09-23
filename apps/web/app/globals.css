@@ -64,6 +64,28 @@
 @media (max-width: 620px) {
   .lp-form-row { grid-template-columns: minmax(0, 1fr) !important }
   .lp-footer-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important }
+  .lp-footer-brand { grid-column: 1 / -1 }
+}
+
+/* The footer's social marks: a quiet ring on the dark ground that fills on
+   hover. 40px, which is also the touch target. */
+.lp-footer-social {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-on-ground);
+  color: var(--text-on-ground);
+  transition:
+    background-color var(--dur-quick) var(--ease-breath),
+    border-color var(--dur-quick) var(--ease-breath);
+}
+.lp-footer-social:hover,
+.lp-footer-social:focus-visible {
+  background: var(--surface-on-ground);
+  border-color: var(--text-on-ground-muted);
+  color: var(--text-on-ground);
 }
 
 /* The navigation's search field is a fixed 200px sitting beside the brand and

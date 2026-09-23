@@ -46,7 +46,10 @@ export default async function ContactPage() {
   ]
 
   /* From the company record. The email and phone are links — on a phone the
-     second one dials. */
+     second one dials. The social accounts and the address are the footer's
+     too: there was a Facebook link typed here that disagreed with the one
+     the office had entered. */
+  const promise = settings.contact.replyPromise
   const aside: [string, ReactNode][] = [
     [
       'Call',
@@ -60,20 +63,18 @@ export default async function ContactPage() {
         {settings.contact.email}
       </a>,
     ],
-    [
-      'Facebook',
-      <a
-        key="fb"
-        href="https://www.facebook.com/profile.php?id=61588546391091"
-        rel="noreferrer noopener"
-        target="_blank"
-        style={LINK}
-      >
-        Lotus Peak Tours &amp; Travel
+    ...settings.socials.map((social): [string, ReactNode] => [
+      social.label,
+      <a key={social.url} href={social.url} rel="noreferrer noopener" target="_blank" style={LINK}>
+        {settings.brand}
       </a>,
-    ],
-    ['Where', 'Thimphu, Bhutan'],
-    ['Reply', settings.contact.replyPromise === 'Personally, within two days' ? 'We write back personally, within two days.' : settings.contact.replyPromise],
+    ]),
+    ...(settings.address.lines.length
+      ? [['Where', settings.address.lines.join(', ')] as [string, ReactNode]]
+      : []),
+    ...(promise
+      ? [['Reply', `We write back ${promise.charAt(0).toLowerCase()}${promise.slice(1)}.`] as [string, ReactNode]]
+      : []),
   ]
 
   return (

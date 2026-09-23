@@ -1,8 +1,8 @@
 import type { JournalCategory } from '@lotuspeak/api-contracts'
 
-import type { SiteIconName } from '@/design-system'
+import type { SiteIconName, SocialPlatform } from '@/design-system'
 
-export type { JournalCategory }
+export type { JournalCategory, SocialPlatform }
 
 export type TripType = 'mindfulness' | 'meditation' | 'festival' | 'trekking'
 export type Difficulty = 'Gentle' | 'Moderate' | 'Demanding'
@@ -314,12 +314,33 @@ export type Reflection = {
   order: number
 }
 
+/** One public way to reach the office, with the link it opens already built. */
+export type ContactLine = {
+  kind: 'phone' | 'whatsapp' | 'email' | 'fax'
+  label: string
+  display: string
+  /** `tel:`, `mailto:` or `wa.me`. Null for a fax, which is read, not followed. */
+  href: string | null
+}
+
 export type SiteSettings = {
   brand: string
   line: string
   nav: { label: string; href: string }[]
   navCta: { label: string; href: string }
-  footer: { columns: { title: string; links: { label: string; href: string }[] }[]; note: string }
+  footer: {
+    columns: { title: string; links: { label: string; href: string }[] }[]
+    /** The introduction under the name; the tagline when the office left it empty. */
+    note: string
+    /** The copyright line, `{year}` and `{name}` already substituted. */
+    copyright: string
+    credit: { label: string; name: string; url: string | null } | null
+    show: { links: boolean; address: boolean; contacts: boolean; socials: boolean }
+  }
+  /** The office's address, one printed line per entry. */
+  address: { lines: string[]; mapUrl: string | null }
+  contacts: ContactLine[]
+  socials: { platform: SocialPlatform; label: string; url: string }[]
   contact: { phone: string; email: string; replyPromise: string }
   pledge: { percent: number; beneficiary: string }
   sdfPerNightUsd: number
@@ -331,6 +352,16 @@ export type SiteSettings = {
    one place. The design project stores these pre-formatted, which makes the
    data unsortable — these are derived, never stored.
    --------------------------------------------------------------------------- */
+
+/**
+ * The copyright line with its tokens filled. `{year}` is resolved when the page
+ * is rendered, and the publish-or-hourly rebuild is what carries it into
+ * January — not a client-side clock, which would disagree with the server's
+ * HTML for the few hours either side of midnight on New Year's Eve.
+ */
+export function fillCopyright(template: string, name: string, year = new Date().getFullYear()) {
+  return template.replaceAll('{year}', String(year)).replaceAll('{name}', name)
+}
 
 export const fmt = {
   duration: (t: Trip) => `${t.durationDays} days`,
