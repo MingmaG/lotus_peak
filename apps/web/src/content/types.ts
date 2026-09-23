@@ -323,8 +323,13 @@ export type ContactLine = {
   href: string | null
 }
 
+/** A band at the foot of a journey page: its heading and the words on its link. */
+export type JourneyBandCopy = { title: string; more: string }
+
 export type SiteSettings = {
   brand: string
+  /** The registered name. "Lotus Peak Tours & Travel". */
+  legalName: string
   line: string
   nav: { label: string; href: string }[]
   navCta: { label: string; href: string }
@@ -341,6 +346,7 @@ export type SiteSettings = {
   address: { lines: string[]; mapUrl: string | null }
   contacts: ContactLine[]
   socials: { platform: SocialPlatform; label: string; url: string }[]
+  journeyBands: Record<'places' | 'culture' | 'journal' | 'related', JourneyBandCopy>
   contact: { phone: string; email: string; replyPromise: string }
   pledge: { percent: number; beneficiary: string }
   sdfPerNightUsd: number
@@ -444,7 +450,13 @@ export type PageBand =
       items: [src: string, ratio?: string, width?: string, alt?: string][]
     }
   | { kind: 'reflections'; title: string | null; reflectionIds: string[] }
-  | { kind: 'trips'; title: string | null; lead: string | null; tripSlugs: string[] }
+  | {
+      kind: 'trips'
+      eyebrow: string | null
+      title: string | null
+      lead: string | null
+      tripSlugs: string[]
+    }
   | {
       kind: 'cta'
       title: string
@@ -461,6 +473,8 @@ export type SitePage = {
   title: string
   eyebrow: string | null
   lead: string | null
+  /** A quiet closing line on a reference page. */
+  note: string | null
   heroImage: string | null
   heroAlt: ImageAlt
   bands: PageBand[]

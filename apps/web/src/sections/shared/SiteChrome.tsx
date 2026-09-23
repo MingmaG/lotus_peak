@@ -18,8 +18,13 @@ import { Dignities, Halo } from '@/motion'
 import { sendEnquiry } from '@/lib/send-enquiry'
 import type { SiteSettings, Trip } from '@/content/types'
 
-type DrawerCtx = { open: (tripSlug?: string) => void; notify: (message: string) => void }
-const Ctx = createContext<DrawerCtx>({ open: () => {}, notify: () => {} })
+type DrawerCtx = {
+  open: (tripSlug?: string) => void
+  notify: (message: string) => void
+  /** The company's email, for a form to offer when its enquiry did not arrive. */
+  email: string
+}
+const Ctx = createContext<DrawerCtx>({ open: () => {}, notify: () => {}, email: '' })
 
 /** Any CTA anywhere can open the enquiry drawer or raise the toast. */
 export function useInquiry() {
@@ -65,7 +70,8 @@ export function SiteChrome({
     setDrawerOpen(true)
   }, [])
 
-  const ctx = useMemo(() => ({ open, notify }), [open, notify])
+  const email = settings.contact.email
+  const ctx = useMemo(() => ({ open, notify, email }), [open, notify, email])
 
   // Close the drawer on navigation.
   useEffect(() => setDrawerOpen(false), [pathname])
@@ -119,6 +125,7 @@ export function SiteChrome({
         footer="No deposit, no obligation. Just a reply."
       >
         <DrawerForm
+          email={email}
           options={journeyOptions}
           preselect={preselect}
           onSent={() => {
@@ -140,11 +147,13 @@ export function SiteChrome({
 }
 
 function DrawerForm({
+  email,
   options,
   preselect,
   onSent,
   onFailed,
 }: {
+  email: string
   options: { label: string; value: string }[]
   preselect?: string
   onSent: () => void
@@ -159,7 +168,7 @@ function DrawerForm({
         e.preventDefault()
         setPending(true)
         const data = Object.fromEntries(new FormData(e.currentTarget))
-        const outcome = await sendEnquiry({ ...data, source: 'drawer' })
+        const outcome = await sendEnquiry({ ...data, source: 'drawer' }, email)
         setPending(false)
         /* A refused enquiry leaves the drawer open with the words still in it,
            so there is something to try again with. */

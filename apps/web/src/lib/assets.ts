@@ -101,9 +101,9 @@ export type MediaAsset = {
 
 const RECORDS: Record<string, Omit<MediaAsset, 'src'>> = {
   [IMG.hero]: {
-    alt: 'A Bhutanese monastery on a cliff above a valley, with snow peaks beyond',
-    width: 4000,
-    height: 3000,
+    alt: 'Taktshang, the Tiger’s Nest, on its granite cliff above a forested valley, with the path climbing to it on the left',
+    width: 4032,
+    height: 3024,
   },
   [IMG.taktshang]: {
     alt: 'Taktshang monastery on the granite cliff above the Paro valley, white walls and red roofs among pine forest',

@@ -438,6 +438,7 @@ export function toSettings(site: ApiSite): SiteSettings {
 
   return {
     brand: site.company.name,
+    legalName: site.company.legalName,
     line: site.company.tagline,
     nav: site.nav.map((link) => ({ label: link.label, href: link.href })),
     navCta: site.navCta ?? { label: 'Explore trips', href: '/trips' },
@@ -463,6 +464,7 @@ export function toSettings(site: ApiSite): SiteSettings {
       label: social.label,
       url: social.url,
     })),
+    journeyBands: site.journeyBands,
     contact: {
       phone: phone?.display ?? '',
       email: email?.value ?? '',
@@ -540,6 +542,7 @@ export function toPage(row: ApiPage): SitePage {
     title: row.title,
     eyebrow: row.eyebrow,
     lead: row.lead,
+    note: row.note ?? null,
     heroImage: row.heroImage ? imagePath(row.heroImage) : null,
     heroAlt: row.heroImage?.alt,
     bands: row.sections.map(toBand).filter((band): band is PageBand => band !== null),
@@ -625,6 +628,7 @@ function toBand(section: ApiPageSection): PageBand | null {
     case 'trips':
       return {
         kind: 'trips',
+        eyebrow: section.eyebrow ?? null,
         title: section.title,
         lead: renderStoredRichText(section.lead),
         tripSlugs: section.tripSlugs,

@@ -111,8 +111,9 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        error:
-          'We could not record that just now. Please write to info@lotuspeak.org and we will pick it up from there.',
+        /* No address here: the form that sent this knows the company's, from
+           the settings, and replaces this message with one that has it. */
+        error: 'We could not record that just now.',
       },
       { status: 502 },
     )

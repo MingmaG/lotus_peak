@@ -15,7 +15,7 @@ export type EnquiryFormProps = {
 }
 
 export function EnquiryForm({ source, fixedTrip, tripOptions, variant = 'compact' }: EnquiryFormProps) {
-  const { notify } = useInquiry()
+  const { notify, email } = useInquiry()
   const [pending, setPending] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -38,7 +38,7 @@ export function EnquiryForm({ source, fixedTrip, tripOptions, variant = 'compact
       ...data,
       source,
       tripSlug: fixedTrip?.slug ?? data.tripSlug,
-    })
+    }, email)
     setPending(false)
 
     /* The form is reset only once the server says it holds the enquiry —

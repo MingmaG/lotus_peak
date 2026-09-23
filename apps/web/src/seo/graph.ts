@@ -235,7 +235,7 @@ async function base(settings: SiteSettings): Promise<ApiSite> {
   /* The file provider, or an unreachable API. Enough for a valid graph. */
   return {
     company: {
-      legalName: settings.brand,
+      legalName: settings.legalName,
       name: settings.brand,
       tagline: settings.line,
       description: settings.defaultSeo.description,
@@ -286,6 +286,7 @@ async function base(settings: SiteSettings): Promise<ApiSite> {
       credit: settings.footer.credit,
       show: settings.footer.show,
     },
+    journeyBands: settings.journeyBands,
     replyPromise: settings.contact.replyPromise,
     pledge: { percent: settings.pledge.percent, beneficiary: settings.pledge.beneficiary, note: null },
     sdfPerNightUsd: settings.sdfPerNightUsd,

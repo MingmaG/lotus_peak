@@ -341,8 +341,11 @@ function Band({
       return (
         <Section>
           <Reveal>
+            {band.eyebrow && <Eyebrow number={pad(index)}>{band.eyebrow}</Eyebrow>}
             {band.title && (
-              <h2 style={{ fontSize: 'var(--text-h2)', maxWidth: '18ch' }}>{band.title}</h2>
+              <h2 style={{ fontSize: 'var(--text-h2)', maxWidth: '18ch', marginTop: band.eyebrow ? 20 : 0 }}>
+                {band.title}
+              </h2>
             )}
             {band.lead && (
               <Prose

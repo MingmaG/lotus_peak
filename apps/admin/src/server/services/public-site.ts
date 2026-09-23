@@ -329,6 +329,12 @@ export async function getSite(): Promise<ApiSite> {
         socials: company.footerShowSocials,
       },
     },
+    journeyBands: {
+      places: { title: company.journeyPlacesTitle, more: company.journeyPlacesMore },
+      culture: { title: company.journeyCultureTitle, more: company.journeyCultureMore },
+      journal: { title: company.journeyJournalTitle, more: company.journeyJournalMore },
+      related: { title: company.journeyRelatedTitle, more: company.journeyRelatedMore },
+    },
     replyPromise: company.replyPromise,
     pledge:
       company.pledgePercent && company.pledgeBeneficiary
@@ -1287,6 +1293,7 @@ export async function getPage(
     title: page.title,
     eyebrow: page.eyebrow,
     lead: page.lead,
+    note: page.note,
     heroImage: img(page.hero),
     sections: serialiseSections(stored, images),
     seo: serialiseSeo(page, img(page.ogImage)),

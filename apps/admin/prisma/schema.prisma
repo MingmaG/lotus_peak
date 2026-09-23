@@ -1508,6 +1508,9 @@ model Page {
   title   String
   eyebrow String?
   lead    String?
+  /// A quiet line at the foot of a reference page: "Last revised for the
+  /// 2026 season." Terms and Travellers' information draw it.
+  note    String?
 
   sections Json @default("[]")
 
@@ -1665,6 +1668,18 @@ model CompanyProfile {
   footerShowAddress  Boolean @default(true)
   footerShowContacts Boolean @default(true)
   footerShowSocials  Boolean @default(true)
+
+  /// The bands at the foot of every journey page: each one's heading, and the
+  /// words on the link to its whole section. An empty link text draws no link.
+  journeyPlacesTitle  String @default("Where you will go")
+  journeyPlacesMore   String @default("View more destinations")
+  journeyCultureTitle String @default("Culture on the way")
+  journeyCultureMore  String @default("Know more about the culture")
+  journeyJournalTitle String @default("From the journal")
+  journeyJournalMore  String @default("Read the whole journal")
+  journeyRelatedTitle String @default("Other journeys")
+  journeyRelatedMore  String @default("View more trips")
+
   replyPromise    String @default("")
 
   pledgePercent     Int?

@@ -43,6 +43,7 @@ export const POST = route<z.infer<typeof pageSchema>>({
         title: body.title,
         eyebrow: body.eyebrow || null,
         lead: body.lead || null,
+        note: body.note || null,
         sections: body.sections as never,
         heroId: body.heroId ?? null,
         showInSitemap: body.showInSitemap,
