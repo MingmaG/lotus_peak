@@ -1,4 +1,5 @@
 import { Prose } from '@/components/site/Prose'
+import { toPlainText } from '@/lib/rich-text'
 import Image from 'next/image'
 import { Button, Divider, Eyebrow, Reflection, SiteIcon, TrekCard } from '@/design-system'
 import { getContent } from '@/content'
@@ -137,7 +138,9 @@ function Band({
               </h2>
             )}
             {band.lead && (
-              <p
+              <Prose
+                html={band.lead}
+                compact
                 style={{
                   marginTop: 20,
                   fontSize: 'var(--text-lead)',
@@ -145,9 +148,7 @@ function Band({
                   maxWidth: 'var(--measure-narrow)',
                   color: 'var(--text-muted)',
                 }}
-              >
-                {band.lead}
-              </p>
+              />
             )}
           </Reveal>
 
@@ -344,9 +345,11 @@ function Band({
               <h2 style={{ fontSize: 'var(--text-h2)', maxWidth: '18ch' }}>{band.title}</h2>
             )}
             {band.lead && (
-              <p style={{ marginTop: 16, color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}>
-                {band.lead}
-              </p>
+              <Prose
+                html={band.lead}
+                compact
+                style={{ marginTop: 16, color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}
+              />
             )}
           </Reveal>
 
@@ -396,9 +399,11 @@ function Band({
               <h2 style={{ fontSize: 'var(--text-h2)', maxWidth: '18ch' }}>{band.title}</h2>
             )}
             {band.lead && (
-              <p style={{ marginTop: 16, color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}>
-                {band.lead}
-              </p>
+              <Prose
+                html={band.lead}
+                compact
+                style={{ marginTop: 16, color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}
+              />
             )}
           </Reveal>
 
@@ -455,7 +460,10 @@ function Band({
           src={heroImage}
           alt={heroAlt ?? ''}
           title={band.title}
-          body={band.lead ?? ''}
+          /* The band sets this in a `<p>` of its own, as text: HTML here would
+             print its tags. A lead is a sentence or two, so the words are all
+             of it that matters. */
+          body={toPlainText(band.lead)}
           cta={band.label}
           href={band.href}
           height="70vh"
@@ -465,9 +473,11 @@ function Band({
           <Reveal>
             <h2 style={{ fontSize: 'var(--text-h2)', maxWidth: '18ch' }}>{band.title}</h2>
             {band.lead && (
-              <p style={{ marginTop: 16, color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}>
-                {band.lead}
-              </p>
+              <Prose
+                html={band.lead}
+                compact
+                style={{ marginTop: 16, color: 'var(--text-muted)', maxWidth: 'var(--measure-narrow)' }}
+              />
             )}
             <div style={{ marginTop: 'var(--space-7)' }}>
               <Button href={band.href}>{band.label}</Button>
