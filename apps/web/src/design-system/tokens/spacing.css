@@ -9,6 +9,10 @@
 /* A page's cover photograph. Shorter on a phone, so the title under it still reaches the first screen */
 --cover-h:clamp(360px,64svh,720px);
 --cover-h-narrow:clamp(240px,42svh,420px);
+/* The landscape over the footer. Its own proportions from a tablet up; below that it would be
+   a strip too thin to read, so it holds 9.5rem and gives up its edges instead. 472/2172 is the
+   painting's own proportion; cqi is the footer's width (it is a size container) */
+--footer-scene-h:max(9.5rem,calc(100cqi * 472 / 2172));
 /* Radii — sharp architecture, softened edge */
 --radius-sm:2px;--radius-md:2px;--radius-pill:999px;
 /* Hairlines & depth */

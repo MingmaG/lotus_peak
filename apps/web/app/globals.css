@@ -521,6 +521,46 @@
   .lp-footer-cols a:not(.lp-footer-social) { display: inline-block; padding-block: 6px }
 }
 
+/* The landscape the footer stands on (Footer.tsx).
+
+   At its own proportions it is 4.6:1, which on a phone is an 80px strip of
+   specks. So it keeps its proportions only down to a 9.5rem floor, and
+   below that it is cropped from the sides, centred — the peaks, the bridge and
+   the river stay, the dzong on the left and the chorten on the right go first.
+   It is always anchored to its bottom edge, which is the one that meets the
+   deep sky and must never show a gap.
+
+   The height is worked out from the footer's width (`cqi`) rather than with
+   aspect-ratio. aspect-ratio plus a min-height turns the floor into a minimum
+   width as well: at 375px the box grew to 700px and the whole page scrolled
+   sideways. */
+.lp-footer { container-type: inline-size }
+.lp-footer-scene {
+  position: relative;
+  height: var(--footer-scene-h);
+  pointer-events: none;
+}
+/* Out of flow, so the image's intrinsic 2172px can never size the box. */
+.lp-footer-scene img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+/* The painting's last rows are faintly translucent, and a fractional height
+   rounds differently from the block below it: without this there is a
+   one-pixel line of page ground between the valley floor and the footer on
+   some zoom levels. The fade also softens the join from paint to flat ink. */
+.lp-footer-scene::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 12%;
+  background: linear-gradient(to bottom, transparent, var(--surface-ground-deep));
+}
+
 /* ---------------------------------------------------------------------------
    A journey's photographs (src/sections/trip/TripGallery.tsx).
 
