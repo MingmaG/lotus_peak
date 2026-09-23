@@ -486,3 +486,77 @@
 @media (pointer: coarse) {
   .lp-footer-cols a { display: inline-block; padding-block: 6px }
 }
+
+/* ---------------------------------------------------------------------------
+   A journey's photographs (src/sections/trip/TripGallery.tsx).
+
+   The mosaic is one large photograph and up to four beside it, the way the
+   count allows: a journey with three photographs gets three good cells rather
+   than five with two empty. On a phone it is the large one and two under it —
+   every other photograph is one tap away in the sheet, and a phone-height
+   stack of five is a gallery nobody scrolls past.
+   --------------------------------------------------------------------------- */
+.lp-mosaic {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, clamp(150px, 17vw, 260px));
+}
+.lp-mosaic > :first-child { grid-column: span 2; grid-row: span 2 }
+
+.lp-mosaic[data-count="1"] { grid-template-columns: 1fr; grid-template-rows: clamp(300px, 44vw, 600px) }
+.lp-mosaic[data-count="1"] > :first-child { grid-column: auto; grid-row: auto }
+.lp-mosaic[data-count="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: clamp(260px, 30vw, 460px) }
+.lp-mosaic[data-count="2"] > :first-child { grid-column: auto; grid-row: auto }
+.lp-mosaic[data-count="3"] { grid-template-columns: 2fr 1fr }
+.lp-mosaic[data-count="3"] > :first-child { grid-column: auto }
+.lp-mosaic[data-count="4"] { grid-template-columns: 2fr 1fr 1fr }
+.lp-mosaic[data-count="4"] > :first-child { grid-column: auto }
+.lp-mosaic[data-count="4"] > :last-child { grid-column: span 2 }
+
+@media (max-width: 700px) {
+  .lp-mosaic,
+  .lp-mosaic[data-count] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 62vw;
+    grid-auto-rows: 36vw;
+  }
+  .lp-mosaic > :first-child,
+  .lp-mosaic[data-count] > :first-child { grid-column: span 2; grid-row: auto }
+  .lp-mosaic[data-count] > :last-child:nth-child(2) { grid-column: span 2 }
+  .lp-mosaic[data-count="4"] > :last-child { grid-column: auto }
+  .lp-mosaic > :nth-child(n + 4) { display: none }
+  /* The button sits under the mosaic rather than on it: on a phone the
+     corner of the last photograph is too small to stand a label on. */
+  .lp-gallery-all { position: static !important; width: 100%; justify-content: center; margin-top: var(--space-3) }
+}
+
+.lp-mosaic-tile {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--paper-2);
+  cursor: zoom-in;
+}
+.lp-mosaic-tile img { transition: transform var(--dur-slow) var(--ease-breath) }
+.lp-mosaic-tile:hover img,
+.lp-mosaic-tile:focus-visible img { transform: scale(1.03) }
+.lp-mosaic-tile:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px }
+
+/* The viewer and the sheet are native dialogs; the scrim is their backdrop. */
+.lp-lightbox::backdrop { background: var(--scrim) }
+.lp-lightbox[open] { animation: veil var(--dur-quick) var(--ease-breath) }
+.lp-thumbs::-webkit-scrollbar { display: none }
+
+/* On a phone the photograph is the whole width and the swipe is the way
+   through; the arrows would sit on top of it. */
+@media (max-width: 700px) {
+  .lp-viewer-step { display: none !important }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-mosaic-tile:hover img,
+  .lp-mosaic-tile:focus-visible img { transform: none }
+}

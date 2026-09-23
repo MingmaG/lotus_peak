@@ -56,6 +56,8 @@ export const TRIP_DETAIL_INCLUDE = {
     orderBy: { sortOrder: 'asc' },
     include: { target: { select: { id: true, title: true, slug: true } } },
   },
+  cultureLinks: { orderBy: { sortOrder: 'asc' } },
+  postLinks: { orderBy: { sortOrder: 'asc' } },
   departures: { orderBy: { startDate: 'asc' } },
 } satisfies Prisma.TripInclude;
 
@@ -166,6 +168,11 @@ export async function updateTrip(id: string, patch: TripPatch): Promise<TripDeta
               ? patch.elevationProfile
               : Prisma.DbNull,
         featured: patch.featured,
+        showGallery: patch.showGallery,
+        showDestinations: patch.showDestinations,
+        showCulture: patch.showCulture,
+        showJournal: patch.showJournal,
+        showRelated: patch.showRelated,
         sortOrder: patch.sortOrder,
         ...(publishing ?? {}),
         ...seoFields(patch),
@@ -358,6 +365,37 @@ export async function updateTrip(id: string, patch: TripPatch): Promise<TripDeta
              offer it — but a stale form or an import can still send it. */
           .filter((targetId) => targetId !== id)
           .map((targetId, index) => ({ sourceId: id, targetId, sortOrder: index })),
+        skipDuplicates: true,
+      });
+    }
+
+    if (patch.cultureIds) {
+      await tx.cultureOnTrip.deleteMany({ where: { tripId: id } });
+      await tx.cultureOnTrip.createMany({
+        data: patch.cultureIds.map((cultureId, index) => ({
+          tripId: id,
+          cultureId,
+          sortOrder: index,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    /**
+     * The entry ↔ journey join, from the journey's end.
+     *
+     * The entry's editor writes the same rows from the other end, so a link
+     * made there arrives here checked, and one removed here is gone from the
+     * entry too. `sortOrder` is left at the entry's own value where the row
+     * already existed — it orders the entry's journeys, not the journey's
+     * entries, and the page orders those by date.
+     */
+    if (patch.postIds) {
+      await tx.postOnTrip.deleteMany({
+        where: { tripId: id, postId: { notIn: patch.postIds } },
+      });
+      await tx.postOnTrip.createMany({
+        data: patch.postIds.map((postId) => ({ tripId: id, postId })),
         skipDuplicates: true,
       });
     }

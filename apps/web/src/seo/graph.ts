@@ -152,7 +152,11 @@ function widenTrip(trip: Trip): ApiTrip {
     faq: trip.faq,
     gallery: [],
     departures: [],
-    relatedSlugs: [],
+    sections: { gallery: true, destinations: true, culture: true, journal: true, related: true },
+    destinations: [],
+    culture: [],
+    posts: [],
+    related: [],
     featured: false,
     seo: EMPTY_SEO,
   }

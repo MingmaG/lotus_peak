@@ -21,6 +21,37 @@ export async function tripFormData(id: string): Promise<TripFormData | null> {
   return trip ? toForm(trip) : null;
 }
 
+/**
+ * What the Links tab offers to choose from: every culture piece and every
+ * journal entry that has not been deleted.
+ *
+ * Drafts included, and marked, because an entry is often written alongside
+ * the journey it is about — it should be linkable before either is live. The
+ * site only ever draws the published ones.
+ */
+export async function tripLinkOptions() {
+  const [culture, posts] = await Promise.all([
+    db.cultureArticle.findMany({
+      where: { deletedAt: null },
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true, title: true },
+    }),
+    db.post.findMany({
+      where: { deletedAt: null },
+      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true, title: true, status: true },
+    }),
+  ]);
+  return {
+    culture,
+    posts: posts.map((row) => ({
+      id: row.id,
+      title: row.title,
+      published: row.status === 'PUBLISHED',
+    })),
+  };
+}
+
 export function emptyTripForm(): TripFormData {
   return {
     id: null,
@@ -60,11 +91,23 @@ export function emptyTripForm(): TripFormData {
     destinationIds: [],
     offeredByDestinationIds: [],
     relatedTripIds: [],
+    cultureIds: [],
+    postIds: [],
+    sections: { ...ALL_SECTIONS },
     featured: false,
     status: 'DRAFT',
     seo: emptySeo(),
   };
 }
+
+/** Every band on, which is what the columns default to. */
+const ALL_SECTIONS = {
+  gallery: true,
+  destinations: true,
+  culture: true,
+  journal: true,
+  related: true,
+};
 
 export function emptySeo() {
   return {
@@ -166,6 +209,15 @@ function toForm(trip: TripDetail): TripFormData {
       .sort((a, b) => (a.offerOrder ?? 0) - (b.offerOrder ?? 0))
       .map((link) => link.destinationId),
     relatedTripIds: trip.relatedFrom.map((link) => link.targetId),
+    cultureIds: trip.cultureLinks.map((link) => link.cultureId),
+    postIds: trip.postLinks.map((link) => link.postId),
+    sections: {
+      gallery: trip.showGallery,
+      destinations: trip.showDestinations,
+      culture: trip.showCulture,
+      journal: trip.showJournal,
+      related: trip.showRelated,
+    },
     featured: trip.featured,
     status: trip.status,
     seo: {

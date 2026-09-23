@@ -477,10 +477,45 @@ export interface ApiTrip {
   faqGroups: ApiTripFaqGroup[];
   gallery: ApiTripGalleryItem[];
   departures: ApiDeparture[];
-  /** Other journeys to offer at the foot of this one, in the order chosen. */
-  relatedSlugs: string[];
+  /**
+   * Which of the optional bands the page draws, as the office set them.
+   *
+   * Sent as well as the lists below rather than instead of them, because the
+   * gallery is also the journey's pictures in its structured data — hiding the
+   * band is not the same as having no photographs.
+   */
+  sections: ApiTripSections;
+  /** The places on the route that have pages, in route order. */
+  destinations: ApiDestinationSummary[];
+  /**
+   * The culture seen on the way.
+   *
+   * The pieces the office chose on the journey, or — where it chose none —
+   * those linked to the places on its route. Empty when `sections.culture` is
+   * off, since nothing would draw them.
+   */
+  culture: ApiCultureSummary[];
+  /** Journal entries: the ones linked to the journey, or else about its route. */
+  posts: ApiPostSummary[];
+  /**
+   * Other journeys to offer at the foot of this one.
+   *
+   * The office's choice in its order, or the next few in catalogue order when
+   * it made none. Resolved here, not on the site, so that a hidden or deleted
+   * journey never reaches a card.
+   */
+  related: ApiTripSummary[];
   featured: boolean;
   seo: ApiSeo;
+}
+
+/** The journey page's optional bands. Each is drawn only when it has something in it. */
+export interface ApiTripSections {
+  gallery: boolean;
+  destinations: boolean;
+  culture: boolean;
+  journal: boolean;
+  related: boolean;
 }
 
 /** The list payload. Everything a `TrekCard` renders and nothing more. */

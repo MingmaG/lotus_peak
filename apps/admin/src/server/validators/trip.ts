@@ -146,6 +146,19 @@ export const tripSchema = z.object({
   /** Destinations that offer this journey, in the order they offer it. */
   offeredByDestinationIds: z.array(z.string()).max(30).default([]),
   relatedTripIds: z.array(z.string()).max(12).default([]),
+  /** Culture pieces the page offers. Empty offers what is linked to the route. */
+  cultureIds: z.array(z.string()).max(12).default([]),
+  /**
+   * Journal entries the page offers — the entry ↔ journey join, written from
+   * this side. Empty offers the newest entries about the route.
+   */
+  postIds: z.array(z.string()).max(12).default([]),
+  /** The optional bands on the journey's page. */
+  showGallery: z.boolean().default(true),
+  showDestinations: z.boolean().default(true),
+  showCulture: z.boolean().default(true),
+  showJournal: z.boolean().default(true),
+  showRelated: z.boolean().default(true),
 
   featured: z.boolean().default(false),
   status: statusSchema.default('DRAFT'),

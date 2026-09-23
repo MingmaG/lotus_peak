@@ -66,7 +66,7 @@ export type Trip = {
   /** The questions with no heading. They render first, above the groups. */
   faq: { question: string; answer: string }[]
   faqGroups: FaqGroup[]
-  gallery: [src: string, ratio?: string, width?: string, alt?: string][]
+  gallery: TripPhoto[]
   /** The route drawn on a map. Empty where the office has not made one. */
   routeMap: string | null
   routeMapAlt?: ImageAlt
@@ -76,6 +76,51 @@ export type Trip = {
   stats: { label: string; value: string; note: string | null }[]
   /** The walking profile. Empty for everything but the trekking journeys. */
   elevationProfile: { day: number; label: string; metres: number }[]
+  /** Which of the optional bands below the itinerary the office has switched on. */
+  sections: TripSections
+  /** The places on the route that have pages, in route order. */
+  destinations: Destination[]
+  /** The culture seen on the way — chosen, or else linked to the route. */
+  culture: CultureArticle[]
+  /** Journal entries — linked, or else about the route. */
+  posts: Post[]
+  /**
+   * Other journeys to offer, as cards.
+   *
+   * Summaries widened into `Trip`s, like every list — see `toTripSummary`.
+   * Nothing renders more of them than a `TrekCard` does.
+   */
+  related: Trip[]
+}
+
+/** The journey page's optional bands. Each draws only when it has something in it. */
+export type TripSections = {
+  gallery: boolean
+  destinations: boolean
+  culture: boolean
+  journal: boolean
+  related: boolean
+}
+
+/**
+ * A photograph in a journey's gallery.
+ *
+ * An object rather than the strip's old `[src, ratio, width, alt]` tuple,
+ * because the viewer needs what the tuple had no room for: the caption and
+ * credit it prints under the picture, and the intrinsic size it letterboxes
+ * to. The mosaic crops, so the ratio and width hints the strip read are gone.
+ */
+export type TripPhoto = {
+  src: string
+  alt?: ImageAlt
+  /** Editorial, printed under the photograph in the viewer. Distinct from `alt`. */
+  caption: string | null
+  credit: string | null
+  /** Intrinsic pixels, where known. The viewer letterboxes to them. */
+  width: number | null
+  height: number | null
+  /** Where to hold the crop in the mosaic, as `object-position`. */
+  focal: [x: number, y: number]
 }
 
 /** What a journey costs at a party size. `maxPeople` null is "and above". */

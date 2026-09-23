@@ -112,7 +112,17 @@ export function createApiProvider(): ContentRepository {
       async bySlug(slug) {
         const trip = await fetchContentOrNull<ApiTrip>(
           `/api/public/site/trips/${encodeURIComponent(slug)}`,
-          { tags: [REVALIDATE_TAGS.trips] },
+          /* Tagged with the three sections its foot draws cards from: a new
+             journal entry about Paro belongs on every journey through Paro,
+             and saving it sends `journal`, not `trips`. */
+          {
+            tags: [
+              REVALIDATE_TAGS.trips,
+              REVALIDATE_TAGS.destinations,
+              REVALIDATE_TAGS.culture,
+              REVALIDATE_TAGS.journal,
+            ],
+          },
         )
         return trip ? toTrip(trip) : null
       },
