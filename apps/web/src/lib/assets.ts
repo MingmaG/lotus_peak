@@ -13,6 +13,7 @@ export function asset(path: string): string {
 
 /** Imagery used across the site, matching the design project's IMG map. */
 export const IMG = {
+  hero: asset('hero-section-image.jpg'),
   dress: asset('imagery/traditional-dress.jpg'),
   dzong: asset('imagery/punakha-foggy-dzong.webp'),
   chorten: asset('imagery/memorial-chorten.webp'),
@@ -99,6 +100,11 @@ export type MediaAsset = {
 }
 
 const RECORDS: Record<string, Omit<MediaAsset, 'src'>> = {
+  [IMG.hero]: {
+    alt: 'A Bhutanese monastery on a cliff above a valley, with snow peaks beyond',
+    width: 4000,
+    height: 3000,
+  },
   [IMG.taktshang]: {
     alt: 'Taktshang monastery on the granite cliff above the Paro valley, white walls and red roofs among pine forest',
     width: 1024,
