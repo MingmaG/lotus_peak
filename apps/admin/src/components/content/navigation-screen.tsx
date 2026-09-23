@@ -5,7 +5,7 @@ import { Loader2, Plus, Save, Star } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { Section } from '@/components/shared/editor-shell';
+import { Field, Section } from '@/components/shared/editor-shell';
 import { SortableList } from '@/components/shared/sortable-list';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,16 +27,42 @@ interface Menu {
   items: Item[];
 }
 
-const LOCATIONS: { location: Menu['location']; name: string; description: string }[] = [
+/**
+ * `name` is the heading a menu is created with. On a footer column it is what
+ * the site prints above the links, so it is editable there; the header's name
+ * is never shown and is not.
+ */
+const LOCATIONS: {
+  location: Menu['location'];
+  title: string;
+  name: string;
+  description: string;
+}[] = [
   {
     location: 'HEADER',
+    title: 'Header',
     name: 'Header',
     description:
       'The navigation across the top. One link may be the call to action — the filled saffron button — and the design allows exactly one.',
   },
-  { location: 'FOOTER_ONE', name: 'Journeys', description: 'The first footer column.' },
-  { location: 'FOOTER_TWO', name: 'Bhutan', description: 'The second footer column.' },
-  { location: 'FOOTER_THREE', name: 'Practical', description: 'The third footer column.' },
+  {
+    location: 'FOOTER_ONE',
+    title: 'Footer, first column',
+    name: 'Journeys',
+    description: 'A column with no links is not shown. All three can be hidden at once under Company → On the site.',
+  },
+  {
+    location: 'FOOTER_TWO',
+    title: 'Footer, second column',
+    name: 'Bhutan',
+    description: 'A column with no links is not shown.',
+  },
+  {
+    location: 'FOOTER_THREE',
+    title: 'Footer, third column',
+    name: 'Practical',
+    description: 'A column with no links is not shown.',
+  },
 ];
 
 export function NavigationScreen({
@@ -79,7 +105,7 @@ export function NavigationScreen({
       apiPut('/api/menus', {
         menus: menus?.map((menu) => ({
           location: menu.location,
-          name: menu.name,
+          name: menu.name.trim() || LOCATIONS.find((spec) => spec.location === menu.location)!.name,
           items: menu.items
             .filter((item) => item.label.trim() && item.href.trim())
             .map(({ key: _key, ...item }) => item),
@@ -107,6 +133,11 @@ export function NavigationScreen({
       current?.map((menu) => (menu.location === location ? { ...menu, items } : menu)) ?? null,
     );
 
+  const rename = (location: Menu['location'], name: string) =>
+    setMenus((current) =>
+      current?.map((menu) => (menu.location === location ? { ...menu, name } : menu)) ?? null,
+    );
+
   return (
     <div className="max-w-3xl space-y-5">
       {LOCATIONS.map((spec) => {
@@ -114,7 +145,17 @@ export function NavigationScreen({
         if (!menu) return null;
 
         return (
-          <Section key={spec.location} title={spec.name} description={spec.description}>
+          <Section key={spec.location} title={spec.title} description={spec.description}>
+            {spec.location !== 'HEADER' && (
+              <Field label="Heading">
+                <Input
+                  value={menu.name}
+                  disabled={!canWrite}
+                  onChange={(event) => rename(spec.location, event.target.value)}
+                  className="max-w-xs"
+                />
+              </Field>
+            )}
             <SortableList
               items={menu.items}
               itemKey={(item) => item.key}

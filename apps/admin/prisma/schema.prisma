@@ -1650,8 +1650,21 @@ model CompanyProfile {
 
   // --- Site chrome the whole site reads ---
   strapline       String @default("")
+  /// The short introduction under the name in the footer. It used to be the
+  /// line along the foot, beside the copyright — which the credit now holds.
   footerNote      String @default("")
   footerCopyright String @default("© {year} {name}")
+  /// The credit on the right of the copyright row: "{label} {name}", with the
+  /// name linked to `footerCreditUrl`. No name, no credit.
+  footerCreditLabel String @default("Website by")
+  footerCreditName  String @default("")
+  footerCreditUrl   String @default("")
+  /// Which parts of the footer draw. Columns rather than a `Setting` row for the
+  /// reason given on `Setting`: a typo in a key is a silently empty footer.
+  footerShowLinks    Boolean @default(true)
+  footerShowAddress  Boolean @default(true)
+  footerShowContacts Boolean @default(true)
+  footerShowSocials  Boolean @default(true)
   replyPromise    String @default("")
 
   pledgePercent     Int?

@@ -45,8 +45,12 @@ function profile() {
     licenceNumber: null,
     registrationNumber: null,
     strapline: 'Mindful journeys in Bhutan',
-    footerNote: 'Lotus Peak Tours & Travel · Thimphu, Bhutan',
+    footerNote:
+      'A small Bhutanese company. Journeys led slowly, with monks and Lams, and time written in to do nothing.',
     footerCopyright: '© {year} {name}',
+    footerCreditLabel: 'Website by',
+    footerCreditName: 'Trailma',
+    footerCreditUrl: 'https://trailma.com',
     replyPromise: 'Personally, within two days',
     pledgePercent: 30,
     pledgeBeneficiary: 'Osel Ling Perila Goenpa',
