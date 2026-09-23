@@ -103,13 +103,16 @@ export async function revalidate(
 export const TAGS_FOR: Record<string, RevalidateTag[]> = {
   trip: ['trips', 'destinations', 'activities', 'pages', 'discovery'],
   departure: ['trips'],
-  destination: ['destinations', 'trips', 'discovery'],
+  /* The three sections link to each other — a place lists its culture and
+     its journal entries, an entry names its places — so a change to any one
+     of them touches the pages of the other two. */
+  destination: ['destinations', 'culture', 'journal', 'trips', 'discovery'],
   activity: ['activities', 'trips', 'discovery'],
   season: ['seasons'],
-  culture: ['culture', 'discovery'],
+  culture: ['culture', 'destinations', 'journal', 'discovery'],
   gallery: ['gallery'],
   reflection: ['reflections', 'pages'],
-  post: ['journal', 'discovery'],
+  post: ['journal', 'destinations', 'culture', 'discovery'],
   page: ['pages', 'discovery'],
   person: ['pages'],
   menu: ['navigation', 'site'],

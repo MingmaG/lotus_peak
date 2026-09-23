@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { richTextSchema } from '@/server/schema/rich-text';
 import { seoSchema, statusSchema } from './trip';
 
 /**
@@ -26,12 +27,22 @@ const icon = z.enum([
   'BUDDHA',
 ]);
 
+/**
+ * A valley or a place.
+ *
+ * `parentId` null is a valley; a place names its valley. The body is one
+ * rich-text document, the same editor and the same allowlist as a journal
+ * entry — which is what "one editor" means in practice: nobody has to learn a
+ * second way of writing a page.
+ */
 export const destinationSchema = z.object({
   slug: z.string().max(140).optional(),
   name: z.string().min(1, 'Give the place a name.').max(120),
+  parentId: z.string().nullable().optional(),
   icon: icon.default('DZONG'),
   blurb: z.string().min(1, 'One line, for the card.').max(300),
-  detail: z.string().max(3_000).default(''),
+  standfirst: z.string().max(600).default(''),
+  body: richTextSchema.default(''),
   imageId: z.string().nullable().optional(),
   altitudeMetres: z.number().int().min(0).max(9_000).nullable().optional(),
   latitude: z.number().min(-90).max(90).nullable().optional(),
@@ -40,6 +51,8 @@ export const destinationSchema = z.object({
   status: statusSchema.default('PUBLISHED'),
   seo: seoSchema.optional(),
 });
+
+export type DestinationInput = z.infer<typeof destinationSchema>;
 
 export const activitySchema = z.object({
   slug: z.string().max(140).optional(),
@@ -80,16 +93,27 @@ export const seasonSchema = z.object({
   imageId: z.string().nullable().optional(),
 });
 
+/**
+ * A culture piece.
+ *
+ * `destinationIds` is where to see it — dzongs and Punakha Dzong. The join is
+ * edited here and only here, and shown on both pages: two editors for one
+ * list is two people unticking each other's boxes.
+ */
 export const cultureSchema = z.object({
   slug: z.string().max(140).optional(),
   title: z.string().min(1, 'Give it a title.').max(160),
-  body: z.string().min(1, 'Write the paragraph.').max(4_000),
+  standfirst: z.string().max(600).default(''),
+  body: richTextSchema.default(''),
   icon: icon.default('CHORTEN'),
   imageId: z.string().nullable().optional(),
+  destinationIds: z.array(z.string()).max(40).default([]),
   sortOrder: z.number().int().min(0).optional(),
   status: statusSchema.default('PUBLISHED'),
   seo: seoSchema.optional(),
 });
+
+export type CultureInput = z.infer<typeof cultureSchema>;
 
 export const galleryImageSchema = z.object({
   mediaId: z.string().min(1),

@@ -19,13 +19,20 @@ interface Row {
   slug: string;
   title: string;
   standfirst: string;
-  region: string;
+  category: 'JOURNEYS' | 'TRAVEL_GUIDES' | 'EXPERIENCES' | 'STORIES';
   status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
   featured: boolean;
   readingMinutes: number;
   publishedAt: string | null;
   author: { name: string } | null;
 }
+
+const SHELF: Record<Row['category'], string> = {
+  JOURNEYS: 'Journeys',
+  TRAVEL_GUIDES: 'Travel guides',
+  EXPERIENCES: 'Experiences',
+  STORIES: 'Stories',
+};
 
 export function PostsTable({ canWrite }: { canWrite: boolean }) {
   const router = useRouter();
@@ -73,10 +80,10 @@ export function PostsTable({ canWrite }: { canWrite: boolean }) {
       ),
     },
     {
-      key: 'region',
-      label: 'Where',
+      key: 'category',
+      label: 'Shelf',
       hideBelow: 'md',
-      render: (row) => <span className="text-muted-foreground">{row.region}</span>,
+      render: (row) => <span className="text-muted-foreground">{SHELF[row.category]}</span>,
     },
     {
       key: 'author',

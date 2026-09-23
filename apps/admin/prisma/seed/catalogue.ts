@@ -2,6 +2,7 @@ import type { Difficulty, SeasonKey, SiteIcon, TripType } from '@prisma/client';
 
 import { db } from '@/lib/db';
 
+import { asParagraphs, blocksToHtml, type Block } from './blocks';
 import type { ImageMap } from './media';
 import activities from '../seed-data/activities.json';
 import culture from '../seed-data/culture.json';
@@ -90,15 +91,26 @@ interface TripJson {
   gallery: [string, string?, string?][];
 }
 
+/**
+ * A valley, or — with `parent` — a place inside one.
+ *
+ * `standfirst` and `body` are what the migration makes of the old one-paragraph
+ * `detail`: its first sentence, and the rest as the start of the body. The
+ * Thimphu and Bumthang bodies continue with what were their journal entries,
+ * and the three places *are* what were journal entries.
+ */
 interface DestinationJson {
   slug: string;
   name: string;
+  parent?: string;
   icon: string;
   blurb: string;
-  detail: string;
+  standfirst: string;
+  body: Block[];
   image: string;
   tripSlugs: string[];
   order: number;
+  publishedAt?: string;
 }
 
 interface ActivityJson {
@@ -126,10 +138,14 @@ interface SeasonJson {
 interface CultureJson {
   slug: string;
   title: string;
+  standfirst: string;
+  /** Plain text; one paragraph. */
   body: string;
   icon: string;
   image: string;
   order: number;
+  /** Destination slugs: where to see it. */
+  destinations: string[];
 }
 
 interface GalleryJson {
@@ -157,10 +173,10 @@ export async function seedCatalogue(images: ImageMap): Promise<void> {
 
   await seedSeasons(media);
   const tripIds = await seedTrips(media);
-  const destinationIds = await seedDestinations(media);
+  const destinationIds = await seedDestinations(media, images);
   await linkTripsToDestinations(tripIds, destinationIds);
   await seedActivities(media, tripIds);
-  await seedCulture(media);
+  await seedCulture(media, destinationIds);
   await seedGallery(media);
   await seedReflections(tripIds);
 }
@@ -345,20 +361,30 @@ function seasonKeysFrom(label: string): SeasonKey[] {
 
 async function seedDestinations(
   media: (src?: string | null) => string | null,
+  images: ImageMap,
 ): Promise<Map<string, string>> {
   const ids = new Map<string, string>();
+  const rows = destinations as DestinationJson[];
 
-  for (const destination of destinations as DestinationJson[]) {
+  /* Valleys first, so every place has its parent's id to point at. */
+  for (const destination of [...rows.filter((d) => !d.parent), ...rows.filter((d) => d.parent)]) {
+    const parentId = destination.parent ? (ids.get(destination.parent) ?? null) : null;
+    const { html: body } = blocksToHtml(destination.body, images, destination.slug);
+
     const base = {
       name: destination.name,
+      parentId,
       icon: ICON[destination.icon] ?? 'DZONG',
       blurb: destination.blurb,
-      detail: destination.detail,
+      standfirst: destination.standfirst,
+      body,
       imageId: media(destination.image),
       sortOrder: destination.order,
       status: 'PUBLISHED' as const,
-      publishedAt: now,
-      metaDescription: destination.blurb,
+      publishedAt: destination.publishedAt ? new Date(destination.publishedAt) : now,
+      /* Null, so the search result follows the standfirst. A copy here would
+         read as an override on the SEO tab and pin the old words. */
+      metaDescription: null,
     };
 
     const row = await db.destination.upsert({
@@ -369,7 +395,9 @@ async function seedDestinations(
     ids.set(destination.slug, row.id);
   }
 
-  console.log(`  destinations ${destinations.length}`);
+  console.log(
+    `  destinations ${rows.filter((d) => !d.parent).length} valleys, ${rows.filter((d) => d.parent).length} places`,
+  );
   return ids;
 }
 
@@ -393,15 +421,19 @@ async function linkTripsToDestinations(
   tripIds: Map<string, string>,
   destinationIds: Map<string, string>,
 ): Promise<void> {
+  /* Valleys only. A journey's route is a line of valleys; a place inside one
+     is reached through it and has no route position of its own. */
+  const valleys = (destinations as DestinationJson[]).filter((d) => !d.parent);
+
   const byName = new Map<string, string>();
-  for (const destination of destinations as DestinationJson[]) {
+  for (const destination of valleys) {
     const id = destinationIds.get(destination.slug);
     if (id) byName.set(destination.name.toLowerCase(), id);
   }
 
   /* destinationId → the journeys that list it, for the append pass. */
   const visits = new Map<string, Set<string>>();
-  for (const destination of destinations as DestinationJson[]) {
+  for (const destination of valleys) {
     const id = destinationIds.get(destination.slug);
     if (!id) continue;
     for (const slug of destination.tripSlugs) {
@@ -461,7 +493,7 @@ async function linkTripsToDestinations(
    * order the office wants those journeys offered on that place's page, which
    * is an editorial decision and not a consequence of anybody's route.
    */
-  for (const destination of destinations as DestinationJson[]) {
+  for (const destination of valleys) {
     const destinationId = destinationIds.get(destination.slug);
     if (!destinationId) continue;
 
@@ -523,23 +555,41 @@ async function seedActivities(
   console.log(`  activities   ${activities.length}`);
 }
 
-async function seedCulture(media: (src?: string | null) => string | null): Promise<void> {
+async function seedCulture(
+  media: (src?: string | null) => string | null,
+  destinationIds: Map<string, string>,
+): Promise<void> {
   for (const article of culture as CultureJson[]) {
     const base = {
       title: article.title,
-      body: article.body,
+      standfirst: article.standfirst,
+      body: article.body ? asParagraphs(article.body) : '',
       icon: ICON[article.icon] ?? 'CHORTEN',
       imageId: media(article.image),
       sortOrder: article.order,
       status: 'PUBLISHED' as const,
       publishedAt: now,
-      metaDescription: article.body.slice(0, 155),
+      metaDescription: null,
     };
-    await db.cultureArticle.upsert({
+    const row = await db.cultureArticle.upsert({
       where: { slug: article.slug },
       create: { slug: article.slug, ...base },
       update: base,
     });
+
+    await db.cultureOnDestination.deleteMany({ where: { cultureId: row.id } });
+    const links = article.destinations
+      .map((slug) => destinationIds.get(slug))
+      .filter((id): id is string => Boolean(id));
+    if (links.length) {
+      await db.cultureOnDestination.createMany({
+        data: links.map((destinationId, index) => ({
+          cultureId: row.id,
+          destinationId,
+          sortOrder: index,
+        })),
+      });
+    }
   }
   console.log(`  culture      ${culture.length}`);
 }

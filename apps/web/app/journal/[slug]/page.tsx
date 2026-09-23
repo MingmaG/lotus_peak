@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Divider, Eyebrow } from '@/design-system'
+import { journalCategoryLabel } from '@lotuspeak/api-contracts'
 import { getContent } from '@/content'
 import { fmt } from '@/content/types'
-import { ogImage } from '@/lib/seo'
-import { Parallax, Reveal } from '@/motion'
+import { entityMetadata } from '@/lib/seo'
+import { Reveal } from '@/motion'
+import { ArticleHero } from '@/sections/article/ArticleHero'
+import { PageCard } from '@/sections/article/PageCard'
+import { CardGrid, JourneyList, RelatedBand } from '@/sections/article/Related'
 import { PostBody } from '@/sections/journal/PostBody'
-import { heroOffset } from '@/sections/shared/Section'
 import { JsonLd } from '@/seo/JsonLd'
 import { graphForPost } from '@/seo/graph'
 
@@ -25,17 +26,15 @@ export async function generateMetadata({
   const post = await getContent().posts.bySlug(slug)
   if (!post) return { title: 'Not found' }
 
-  return {
+  return entityMetadata({
+    path: post.path,
     title: post.title,
     description: post.standfirst,
-    openGraph: {
-      type: 'article',
-      title: post.title,
-      description: post.standfirst,
-      publishedTime: post.date,
-      images: ogImage(post.heroImage),
-    },
-  }
+    image: post.heroImage,
+    seo: post.seo,
+    type: 'article',
+    publishedTime: post.date,
+  })
 }
 
 export default async function JournalEntryPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -44,60 +43,35 @@ export default async function JournalEntryPage({ params }: { params: Promise<{ s
   const post = await content.posts.bySlug(slug)
   if (!post) notFound()
 
-  const more = await content.posts.list({ exclude: slug, limit: 3 })
+  const [more, trips] = await Promise.all([
+    content.posts.list({ exclude: slug, limit: 3 }),
+    post.relatedTripSlugs.length ? content.trips.list() : Promise.resolve([]),
+  ])
+  const journeys = post.relatedTripSlugs
+    .map((s) => trips.find((t) => t.slug === s))
+    .filter((t) => t !== undefined)
+  const shelf = journalCategoryLabel(post.category)
 
   return (
     <main>
       <JsonLd graph={await graphForPost(post)} />
-      <Parallax
-        src={post.heroImage}
+
+      <ArticleHero
+        image={post.heroImage}
         alt={post.heroAlt}
-        speed={0.6}
-        priority
-        style={{ height: '78svh', minHeight: 520, display: 'flex', alignItems: 'flex-end', ...heroOffset }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to top,rgba(31,29,26,.78),rgba(31,29,26,.12) 55%,rgba(31,29,26,.3))',
-          }}
-        />
-        <div
-          style={{
-            position: 'relative',
-            padding: '0 var(--gutter) var(--space-8)',
-            maxWidth: 'var(--container)',
-            margin: '0 auto',
-            width: '100%',
-            boxSizing: 'border-box',
-            color: 'var(--paper)',
-            display: 'grid',
-            gap: 24,
-          }}
-        >
-          <Reveal>
-            <Eyebrow tone="inverse">
-              {post.region} · <time dateTime={post.date}>{fmt.date(post.date)}</time>
-            </Eyebrow>
-          </Reveal>
-          <Reveal delay={240}>
-            <h1 style={{ fontSize: 'var(--text-display)', lineHeight: 1, maxWidth: '14ch' }}>{post.title}</h1>
-          </Reveal>
-          <Reveal delay={520}>
-            <p
-              style={{
-                fontSize: 'var(--text-lead)',
-                lineHeight: 'var(--leading-lead)',
-                maxWidth: 'var(--measure-narrow)',
-                color: 'rgba(255,255,255,.85)',
-              }}
-            >
-              {post.standfirst}
-            </p>
-          </Reveal>
-        </div>
-      </Parallax>
+        trail={[
+          { label: 'Journal', href: '/journal' },
+          { label: shelf, href: `/journal/category/${post.category}` },
+          { label: post.title },
+        ]}
+        eyebrow={
+          <>
+            {shelf} · <time dateTime={post.date}>{fmt.date(post.date)}</time>
+          </>
+        }
+        title={post.title}
+        standfirst={post.standfirst}
+      />
 
       <article style={{ padding: 'var(--space-9) var(--gutter) var(--space-10)' }}>
         <div style={{ maxWidth: 'var(--container-text)', margin: '0 auto' }}>
@@ -105,49 +79,66 @@ export default async function JournalEntryPage({ params }: { params: Promise<{ s
         </div>
       </article>
 
+      {post.destinations.length > 0 && (
+        <RelatedBand title="The places in this entry">
+          <CardGrid>
+            {post.destinations.map((place) => (
+              <PageCard
+                key={place.slug}
+                href={place.path}
+                image={place.image}
+                alt={place.imageAlt}
+                eyebrow="Where we go"
+                title={place.name}
+                text={place.standfirst || place.blurb}
+              />
+            ))}
+          </CardGrid>
+        </RelatedBand>
+      )}
+
+      {post.culture.length > 0 && (
+        <RelatedBand title="The culture behind it">
+          <CardGrid>
+            {post.culture.map((article) => (
+              <PageCard
+                key={article.slug}
+                href={article.path}
+                image={article.image}
+                alt={article.imageAlt}
+                eyebrow="Culture"
+                title={article.title}
+                text={article.standfirst}
+              />
+            ))}
+          </CardGrid>
+        </RelatedBand>
+      )}
+
+      {journeys.length > 0 && (
+        <RelatedBand title="Journeys that go there">
+          <Reveal>
+            <JourneyList trips={journeys} />
+          </Reveal>
+        </RelatedBand>
+      )}
+
       {more.length > 0 && (
-        <section style={{ padding: '0 var(--gutter) var(--space-10)' }}>
-          <div style={{ maxWidth: 'var(--container)', margin: '0 auto' }}>
-            <Divider variant="kera" />
-            <div style={{ marginTop: 'var(--space-8)' }}>
-              <Reveal>
-                <Eyebrow>More from the journal</Eyebrow>
-              </Reveal>
-              <ul
-                className="lp-three-col"
-                style={{
-                  listStyle: 'none',
-                  margin: 'var(--space-7) 0 0',
-                  padding: 0,
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3,minmax(0,1fr))',
-                  gap: 'var(--space-6)',
-                }}
-              >
-                {more.map((other, i) => (
-                  <Reveal key={other.slug} as="li" delay={i * 180}>
-                    <Link
-                      href={`/journal/${other.slug}`}
-                      style={{
-                        display: 'block',
-                        textDecoration: 'none',
-                        color: 'inherit',
-                        borderTop: '1px solid var(--border-gold)',
-                        paddingTop: 18,
-                      }}
-                    >
-                      <Eyebrow tone="muted">{other.region}</Eyebrow>
-                      <div style={{ marginTop: 12, fontSize: 'var(--text-h3)' }}>{other.title}</div>
-                      <p style={{ marginTop: 10, color: 'var(--text-muted)', lineHeight: 'var(--leading-body)' }}>
-                        {other.standfirst}
-                      </p>
-                    </Link>
-                  </Reveal>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
+        <RelatedBand title="More from the journal">
+          <CardGrid>
+            {more.map((other) => (
+              <PageCard
+                key={other.slug}
+                href={other.path}
+                image={other.heroImage}
+                alt={other.heroAlt}
+                eyebrow={journalCategoryLabel(other.category)}
+                title={other.title}
+                text={other.standfirst}
+              />
+            ))}
+          </CardGrid>
+        </RelatedBand>
       )}
     </main>
   )

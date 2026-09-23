@@ -369,7 +369,7 @@ function Counter({
  * who can see the description being cut off mid-word will fix it, and one
  * reading a character count will not.
  */
-function SearchPreview({
+export function SearchPreview({
   url,
   title,
   description,

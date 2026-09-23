@@ -36,14 +36,26 @@ const ALWAYS: [string, string][] = [
   ['BreadcrumbList', 'Where it sits, which is what a search result shows above the title.'],
 ];
 
-export type StructuredDataKind = 'trip' | 'post' | 'page';
+export type StructuredDataKind = 'trip' | 'post' | 'page' | 'destination' | 'culture';
 
 const ENTITY: Record<StructuredDataKind, [string, string][]> = {
   trip: [
     ['TouristTrip', 'The journey: its itinerary, what is included, and the price as an AggregateOffer.'],
     ['FAQPage', 'Only the questions this page actually shows. Answers a visitor cannot see are not described.'],
   ],
-  post: [['Article', 'The entry: when it was published, who wrote it, and its photograph.']],
+  post: [
+    [
+      'Article',
+      'The entry: when it was published, who wrote it, its photograph, and the places and culture it is about.',
+    ],
+  ],
+  destination: [
+    [
+      'TouristDestination',
+      'A valley, with its coordinates, its places as attractions, and the journal entries about it. A place inside a valley is a TouristAttraction contained in it.',
+    ],
+  ],
+  culture: [['Article', 'The piece, and the places it can be seen.']],
   page: [],
 };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Plus } from 'lucide-react';
+import { ArrowRight, Pencil, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -42,10 +42,11 @@ export interface CatalogueRow {
   [key: string]: unknown;
 }
 
-export interface CatalogueConfig<T extends CatalogueRow, TForm> {
+/** What the list half needs. Where we go and Culture use only this. */
+export interface CatalogueListConfig<T extends CatalogueRow> {
   /** `/api/destinations`. Items come from GET, order goes back on PATCH. */
   endpoint: string;
-  /** `/destinations`. The list page, and the stem of every editor address. */
+  /** `/destinations`. The list page, and the stem of every row's address. */
   basePath: string;
   /** React Query key root. */
   queryKey: string;
@@ -59,30 +60,48 @@ export interface CatalogueConfig<T extends CatalogueRow, TForm> {
   secondary?: (row: T) => React.ReactNode;
   thumbnail?: (row: T) => string | null;
 
-  /** A blank form, for Add. Null hides the Add button. */
-  blank: (() => TForm) | null;
-  toForm: (row: T) => TForm;
-  toBody: (form: TForm) => unknown;
-  renderForm: (form: TForm, set: (patch: Partial<TForm>) => void) => React.ReactNode;
+  /**
+   * Which rows this list shows. Where we go shows the valleys; a valley's
+   * places are listed on the valley's own page. Hidden rows keep their order
+   * and are left alone by a drag here.
+   */
+  show?: (row: T) => boolean;
 
+  /** Whether there is an Add button. */
+  canAdd: boolean;
   addLabel?: string;
-  editTitle: (form: TForm) => string;
   emptyTitle: string;
   emptyDescription: string;
 
   /** False where the type has a fixed membership — the four seasons. */
   reorderable?: boolean;
+
+  /**
+   * What a row does, for the label on it. "Open" where a row leads to the
+   * record's page and editing is a button there — Where we go, Culture.
+   */
+  rowAction?: 'Edit' | 'Open';
+}
+
+export interface CatalogueConfig<T extends CatalogueRow, TForm>
+  extends Omit<CatalogueListConfig<T>, 'canAdd'> {
+  /** A blank form, for Add. Null hides the Add button. */
+  blank: (() => TForm) | null;
+  toForm: (row: T) => TForm;
+  toBody: (form: TForm) => unknown;
+  renderForm: (form: TForm, set: (patch: Partial<TForm>) => void) => React.ReactNode;
+  editTitle: (form: TForm) => string;
 }
 
 /* -------------------------------------------------------------------------- */
 /*  The list                                                                   */
 /* -------------------------------------------------------------------------- */
 
-export function CatalogueList<T extends CatalogueRow, TForm>({
+export function CatalogueList<T extends CatalogueRow>({
   config,
   canWrite,
 }: {
-  config: CatalogueConfig<T, TForm>;
+  config: CatalogueListConfig<T>;
   canWrite: boolean;
 }) {
   const client = useQueryClient();
@@ -93,7 +112,8 @@ export function CatalogueList<T extends CatalogueRow, TForm>({
     queryFn: () => fetch(config.endpoint).then((response) => response.json()),
   });
 
-  const items = data?.items ?? [];
+  const all = data?.items ?? [];
+  const items = config.show ? all.filter(config.show) : all;
 
   const reorder = useMutation({
     mutationFn: (ids: string[]) => apiPatch(config.endpoint, { ids }),
@@ -111,7 +131,7 @@ export function CatalogueList<T extends CatalogueRow, TForm>({
     },
   });
 
-  const addButton = canWrite && config.blank && (
+  const addButton = canWrite && config.canAdd && (
     <Button asChild>
       <Link href={`${config.basePath}/new`}>
         <Plus className="mr-1.5 size-4" />
@@ -153,8 +173,10 @@ export function CatalogueList<T extends CatalogueRow, TForm>({
           itemKey={(row) => row.id}
           onChange={(next) => {
             /* Optimistic: the cache is rewritten first so the drag lands where
-               it was dropped, and the request follows. */
-            client.setQueryData([config.queryKey], { items: next });
+               it was dropped, and the request follows. Rows this list does
+               not show stay in the cache after the ones it does. */
+            const hidden = all.filter((row) => !next.includes(row));
+            client.setQueryData([config.queryKey], { items: [...next, ...hidden] });
             if (reorderable) reorder.mutate(next.map((row) => row.id));
           }}
           disabled={!canWrite || !reorderable}
@@ -199,8 +221,12 @@ export function CatalogueList<T extends CatalogueRow, TForm>({
 
               {canWrite && (
                 <span className="hidden shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs text-muted-foreground group-hover:border-primary/40 group-hover:text-foreground sm:inline-flex">
-                  <Pencil className="size-3.5" />
-                  Edit
+                  {config.rowAction === 'Open' ? (
+                    <ArrowRight className="size-3.5" />
+                  ) : (
+                    <Pencil className="size-3.5" />
+                  )}
+                  {config.rowAction ?? 'Edit'}
                 </span>
               )}
             </Link>
@@ -369,7 +395,9 @@ export function CatalogueScreen<T extends CatalogueRow, TForm>({
   ...config
 }: CatalogueScreenProps<T, TForm>) {
   if (editId === undefined) {
-    return <CatalogueList config={config} canWrite={canWrite} />;
+    return (
+      <CatalogueList config={{ ...config, canAdd: config.blank !== null }} canWrite={canWrite} />
+    );
   }
   return (
     <CatalogueEditor

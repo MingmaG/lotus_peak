@@ -1,8 +1,8 @@
 import { JsonLd } from '@/seo/JsonLd'
-import { graphForPage } from '@/seo/graph'
-import { Prose } from '@/components/site/Prose'
+import { graphForIndex } from '@/seo/graph'
+import Link from 'next/link'
 import type { Metadata } from 'next'
-import { Eyebrow, SiteIcon } from '@/design-system'
+import { Button, Eyebrow, SiteIcon } from '@/design-system'
 import { getContent } from '@/content'
 import { ogImage } from '@/lib/seo'
 import { IMG, altFor } from '@/lib/assets'
@@ -24,6 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   title: 'Culture',
   description:
     'Tshechu, dzongs, textiles, Jomzo and the thirteen arts, Gross National Happiness, kira and gho, archery, and what is on the table — what you will see on a journey with us, and a little of what it means.',
+  alternates: { canonical: '/culture' },
   openGraph: { images: ogImage(IMG.tshechu) },
   }
 
@@ -52,11 +53,12 @@ export default async function CulturePage() {
           sits in the trail, and who publishes it. `extra` is whatever the
           office added on the SEO tab. */}
       <JsonLd
-        graph={await graphForPage({
+        graph={await graphForIndex({
           path: '/culture',
           title: page?.seo.title ?? page?.title ?? 'Culture',
           description: page?.seo.description ?? page?.lead ?? settings.defaultSeo.description,
           crumbs: [{ name: 'Culture', path: '/culture' }],
+          items: articles.map((a) => ({ path: a.path, name: a.title })),
           extra: page?.seo.schemaJson,
         })}
       />
@@ -151,7 +153,11 @@ export default async function CulturePage() {
                 <div style={{ direction: 'ltr' }}>
                   <Reveal delay={240}>
                     <SiteIcon name={a.icon} size={40} color="var(--maroon)" />
-                    <h2 style={{ fontSize: 'var(--text-h1)', marginTop: 20, maxWidth: '14ch' }}>{a.title}</h2>
+                    <h2 style={{ fontSize: 'var(--text-h1)', marginTop: 20, maxWidth: '14ch' }}>
+                      <Link href={a.path} style={{ color: 'inherit', textDecoration: 'none' }}>
+                        {a.title}
+                      </Link>
+                    </h2>
                   </Reveal>
                   <Reveal delay={480}>
                     <p
@@ -163,8 +169,15 @@ export default async function CulturePage() {
                         lineHeight: 'var(--leading-lead)',
                       }}
                     >
-                      <Prose html={a.body} compact />
+                      {a.standfirst}
                     </p>
+                  </Reveal>
+                  <Reveal delay={640}>
+                    <div style={{ marginTop: 'var(--space-6)' }}>
+                      <Button href={a.path} variant="outline" size="sm">
+                        About {a.title}
+                      </Button>
+                    </div>
                   </Reveal>
                 </div>
               </article>

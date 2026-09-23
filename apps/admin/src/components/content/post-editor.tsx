@@ -6,6 +6,7 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { RichTextEditor } from '@/components/editor/rich-text-editor';
+import { LinkPicker, type LinkOption } from '@/components/content/link-picker';
 import { SeoPanel, type SeoValue } from '@/components/content/seo-panel';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import {
@@ -32,13 +33,15 @@ export interface PostFormData {
   slug: string;
   title: string;
   standfirst: string;
-  region: string;
+  category: 'JOURNEYS' | 'TRAVEL_GUIDES' | 'EXPERIENCES' | 'STORIES';
   body: string;
   hero: PickedMedia | null;
   ogImage: PickedMedia | null;
   authorId: string | null;
   tags: string;
   relatedTripIds: string[];
+  destinationIds: string[];
+  cultureIds: string[];
   featured: boolean;
   status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
   publishedAt: string | null;
@@ -61,16 +64,39 @@ const TABS = [
   { value: 'seo', label: 'SEO' },
 ];
 
+/**
+ * The four shelves, with what belongs on each.
+ *
+ * Spelt out beside the select because the one mistake this structure exists
+ * to prevent is a journal entry that is really a place: "Punakha Dzong" is a
+ * page under Where we go, and "The morning we crossed to Punakha Dzong" is a
+ * story about it.
+ */
+const CATEGORIES: { value: PostFormData['category']; label: string; hint: string }[] = [
+  { value: 'JOURNEYS', label: 'Journeys', hint: 'A travel story or an itinerary, told after the fact.' },
+  {
+    value: 'TRAVEL_GUIDES',
+    label: 'Travel guides',
+    hint: 'Practical and search-shaped: permits, seasons, what it costs, what to bring.',
+  },
+  { value: 'EXPERIENCES', label: 'Experiences', hint: 'Something a visitor can do, and what it is actually like.' },
+  { value: 'STORIES', label: 'Stories', hint: 'People, places and perspectives.' },
+];
+
 export function PostEditor({
   initial,
   authors,
   trips,
+  places,
+  culture,
   siteUrl,
   canPublish,
 }: {
   initial: PostFormData;
   authors: { id: string; name: string }[];
   trips: { id: string; title: string }[];
+  places: LinkOption[];
+  culture: LinkOption[];
   siteUrl: string;
   canPublish: boolean;
 }) {
@@ -93,7 +119,7 @@ export function PostEditor({
         title: form.title,
         slug: form.slug,
         standfirst: form.standfirst,
-        region: form.region,
+        category: form.category,
         /* Sent as the editor wrote it. The derived `src` inside each figure is
            taken out server-side before the column is written — the column
            stores the media id, not a copy of the URL. */
@@ -102,6 +128,8 @@ export function PostEditor({
         authorId: form.authorId,
         tags: form.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
         relatedTripIds: form.relatedTripIds,
+        destinationIds: form.destinationIds,
+        cultureIds: form.cultureIds,
         featured: form.featured,
         status: form.status,
         publishedAt: form.publishedAt,
@@ -132,7 +160,8 @@ export function PostEditor({
         toast.success('Saved');
       }
 
-      if (!initial.id) router.replace(`/journal/${result.post.id}`);
+      if (!initial.id) router.replace(`/journal/${result.post.id}/edit`);
+      else router.refresh();
     },
     onError: (error: Error) => {
       if (error instanceof ApiClientError && error.fields) {
@@ -147,8 +176,8 @@ export function PostEditor({
 
   return (
     <EditorShell
-      backHref="/journal"
-      backLabel="Journal"
+      backHref={form.id ? `/journal/${form.id}` : '/journal'}
+      backLabel={form.id ? 'Back to the entry' : 'Journal'}
       title={form.title}
       subtitle={form.slug ? `/journal/${form.slug}` : 'Not saved yet'}
       /* Words, not `form.body.length`. That counted blocks when the body was
@@ -210,8 +239,25 @@ export function PostEditor({
               />
             </Field>
 
-            <Field label="Where it is about" hint="“Bumthang”, “Paro”.">
-              <Input value={form.region} onChange={(event) => set('region', event.target.value)} />
+            <Field
+              label="Shelf"
+              hint={`${CATEGORIES.find((c) => c.value === form.category)?.hint ?? ''} Where it is about is on the Links tab.`}
+            >
+              <Select
+                value={form.category}
+                onValueChange={(value) => set('category', value as PostFormData['category'])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
 
             <Field label="Who wrote it">
@@ -285,6 +331,30 @@ export function PostEditor({
           </Section>
 
           <Section
+            title="Places it is about"
+            description="Valleys and the places inside them. The entry is listed on each of those pages, and links to them. Write about the place here; describe it on its own page."
+          >
+            <LinkPicker
+              options={places}
+              value={form.destinationIds}
+              onChange={(ids) => set('destinationIds', ids)}
+              empty="There are no places under Where we go yet."
+            />
+          </Section>
+
+          <Section
+            title="Culture it explains"
+            description="The entry is listed on each culture piece's page, and links to it."
+          >
+            <LinkPicker
+              options={culture}
+              value={form.cultureIds}
+              onChange={(ids) => set('cultureIds', ids)}
+              empty="There are no culture pieces yet."
+            />
+          </Section>
+
+          <Section
             title="Journeys this entry is about"
             description="Puts a link to the entry on those journeys, and a link to them at the foot of this one."
           >
@@ -312,7 +382,7 @@ export function PostEditor({
 
       {tab === 'seo' && (
         <SeoPanel
-            kind="post"
+          kind="post"
           value={form.seo}
           onChange={(patch) => set('seo', { ...form.seo, ...patch })}
           inherited={{ title: form.title, description: form.standfirst }}

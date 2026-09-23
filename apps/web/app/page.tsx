@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Button, Divider, Eyebrow, Reflection, SiteIcon, TrekCard } from '@/design-system'
 import { getContent } from '@/content'
 import { pointsFrom } from '@/content/page-copy'
@@ -152,7 +153,7 @@ export default async function HomePage() {
             borderTop: '1px solid rgba(247,243,236,.15)',
           }}
         >
-          {destinations.map((d, i) => (
+          {destinations.filter((d) => d.parentSlug === null).map((d, i) => (
             <Reveal
               key={d.slug}
               delay={i * 180}
@@ -166,7 +167,11 @@ export default async function HomePage() {
             >
               <SiteIcon name={d.icon} size={88} framed color="var(--saffron-2)" ring="rgba(185,151,91,.55)" />
               <div>
-                <h3 style={{ fontSize: 'var(--text-h3)' }}>{d.name}</h3>
+                <h3 style={{ fontSize: 'var(--text-h3)' }}>
+                  <Link href={d.path} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    {d.name}
+                  </Link>
+                </h3>
                 <p style={{ marginTop: 8, color: 'rgba(247,243,236,.7)', fontSize: 'var(--text-small)' }}>
                   {d.blurb}
                 </p>

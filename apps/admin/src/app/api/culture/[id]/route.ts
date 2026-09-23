@@ -4,7 +4,9 @@ import { db } from '@/lib/db';
 import { notFound, route } from '@/lib/api/handler';
 import { diff } from '@/server/services/activity';
 import { moveSlug, publishing, seoColumns } from '@/server/services/catalogue';
+import { culturePath } from '@/server/services/content-paths';
 import { revalidateFor } from '@/server/services/revalidate';
+import { stripRichTextMedia } from '@/server/schema/rich-text';
 import { cultureSchema } from '@/server/validators/catalogue';
 
 const patchSchema = cultureSchema.partial();
@@ -30,7 +32,8 @@ export const PATCH = route<z.infer<typeof patchSchema>, { id: string }>({
       data: {
         ...(moved ? { slug: moved.slug, slugHistory: moved.slugHistory } : {}),
         title: body.title,
-        body: body.body,
+        standfirst: body.standfirst,
+        ...(body.body !== undefined ? { body: stripRichTextMedia(body.body) } : {}),
         icon: body.icon,
         imageId: body.imageId === undefined ? undefined : body.imageId,
         sortOrder: body.sortOrder,
@@ -40,6 +43,17 @@ export const PATCH = route<z.infer<typeof patchSchema>, { id: string }>({
           currentPublishedAt: before.publishedAt,
         }),
         ...seoColumns(body.seo),
+        ...(body.destinationIds
+          ? {
+              destinations: {
+                deleteMany: {},
+                create: body.destinationIds.map((destinationId, index) => ({
+                  destinationId,
+                  sortOrder: index,
+                })),
+              },
+            }
+          : {}),
       },
     });
 
@@ -52,7 +66,10 @@ export const PATCH = route<z.infer<typeof patchSchema>, { id: string }>({
       before: changes.before as never,
       after: changes.after as never,
     });
-    return { item: row, revalidated: await revalidateFor('culture') };
+
+    const paths = [culturePath(row.slug)];
+    if (before.slug !== row.slug) paths.push(culturePath(before.slug));
+    return { item: row, path: culturePath(row.slug), revalidated: await revalidateFor('culture', paths) };
   },
 });
 
@@ -66,7 +83,7 @@ export const DELETE = route<undefined, { id: string }>({
       data: { deletedAt: new Date(), status: 'ARCHIVED' },
     });
     audit({ action: 'DELETE', entity: 'culture', entityId: row.id, entityLabel: row.title });
-    void revalidateFor('culture');
+    void revalidateFor('culture', [culturePath(row.slug)]);
     return null;
   },
 });

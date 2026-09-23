@@ -3,9 +3,13 @@ import type { ApiEnquiryInput } from '@lotuspeak/api-contracts'
 import type {
   Activity,
   CultureArticle,
+  CulturePage,
   Destination,
+  DestinationPage,
   GalleryImage,
+  JournalCategory,
   Post,
+  PostPage,
   Reflection,
   Person,
   Season,
@@ -88,20 +92,25 @@ export interface ContentRepository {
     slugs(): Promise<string[]>
   }
   posts: {
-    list(opts?: { limit?: number; exclude?: string }): Promise<Post[]>
-    bySlug(slug: string): Promise<Post | null>
+    list(opts?: { limit?: number; exclude?: string; category?: JournalCategory }): Promise<Post[]>
+    bySlug(slug: string): Promise<PostPage | null>
     slugs(): Promise<string[]>
   }
+  /**
+   * Where we go. `list` is every valley and every place, valleys first;
+   * `bySlug` finds either — destination slugs are unique across both, and the
+   * page checks the valley in its URL against the record's.
+   */
   destinations: {
     list(): Promise<Destination[]>
-    bySlug(slug: string): Promise<Destination | null>
+    bySlug(slug: string): Promise<DestinationPage | null>
   }
   activities: { list(): Promise<Activity[]> }
   gallery: { list(opts?: { limit?: number }): Promise<GalleryImage[]> }
   seasons: { list(): Promise<Season[]> }
   culture: {
     list(): Promise<CultureArticle[]>
-    bySlug(slug: string): Promise<CultureArticle | null>
+    bySlug(slug: string): Promise<CulturePage | null>
   }
   reflections: {
     list(opts?: { tripSlug?: string; featured?: boolean; limit?: number }): Promise<Reflection[]>

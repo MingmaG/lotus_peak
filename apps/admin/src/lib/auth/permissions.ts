@@ -167,7 +167,7 @@ export const RESOURCE_META: Record<Resource, ResourceMeta> = {
 
   trips: { label: 'Journeys', group: 'Journeys', publishable: true },
   departures: { label: 'Departures', group: 'Journeys', hint: 'Fixed dates and their places left' },
-  destinations: { label: 'Destinations', group: 'Journeys', publishable: true },
+  destinations: { label: 'Where we go', group: 'The website', publishable: true },
   activities: { label: 'Activities', group: 'Journeys', publishable: true },
   seasons: { label: 'Seasons', group: 'Journeys' },
   countries: { label: 'Countries', group: 'Journeys' },

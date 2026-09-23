@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
 
-import { PostEditor } from '@/components/content/post-editor';
-import { can } from '@/lib/auth/permissions';
-import { requirePermission } from '@/lib/auth/session';
+import { ContentPreview } from '@/components/content/content-preview';
+import { hasPermission, requirePermission } from '@/lib/auth/session';
 import { db } from '@/lib/db';
-import { postFormData } from '@/server/services/post-form';
+import { siteUrl } from '@/server/services/content-editor';
+import { postPreviewData } from '@/server/services/post-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,34 +14,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: post?.title ?? 'Entry' };
 }
 
-export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requirePermission('journal.read');
+export default async function PostPreviewPage({ params }: { params: Promise<{ id: string }> }) {
+  await requirePermission('journal.read');
   const { id } = await params;
-
-  const [post, authors, trips, company] = await Promise.all([
-    postFormData(id),
-    db.user.findMany({
-      where: { isActive: true, deletedAt: null },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true },
-    }),
-    db.trip.findMany({
-      where: { deletedAt: null },
-      orderBy: { sortOrder: 'asc' },
-      select: { id: true, title: true },
-    }),
-    db.companyProfile.findFirst({ select: { siteUrl: true } }),
+  const [data, url, canEdit] = await Promise.all([
+    postPreviewData(id),
+    siteUrl(),
+    hasPermission('journal.write'),
   ]);
-
-  if (!post) notFound();
-
-  return (
-    <PostEditor
-      initial={post}
-      authors={authors}
-      trips={trips}
-      siteUrl={company?.siteUrl ?? 'https://lotuspeak.org'}
-      canPublish={can(user.permissions, 'journal.publish')}
-    />
-  );
+  if (!data) notFound();
+  return <ContentPreview data={data} siteUrl={url} canEdit={canEdit} />;
 }

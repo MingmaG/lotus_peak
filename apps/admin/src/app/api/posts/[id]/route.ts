@@ -74,7 +74,7 @@ export const PATCH = route<PostPatch, { id: string }>({
         slugHistory,
         title: body.title,
         standfirst: body.standfirst,
-        region: body.region,
+        category: body.category,
         /* `!== undefined`, not truthiness: an entry whose body has been
            emptied on purpose sends `''`, and a falsy check would quietly
            decline to save the deletion. */
@@ -96,6 +96,25 @@ export const PATCH = route<PostPatch, { id: string }>({
               tripLinks: {
                 deleteMany: {},
                 create: body.relatedTripIds.map((tripId, index) => ({ tripId, sortOrder: index })),
+              },
+            }
+          : {}),
+        ...(body.destinationIds
+          ? {
+              destinations: {
+                deleteMany: {},
+                create: body.destinationIds.map((destinationId, index) => ({
+                  destinationId,
+                  sortOrder: index,
+                })),
+              },
+            }
+          : {}),
+        ...(body.cultureIds
+          ? {
+              culture: {
+                deleteMany: {},
+                create: body.cultureIds.map((cultureId, index) => ({ cultureId, sortOrder: index })),
               },
             }
           : {}),

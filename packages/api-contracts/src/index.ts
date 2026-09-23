@@ -505,18 +505,126 @@ export interface ApiTripSummary {
 /*  The rest of the catalogue                                                  */
 /* -------------------------------------------------------------------------- */
 
-export interface ApiDestination {
+/* -------------------------------------------------------------------------- */
+/*  Where we go, Culture, Journal                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The three sections, and the one rule between them: nothing appears in two.
+ *
+ * - **Where we go** answers *where can I go?* A valley — Paro — or a place
+ *   inside one — Taktsang. One type at two scales; `parentSlug` says which.
+ * - **Culture** answers *what makes Bhutan Bhutan?* Tshechu, dzongs, the
+ *   thirteen arts. Not a place: a dzong in general is culture, Punakha Dzong
+ *   is a destination.
+ * - **The journal** answers *what should I read?* Dated editorial on one of
+ *   four shelves. An entry can be *about* Paro or about dzongs; it links to
+ *   those pages rather than describing them again.
+ *
+ * Every record carries its `path`, computed by the panel. A place's URL
+ * depends on its valley's slug, and the website working that out a second
+ * time is a second place for `/destinations/paro/taktsang` to be spelt.
+ */
+
+/** Just enough to link to a page: a breadcrumb, a chip, an entry's "about". */
+export interface ApiPageRef {
+  slug: string;
+  title: string;
+  path: string;
+}
+
+/** A valley or a place, as a card draws it. */
+export interface ApiDestinationSummary {
   slug: string;
   name: string;
+  path: string;
+  /** Null for a valley. A place names the valley it is in. */
+  parentSlug: string | null;
   icon: SiteIconName;
+  /** One line. "Taktsang, Kichu and Dungtse Lhakhang". */
   blurb: string;
-  detail: string;
+  /** The sentence under the title. */
+  standfirst: string;
   image: ApiImage | null;
+  /** Journeys offered there, in the order the destination offers them. */
   tripSlugs: string[];
   altitudeMetres: number | null;
   latitude: number | null;
   longitude: number | null;
+  /** A valley's places, in order. Always empty on a place. */
+  places: ApiPageRef[];
+}
+
+/** A destination's own page. */
+export interface ApiDestination extends ApiDestinationSummary {
+  /** Rich text. Sanitised by the website before it is rendered. */
+  body: string;
+  parent: ApiPageRef | null;
+  /** The places inside a valley, as cards. Empty on a place. */
+  placeCards: ApiDestinationSummary[];
+  /** The culture a traveller sees here. */
+  culture: ApiCultureSummary[];
+  /** Journal entries about this place. */
+  posts: ApiPostSummary[];
   seo: ApiSeo;
+}
+
+/** A culture piece, as a card draws it. */
+export interface ApiCultureSummary {
+  slug: string;
+  title: string;
+  path: string;
+  standfirst: string;
+  icon: SiteIconName;
+  image: ApiImage | null;
+}
+
+/** A culture piece's own page. */
+export interface ApiCultureArticle extends ApiCultureSummary {
+  /** Rich text. Sanitised by the website before it is rendered. */
+  body: string;
+  /** Where to see it. */
+  destinations: ApiDestinationSummary[];
+  /** Journal entries that explain more of it. */
+  posts: ApiPostSummary[];
+  seo: ApiSeo;
+}
+
+/**
+ * The four shelves of the journal, in the order the tabs show them.
+ *
+ * Keys are URL segments — `/journal/category/travel-guides` — and the labels
+ * are the tab names. They live here rather than in a row because a fifth shelf
+ * is a design decision, not something added on a Tuesday, and because both
+ * apps have to call them the same thing.
+ */
+export const JOURNAL_CATEGORIES = [
+  {
+    key: 'journeys',
+    label: 'Journeys',
+    description: 'Travel stories and itineraries, told after the fact.',
+  },
+  {
+    key: 'travel-guides',
+    label: 'Travel guides',
+    description: 'The practical side: permits, seasons, what it costs and what to bring.',
+  },
+  {
+    key: 'experiences',
+    label: 'Experiences',
+    description: 'Things to do in Bhutan, and what they are actually like.',
+  },
+  {
+    key: 'stories',
+    label: 'Stories',
+    description: 'People, places and perspectives.',
+  },
+] as const;
+
+export type JournalCategory = (typeof JOURNAL_CATEGORIES)[number]['key'];
+
+export function journalCategoryLabel(key: JournalCategory): string {
+  return JOURNAL_CATEGORIES.find((category) => category.key === key)?.label ?? key;
 }
 
 export interface ApiActivity {
@@ -538,15 +646,6 @@ export interface ApiSeason {
   summary: string;
   detail: string;
   image: ApiImage | null;
-}
-
-export interface ApiCultureArticle {
-  slug: string;
-  title: string;
-  body: string;
-  icon: SiteIconName;
-  image: ApiImage | null;
-  seo: ApiSeo;
 }
 
 export interface ApiGalleryImage {
@@ -602,13 +701,16 @@ export interface ApiPost {
   standfirst: string;
   /** ISO date. Sorting and `<time dateTime>` both read this. */
   date: string;
-  region: string;
+  category: JournalCategory;
   heroImage: ApiImage | null;
   /** Rich text. Sanitised by the website before it is rendered. */
   body: string;
   author: { name: string; role: string | null; avatar: ApiImage | null } | null;
   tags: string[];
   relatedTripSlugs: string[];
+  /** The places it is about, and the culture it explains. Links, not copies. */
+  destinations: ApiDestinationSummary[];
+  culture: ApiCultureSummary[];
   /** Minutes, computed by the admin so both apps say the same number. */
   readingMinutes: number;
   seo: ApiSeo;
@@ -617,9 +719,12 @@ export interface ApiPost {
 export interface ApiPostSummary {
   slug: string;
   title: string;
+  path: string;
   standfirst: string;
   date: string;
-  region: string;
+  category: JournalCategory;
+  /** The places it is about, for the line above the title. */
+  places: ApiPageRef[];
   heroImage: ApiImage | null;
   readingMinutes: number;
 }
