@@ -120,6 +120,7 @@ export const storedPageSectionSchema = z.discriminatedUnion('kind', [
   }),
   z.object({
     kind: z.literal('trips'),
+    eyebrow: z.string().max(80).nullable().default(null),
     title: z.string().max(200).nullable().default(null),
     lead: z.string().max(600).nullable().default(null),
     /* Empty means the current catalogue, in its own order. */

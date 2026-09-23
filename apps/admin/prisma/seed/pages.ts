@@ -26,6 +26,7 @@ interface PageJson {
   title: string;
   eyebrow: string | null;
   lead: string | null;
+  note?: string | null;
   heroSrc: string | null;
   sections: PageSectionJson[];
   isSystem: boolean;
@@ -62,6 +63,7 @@ export async function seedPages(images: ImageMap): Promise<void> {
       title: page.title,
       eyebrow: page.eyebrow,
       lead: page.lead,
+      note: page.note ?? null,
       sections: storedPageSectionsSchema.parse(sections),
       heroId: page.heroSrc ? (images.get(page.heroSrc) ?? null) : null,
       isSystem: page.isSystem,

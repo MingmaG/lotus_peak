@@ -284,6 +284,11 @@ export interface ApiSite {
     /** Which parts draw. Each is also left out when it has nothing in it. */
     show: { links: boolean; address: boolean; contacts: boolean; socials: boolean };
   };
+  /**
+   * The bands at the foot of every journey page: a heading each, and the words
+   * on the link to that whole section. An empty `more` draws no link.
+   */
+  journeyBands: Record<'places' | 'culture' | 'journal' | 'related', { title: string; more: string }>;
   /** "Personally, within two days". Shown beside the enquiry form. */
   replyPromise: string;
   /** The monastery pledge the About and home pages state. */
@@ -826,6 +831,7 @@ export type ApiPageSection =
     }
   | {
       kind: 'trips';
+      eyebrow: string | null;
       title: string | null;
       lead: string | null;
       tripSlugs: string[];
@@ -852,6 +858,8 @@ export interface ApiPage {
   title: string;
   eyebrow: string | null;
   lead: string | null;
+  /** A quiet closing line on a reference page. "Last revised for the 2026 season." */
+  note: string | null;
   heroImage: ApiImage | null;
   sections: ApiPageSection[];
   seo: ApiSeo;

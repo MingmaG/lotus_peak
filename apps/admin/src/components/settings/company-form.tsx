@@ -67,6 +67,14 @@ export interface CompanyFormValue {
   footerShowAddress: boolean;
   footerShowContacts: boolean;
   footerShowSocials: boolean;
+  journeyPlacesTitle: string;
+  journeyPlacesMore: string;
+  journeyCultureTitle: string;
+  journeyCultureMore: string;
+  journeyJournalTitle: string;
+  journeyJournalMore: string;
+  journeyRelatedTitle: string;
+  journeyRelatedMore: string;
   replyPromise: string;
   pledgePercent: number | null;
   pledgeBeneficiary: string | null;
@@ -189,6 +197,19 @@ const FOOTER_PARTS: {
     hint: 'The public ways to reach us, from “Getting in touch”.',
   },
   { key: 'footerShowSocials', label: 'Social icons', hint: 'The active accounts on “Social”.' },
+];
+
+/** The four bands at the foot of a journey page, and where each one's link goes. */
+const JOURNEY_BANDS: {
+  label: string;
+  href: string;
+  title: 'journeyPlacesTitle' | 'journeyCultureTitle' | 'journeyJournalTitle' | 'journeyRelatedTitle';
+  more: 'journeyPlacesMore' | 'journeyCultureMore' | 'journeyJournalMore' | 'journeyRelatedMore';
+}[] = [
+  { label: 'Places', href: '/destinations', title: 'journeyPlacesTitle', more: 'journeyPlacesMore' },
+  { label: 'Culture', href: '/culture', title: 'journeyCultureTitle', more: 'journeyCultureMore' },
+  { label: 'Journal', href: '/journal', title: 'journeyJournalTitle', more: 'journeyJournalMore' },
+  { label: 'Other journeys', href: '/trips', title: 'journeyRelatedTitle', more: 'journeyRelatedMore' },
 ];
 
 const DAYS = [
@@ -872,6 +893,28 @@ export function CompanyForm({ initial }: { initial: CompanyFormValue }) {
                   />
                 </Field>
               </div>
+            </Section>
+
+            <Section
+              title="At the foot of a journey"
+              description="Every journey page ends with up to four bands. Each has a heading, and a link under it to the whole section. Leave a link's words empty to show no link. Which bands a journey shows is chosen on the journey itself."
+            >
+              {JOURNEY_BANDS.map((band) => (
+                <div key={band.title} className="grid gap-4 sm:grid-cols-2">
+                  <Field label={`${band.label}: heading`}>
+                    <Input
+                      value={form[band.title]}
+                      onChange={(event) => set(band.title, event.target.value)}
+                    />
+                  </Field>
+                  <Field label={`${band.label}: link`} hint={`Goes to ${band.href}.`}>
+                    <Input
+                      value={form[band.more]}
+                      onChange={(event) => set(band.more, event.target.value)}
+                    />
+                  </Field>
+                </div>
+              ))}
             </Section>
 
             <Section title="What the site promises">

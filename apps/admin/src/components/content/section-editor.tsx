@@ -90,7 +90,7 @@ export type PageSection =
       items: { media: PickedMedia; ratio: string | null; width: string | null }[];
     }
   | { key: string; kind: 'reflections'; title: string | null; reflectionIds: string[] }
-  | { key: string; kind: 'trips'; title: string | null; lead: string | null; tripSlugs: string[] }
+  | { key: string; kind: 'trips'; eyebrow: string | null; title: string | null; lead: string | null; tripSlugs: string[] }
   | {
       key: string;
       kind: 'cta';
@@ -171,7 +171,7 @@ export function SectionEditor({
       figure: { key, kind: 'figure', media: null, caption: null, width: 'inset' },
       gallery: { key, kind: 'gallery', title: null, items: [] },
       reflections: { key, kind: 'reflections', title: null, reflectionIds: [] },
-      trips: { key, kind: 'trips', title: null, lead: null, tripSlugs: [] },
+      trips: { key, kind: 'trips', eyebrow: null, title: null, lead: null, tripSlugs: [] },
       people: { key, kind: 'people', title: null, lead: null, personIds: [] },
       cta: { key, kind: 'cta', title: '', lead: null, label: '', href: '/contact', band: true },
     };
@@ -551,6 +551,12 @@ export function SectionEditor({
 
             {section.kind === 'trips' && (
               <>
+                <Input
+                  value={section.eyebrow ?? ''}
+                  onChange={(event) => patch(index, { eyebrow: event.target.value || null })}
+                  placeholder="Eyebrow, the small line above the heading (optional)"
+                  className="h-8 text-sm"
+                />
                 <Input
                   value={section.title ?? ''}
                   onChange={(event) => patch(index, { title: event.target.value || null })}

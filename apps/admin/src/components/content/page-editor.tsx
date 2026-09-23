@@ -21,6 +21,7 @@ export interface PageFormData {
   title: string;
   eyebrow: string;
   lead: string;
+  note: string;
   sections: PageSection[];
   hero: PickedMedia | null;
   ogImage: PickedMedia | null;
@@ -70,6 +71,7 @@ export function PageEditor({
         path: form.path,
         eyebrow: form.eyebrow || null,
         lead: form.lead || null,
+        note: form.note || null,
         /* Sections lose their editing key and their photographs become ids. */
         sections: form.sections
           .map((section) => {
@@ -189,6 +191,13 @@ export function PageEditor({
                 rows={3}
                 onChange={(event) => set('lead', event.target.value)}
               />
+            </Field>
+
+            <Field
+              label="Closing note"
+              hint="A quiet line at the foot of a reference page, such as “Last revised for the 2026 season.” Terms and Travellers’ information show it; other pages do not."
+            >
+              <Input value={form.note} onChange={(event) => set('note', event.target.value)} />
             </Field>
 
             <label className="flex items-start gap-2 text-sm">
