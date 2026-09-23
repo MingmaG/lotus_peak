@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 import { ItineraryEditor } from './itinerary-editor';
 import { TripGalleryEditor } from './trip-gallery-editor';
+import { OrderedPicker, TripPageSections, type TripSectionsForm } from './trip-page-sections';
 import { SeoPanel, type SeoValue } from '@/components/content/seo-panel';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import {
@@ -84,6 +85,9 @@ export interface TripFormData {
   destinationIds: string[];
   offeredByDestinationIds: string[];
   relatedTripIds: string[];
+  cultureIds: string[];
+  postIds: string[];
+  sections: TripSectionsForm;
   featured: boolean;
   status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
   seo: SeoValue;
@@ -144,6 +148,8 @@ export interface TripEditorProps {
   initial: TripFormData;
   destinations: { id: string; name: string }[];
   otherTrips: { id: string; title: string }[];
+  culture: { id: string; title: string }[];
+  posts: { id: string; title: string; published: boolean }[];
   siteUrl: string;
   canPublish: boolean;
 }
@@ -163,6 +169,8 @@ export function TripEditor({
   initial,
   destinations,
   otherTrips,
+  culture,
+  posts,
   siteUrl,
   canPublish,
 }: TripEditorProps) {
@@ -245,6 +253,13 @@ export function TripEditor({
         destinationIds: form.destinationIds,
         offeredByDestinationIds: form.offeredByDestinationIds,
         relatedTripIds: form.relatedTripIds,
+        cultureIds: form.cultureIds,
+        postIds: form.postIds,
+        showGallery: form.sections.gallery,
+        showDestinations: form.sections.destinations,
+        showCulture: form.sections.culture,
+        showJournal: form.sections.journal,
+        showRelated: form.sections.related,
         featured: form.featured,
         status: form.status,
         seo: { ...form.seo, ogImageId: form.ogImage?.id ?? null },
@@ -1213,11 +1228,41 @@ export function TripEditor({
             </p>
           </Section>
 
+          <TripPageSections value={form.sections} onChange={(next) => set('sections', next)} />
+
+          <OrderedPicker
+            title="Culture to offer"
+            description="Shown near the foot of this page, in the order you tick them. Left empty, the site offers what is linked to the places on the route."
+            options={culture.map((article) => ({ id: article.id, label: article.title }))}
+            value={form.cultureIds}
+            onChange={(next) => set('cultureIds', next)}
+            disabled={!form.sections.culture}
+            empty="There are no culture pieces yet."
+          />
+
+          <OrderedPicker
+            title="Journal entries to offer"
+            description="The same link as an entry's own Journeys field — ticking one here ticks this journey there. Shown newest first. Left empty, the site offers the newest entries about the route."
+            options={posts.map((post) => ({
+              id: post.id,
+              label: post.title,
+              detail: post.published ? undefined : 'not published',
+            }))}
+            value={form.postIds}
+            onChange={(next) => set('postIds', next)}
+            disabled={!form.sections.journal}
+            empty="There are no journal entries yet."
+          />
+
           <Section
             title="Other journeys to offer"
-            description="Shown at the foot of this page. Left empty, the site offers the next few in catalogue order."
+            description={
+              form.sections.related
+                ? 'Shown at the foot of this page. Left empty, the site offers the next few in catalogue order.'
+                : 'Switched off above, so nothing here shows.'
+            }
           >
-            <div className="space-y-2">
+            <div className={cn('space-y-2', !form.sections.related && 'opacity-60')}>
               {otherTrips.map((trip) => (
                 <label
                   key={trip.id}

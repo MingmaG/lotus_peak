@@ -699,6 +699,26 @@ model Trip {
   relatedTo    TripRelated[]       @relation("RelatedTarget")
   postLinks    PostOnTrip[]
   pageLinks    PageOnTrip[]
+  cultureLinks CultureOnTrip[]
+
+  /// Which of the optional bands the journey page draws.
+  ///
+  /// Columns rather than a Json list of section names: there are five, the
+  /// design fixes their order, and a boolean cannot name a section the page
+  /// has no styles for. Each defaults to on — a band with nothing in it draws
+  /// nothing anyway, so "on" only ever means "show it when there is something
+  /// to show".
+  showGallery      Boolean @default(true)
+  /// The places on the route, as cards.
+  showDestinations Boolean @default(true)
+  /// The culture seen on the way — chosen in `cultureLinks`, or else what is
+  /// linked to the places on the route.
+  showCulture      Boolean @default(true)
+  /// Journal entries — the ones linked in `postLinks`, or else entries about
+  /// the places on the route.
+  showJournal      Boolean @default(true)
+  /// Other journeys — `relatedFrom`, or else the next few in catalogue order.
+  showRelated      Boolean @default(true)
 
   featured     Boolean       @default(false)
   status       ContentStatus @default(DRAFT)
@@ -1184,6 +1204,7 @@ model CultureArticle {
 
   destinations CultureOnDestination[]
   posts        PostOnCulture[]
+  trips        CultureOnTrip[]
 
   imageId String?
   image   Media?  @relation("CultureImage", fields: [imageId], references: [id], onDelete: SetNull)
@@ -1449,6 +1470,21 @@ model CultureOnDestination {
   @@id([cultureId, destinationId])
   @@index([destinationId])
   @@map("culture_on_destinations")
+}
+
+/// A piece of culture and a journey that shows it — tshechu and the festival
+/// journey. Edited from the journey, where the office chooses what its page
+/// offers; a journey with none chosen offers what is linked to its route.
+model CultureOnTrip {
+  cultureId String
+  culture   CultureArticle @relation(fields: [cultureId], references: [id], onDelete: Cascade)
+  tripId    String
+  trip      Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  sortOrder Int            @default(0)
+
+  @@id([cultureId, tripId])
+  @@index([tripId])
+  @@map("culture_on_trips")
 }
 
 // =============================================================================

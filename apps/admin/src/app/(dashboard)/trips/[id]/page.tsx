@@ -4,7 +4,7 @@ import { TripEditor } from '@/components/treks/trip-editor';
 import { can } from '@/lib/auth/permissions';
 import { requirePermission } from '@/lib/auth/session';
 import { db } from '@/lib/db';
-import { tripFormData } from '@/server/services/trip-form';
+import { tripFormData, tripLinkOptions } from '@/server/services/trip-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
   const user = await requirePermission('trips.read');
   const { id } = await params;
 
-  const [trip, destinations, otherTrips, company] = await Promise.all([
+  const [trip, destinations, otherTrips, { culture, posts }, company] = await Promise.all([
     tripFormData(id),
     db.destination.findMany({
       where: { deletedAt: null },
@@ -30,6 +30,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
       orderBy: { sortOrder: 'asc' },
       select: { id: true, title: true },
     }),
+    tripLinkOptions(),
     db.companyProfile.findFirst({ select: { siteUrl: true } }),
   ]);
 
@@ -40,6 +41,8 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
       initial={trip}
       destinations={destinations}
       otherTrips={otherTrips}
+      culture={culture}
+      posts={posts}
       siteUrl={company?.siteUrl ?? 'https://lotuspeak.org'}
       canPublish={can(user.permissions, 'trips.publish')}
     />

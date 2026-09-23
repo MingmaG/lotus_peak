@@ -31,6 +31,7 @@ import type {
   Prisma,
   SeasonKey,
   SiteIcon,
+  Trip,
   TripType,
 } from '@prisma/client';
 
@@ -400,10 +401,7 @@ const TRIP_INCLUDE = {
     where: { isPublished: true, startDate: { gte: new Date() } },
     orderBy: { startDate: 'asc' },
   },
-  relatedFrom: {
-    orderBy: { sortOrder: 'asc' },
-    include: { target: { select: { slug: true } } },
-  },
+  relatedFrom: { orderBy: { sortOrder: 'asc' } },
 } satisfies Prisma.TripInclude;
 
 export async function listTrips(options?: {
@@ -422,7 +420,13 @@ export async function listTrips(options?: {
     include: { hero: { include: MEDIA_INCLUDE } },
   });
 
-  return rows.map((trip) => ({
+  return rows.map(serialiseTripSummary);
+}
+
+function serialiseTripSummary(
+  trip: Trip & { hero: MediaWithRenditions | null },
+): ApiTripSummary {
+  return {
     slug: trip.slug,
     title: trip.title,
     excerpt: trip.excerpt,
@@ -439,7 +443,7 @@ export async function listTrips(options?: {
     journeyLabel: trip.journeyLabel,
     heroImage: img(trip.hero),
     featured: trip.featured,
-  }));
+  };
 }
 
 export async function getTrip(
@@ -450,12 +454,140 @@ export async function getTrip(
     where: { slug, ...visible(options?.preview === true) },
     include: TRIP_INCLUDE,
   });
-  return trip ? serialiseTrip(trip) : null;
+  if (!trip) return null;
+
+  const [destinations, culture, posts, related] = await Promise.all([
+    tripDestinations(trip),
+    trip.showCulture ? tripCulture(trip) : [],
+    trip.showJournal ? tripPosts(trip) : [],
+    trip.showRelated ? tripRelated(trip) : [],
+  ]);
+
+  return { ...serialiseTrip(trip), destinations, culture, posts, related };
+}
+
+/** How many cards a band at the foot of a journey offers when the office chose none. */
+const FALLBACK_CARDS = 3;
+
+/**
+ * The places on the route that have a page, in route order.
+ *
+ * Always read, whatever `showDestinations` says: the culture and journal
+ * fallbacks below are both "what is linked to the route", and they need the
+ * ids whether or not the places draw as cards.
+ */
+async function tripDestinations(trip: TripRow): Promise<ApiDestinationSummary[]> {
+  const ids = trip.destinations.map((link) => link.destinationId);
+  if (ids.length === 0) return [];
+  const rows = await db.destination.findMany({
+    where: { id: { in: ids }, ...PUBLISHED_DESTINATION },
+    include: DESTINATION_SUMMARY_INCLUDE,
+  });
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((row): row is NonNullable<typeof row> => row !== undefined)
+    .map(serialiseDestinationSummary);
+}
+
+/**
+ * The culture a journey offers.
+ *
+ * What the office chose, in its order. Otherwise what is linked to the places
+ * on the route — and to the places inside a valley on it, as a valley's own
+ * page does, because Punakha's route passes Punakha Dzong whether or not the
+ * office listed the dzong as a stop.
+ */
+async function tripCulture(trip: TripRow): Promise<ApiCultureSummary[]> {
+  const chosen = await db.cultureOnTrip.findMany({
+    where: { tripId: trip.id, culture: PUBLISHED },
+    orderBy: { sortOrder: 'asc' },
+    include: { culture: { include: { image: { include: MEDIA_INCLUDE } } } },
+  });
+  if (chosen.length > 0) return chosen.map((link) => serialiseCultureSummary(link.culture));
+
+  const route = trip.destinations.map((link) => link.destinationId);
+  if (route.length === 0) return [];
+  const links = await db.cultureOnDestination.findMany({
+    where: {
+      culture: PUBLISHED,
+      OR: [{ destinationId: { in: route } }, { destination: { parentId: { in: route } } }],
+    },
+    orderBy: { sortOrder: 'asc' },
+    include: { culture: { include: { image: { include: MEDIA_INCLUDE } } } },
+  });
+  const seen = new Set<string>();
+  return links
+    .map((link) => link.culture)
+    .filter((article) => (seen.has(article.id) ? false : (seen.add(article.id), true)))
+    .slice(0, FALLBACK_CARDS)
+    .map(serialiseCultureSummary);
+}
+
+/**
+ * Journal entries for a journey.
+ *
+ * The entries linked to it — the same join the entry's own "Journeys" field
+ * writes, so linking from either side shows on both. Otherwise the newest
+ * entries about the places on its route.
+ */
+async function tripPosts(trip: TripRow): Promise<ApiPostSummary[]> {
+  const linked = await postsAbout({ tripLinks: { some: { tripId: trip.id } } }, 6);
+  if (linked.length > 0) return linked;
+
+  const route = trip.destinations.map((link) => link.destinationId);
+  if (route.length === 0) return [];
+  return postsAbout(
+    {
+      destinations: {
+        some: {
+          OR: [{ destinationId: { in: route } }, { destination: { parentId: { in: route } } }],
+        },
+      },
+    },
+    FALLBACK_CARDS,
+  );
+}
+
+/**
+ * Other journeys to offer.
+ *
+ * The office's choice, in its order and published only. Otherwise the ones
+ * after this in catalogue order, wrapping round to the start — which is what
+ * the editor has always promised under the picker.
+ */
+async function tripRelated(trip: TripRow): Promise<ApiTripSummary[]> {
+  const chosen = trip.relatedFrom.map((link) => link.targetId);
+  if (chosen.length > 0) {
+    const rows = await db.trip.findMany({
+      where: { id: { in: chosen }, ...PUBLISHED },
+      include: { hero: { include: MEDIA_INCLUDE } },
+    });
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    return chosen
+      .map((id) => byId.get(id))
+      .filter((row): row is NonNullable<typeof row> => row !== undefined)
+      .map(serialiseTripSummary);
+  }
+
+  const catalogue = await db.trip.findMany({
+    where: PUBLISHED,
+    orderBy: { sortOrder: 'asc' },
+    include: { hero: { include: MEDIA_INCLUDE } },
+  });
+  const at = catalogue.findIndex((row) => row.id === trip.id);
+  const others = [...catalogue.slice(at + 1), ...catalogue.slice(0, Math.max(at, 0))].filter(
+    (row) => row.id !== trip.id,
+  );
+  return others.slice(0, FALLBACK_CARDS).map(serialiseTripSummary);
 }
 
 type TripRow = Prisma.TripGetPayload<{ include: typeof TRIP_INCLUDE }>;
 
-function serialiseTrip(trip: TripRow): ApiTrip {
+/** Everything but the bands `getTrip` reads with queries of their own. */
+function serialiseTrip(
+  trip: TripRow,
+): Omit<ApiTrip, 'destinations' | 'culture' | 'posts' | 'related'> {
   return {
     slug: trip.slug,
     title: trip.title,
@@ -530,7 +662,13 @@ function serialiseTrip(trip: TripRow): ApiTrip {
       isFixed: row.isFixed,
       wasPriceUsd: row.wasPriceUsd,
     })),
-    relatedSlugs: trip.relatedFrom.map((link) => link.target.slug),
+    sections: {
+      gallery: trip.showGallery,
+      destinations: trip.showDestinations,
+      culture: trip.showCulture,
+      journal: trip.showJournal,
+      related: trip.showRelated,
+    },
     featured: trip.featured,
     seo: serialiseSeo(trip, img(trip.ogImage)),
   };
