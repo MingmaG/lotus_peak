@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { asset } from '@/lib/assets'
 import { Button } from '../core/Button'
 import { MenuMap } from './MenuMap'
@@ -119,6 +119,20 @@ export function NavBar({
     }
   }, [open])
 
+  /**
+   * Both search boxes land on `/search?q=`. The forms are real GET forms, so
+   * they work before hydration; with scripts this keeps it a client-side
+   * navigation and empties the box behind it.
+   */
+  const submitSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    const q = String(new FormData(form).get('q') ?? '').trim()
+    form.reset()
+    setOpen(false)
+    router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search')
+  }
+
   useEffect(() => {
     if (!open) return
     const k = (e: KeyboardEvent) => {
@@ -212,7 +226,11 @@ export function NavBar({
           {!menu && items.map((it) => <NavLink key={it.href} item={it} active={active === it.label} />)}
 
           {search && (
-            <label
+            <form
+              role="search"
+              action="/search"
+              method="get"
+              onSubmit={submitSearch}
               className="lp-nav-search-wrap"
               style={{
                 display: 'flex',
@@ -227,8 +245,12 @@ export function NavBar({
               }}
             >
               <input
+                type="search"
+                name="q"
                 placeholder={searchPlaceholder}
                 aria-label="Search"
+                autoComplete="off"
+                enterKeyHint="search"
                 className="lp-nav-search"
                 style={{
                   flex: 1,
@@ -241,8 +263,24 @@ export function NavBar({
                   fontSize: 'var(--text-small)',
                 }}
               />
-              <span aria-hidden="true" style={{ position: 'relative', width: 14, height: 14, flexShrink: 0 }}>
+              {/* The glyph submits, so the box can be used by pointer alone. */}
+              <button
+                type="submit"
+                aria-label="Search"
+                style={{
+                  position: 'relative',
+                  width: 14,
+                  height: 14,
+                  flexShrink: 0,
+                  padding: 0,
+                  border: 0,
+                  background: 'transparent',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                }}
+              >
                 <span
+                  aria-hidden="true"
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -254,6 +292,7 @@ export function NavBar({
                   }}
                 />
                 <span
+                  aria-hidden="true"
                   style={{
                     position: 'absolute',
                     right: 0,
@@ -265,8 +304,8 @@ export function NavBar({
                     transformOrigin: 'right',
                   }}
                 />
-              </span>
-            </label>
+              </button>
+            </form>
           )}
 
           {menu ? (
@@ -380,6 +419,28 @@ export function NavBar({
             }}
           >
             <div style={{ display: 'grid', gap: 'var(--space-8)', justifyItems: 'start', alignContent: 'start' }}>
+              {/* The bar's search box is hidden on a phone (globals.css), so
+                  the panel carries one there instead. */}
+              {search && (
+                <form
+                  role="search"
+                  action="/search"
+                  method="get"
+                  onSubmit={submitSearch}
+                  className="lp-menu-search"
+                  style={{ opacity: open ? 1 : 0, transition: 'opacity var(--dur-slow) var(--ease-breath)' }}
+                >
+                  <input
+                    type="search"
+                    name="q"
+                    placeholder={searchPlaceholder}
+                    aria-label="Search"
+                    autoComplete="off"
+                    enterKeyHint="search"
+                  />
+                  <button type="submit">Search</button>
+                </form>
+              )}
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 18 }}>
                 {items.map((it, i) => (
                   <li
