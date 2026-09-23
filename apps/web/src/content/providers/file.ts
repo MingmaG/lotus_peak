@@ -8,6 +8,7 @@ import type { ApiImage, ApiSite } from '@lotuspeak/api-contracts'
 import { IMG, altFor } from '@/lib/assets'
 import {
   ABOUT_PURPOSES,
+  HOME_PURPOSES,
   COMMITMENTS,
   TERMS_SECTIONS,
   TRAVELLER_SECTIONS,
@@ -155,7 +156,7 @@ function fileSite(): ApiSite {
   const s = SETTINGS
   return {
     company: {
-      legalName: 'Lotus Peak Tours & Travel',
+      legalName: s.legalName,
       name: s.brand,
       tagline: s.line,
       description: s.defaultSeo.description,
@@ -209,6 +210,7 @@ function fileSite(): ApiSite {
       credit: s.footer.credit,
       show: s.footer.show,
     },
+    journeyBands: s.journeyBands,
     replyPromise: s.contact.replyPromise,
     pledge: { percent: s.pledge.percent, beneficiary: s.pledge.beneficiary, note: null },
     sdfPerNightUsd: s.sdfPerNightUsd,
@@ -440,12 +442,41 @@ function escapeHtml(text: string): string {
 const FILE_SEO_META = { title: null, description: null, noIndex: false }
 
 const FILE_PAGES_CONTENT: Record<string, SitePage> = {
+  '/': {
+    slug: 'home',
+    path: '/',
+    title: 'Lotus Peak',
+    eyebrow: 'Our purpose',
+    lead: 'We are a small Bhutanese company. We share the practice of awareness in a country where it still shapes daily life.',
+    note: null,
+    heroImage: IMG.hero,
+    heroAlt: altFor(IMG.hero),
+    bands: [
+      {
+        kind: 'points',
+        eyebrow: 'Our purpose',
+        title: 'Mindful journeys in Bhutan',
+        lead: null,
+        points: HOME_PURPOSES.map(([title, body]) => ({ title, body: `<p>${escapeHtml(body)}</p>`, icon: null })),
+      },
+      {
+        kind: 'trips',
+        eyebrow: 'Our trips',
+        title: 'Four journeys, each with time to spare',
+        lead: null,
+        tripSlugs: [],
+      },
+    ],
+    seo: FILE_SEO_META,
+  },
+
   '/about': {
     slug: 'about',
     path: '/about',
     title: 'About Lotus Peak',
     eyebrow: 'About',
     lead: 'A small Bhutanese company, sharing the practice of awareness in the country where it still shapes daily life.',
+    note: null,
     heroImage: IMG.courtyard,
     heroAlt: altFor(IMG.courtyard),
     bands: [
@@ -484,6 +515,7 @@ const FILE_PAGES_CONTENT: Record<string, SitePage> = {
     title: 'Terms & conditions',
     eyebrow: 'Terms',
     lead: 'The terms on which we sell and operate our journeys. The figures particular to your booking — deposit, balance date and the cancellation scale — are in the written confirmation we send you.',
+    note: 'Last revised for the 2026 season.',
     heroImage: null,
     heroAlt: undefined,
     bands: TERMS_SECTIONS.map(fromInfoSection),
@@ -496,6 +528,7 @@ const FILE_PAGES_CONTENT: Record<string, SitePage> = {
     title: 'What to know before you come',
     eyebrow: 'Travellers',
     lead: 'Not a complete list — the things travellers ask us most. Anything specific to your journey is in the notes we send when it is booked.',
+    note: 'Last reviewed for the 2026 season. Ask us if you are reading this later than that.',
     heroImage: null,
     heroAlt: undefined,
     bands: TRAVELLER_SECTIONS.map(fromInfoSection),

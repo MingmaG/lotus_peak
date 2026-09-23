@@ -543,7 +543,7 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         </Reveal>
       </Section>
 
-      <TripRelated trip={trip} />
+      <TripRelated trip={trip} copy={settings.journeyBands} />
     </main>
   )
 }

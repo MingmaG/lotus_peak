@@ -19,6 +19,20 @@ import type { PageBand, SitePage } from './types'
  */
 
 /**
+ * The first band of a kind, whole — for a bespoke layout that wants its
+ * eyebrow and heading as well as its items.
+ */
+export function bandFrom<K extends PageBand['kind']>(
+  page: SitePage | null,
+  kind: K,
+): Extract<PageBand, { kind: K }> | null {
+  return (
+    (page?.bands ?? []).find((band): band is Extract<PageBand, { kind: K }> => band.kind === kind) ??
+    null
+  )
+}
+
+/**
  * The `points` band's items — About's commitments, the home page's purposes.
  *
  * `body` is sanitised HTML, like every rich-text field out of the provider, so

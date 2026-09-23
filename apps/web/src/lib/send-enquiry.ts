@@ -16,12 +16,24 @@
  * what actually happened.
  */
 
-const FALLBACK =
-  'That did not send. Please write to info@lotuspeak.org and we will pick it up from there.'
+/**
+ * What to say when the enquiry did not arrive for a reason that is not the
+ * traveller's to fix. The address is the company's, handed in by the caller
+ * from the settings the layout already has — it was a literal here, and would
+ * have gone on offering the old address after the office changed it.
+ */
+function fallback(email: string): string {
+  return email
+    ? `That did not send. Please write to ${email} and we will pick it up from there.`
+    : 'That did not send. Please try again in a little while.'
+}
 
 export type EnquiryOutcome = { sent: true } | { sent: false; message: string }
 
-export async function sendEnquiry(body: Record<string, unknown>): Promise<EnquiryOutcome> {
+export async function sendEnquiry(
+  body: Record<string, unknown>,
+  email: string,
+): Promise<EnquiryOutcome> {
   try {
     const response = await fetch('/api/enquiries', {
       method: 'POST',
@@ -34,9 +46,14 @@ export async function sendEnquiry(body: Record<string, unknown>): Promise<Enquir
       | null
 
     if (response.ok && payload?.ok === true) return { sent: true }
-    return { sent: false, message: payload?.error ?? FALLBACK }
+    /* A refusal (4xx) is the server's own words, written for the traveller.
+       Anything else — our failure — gets the address to write to instead. */
+    if (response.status >= 400 && response.status < 500 && payload?.error) {
+      return { sent: false, message: payload.error }
+    }
+    return { sent: false, message: fallback(email) }
   } catch {
     /* Offline, or the request never left the browser. */
-    return { sent: false, message: FALLBACK }
+    return { sent: false, message: fallback(email) }
   }
 }

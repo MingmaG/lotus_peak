@@ -9,7 +9,7 @@ import {
 } from "@/design-system";
 import { Prose } from "@/components/site/Prose";
 import { getContent } from "@/content";
-import { pointsFrom } from "@/content/page-copy";
+import { bandFrom, pointsFrom } from "@/content/page-copy";
 import { fmt } from "@/content/types";
 import { IMG, altFor } from "@/lib/assets";
 import { Reveal, Split, Strip } from "@/motion";
@@ -25,7 +25,7 @@ export default async function HomePage() {
     const [featured, catalogue, destinations, seasons, reflections, settings, page] =
         await Promise.all([
             content.trips.list({ featured: true, limit: 4 }),
-            content.trips.list({ limit: 4 }),
+            content.trips.list(),
             content.destinations.list(),
             content.seasons.list(),
             content.reflections.list({ featured: true, limit: 2 }),
@@ -33,10 +33,25 @@ export default async function HomePage() {
             content.pages.byPath("/"),
         ]);
 
-    /* The journeys the office marked "Feature this journey", in catalogue
-     order. With none marked the band still has something in it: the first
-     four, which is what it showed before the switch meant anything here. */
-    const trips = featured.length > 0 ? featured : catalogue;
+    /* The words of the two opening sections, from the home page's row: the
+     purpose band and the journeys band. The layout is the design's own; only
+     the words moved. */
+    const purpose = bandFrom(page, "points");
+    const tripsBand = bandFrom(page, "trips");
+
+    /* Which journeys, in order of how deliberately they were chosen: the ones
+     ticked on the home page's journeys band, in the order ticked; otherwise
+     the ones marked "Feature this journey"; otherwise the first four in the
+     catalogue, which is what the band showed before either meant anything. */
+    const picked = (tripsBand?.tripSlugs ?? [])
+        .map((slug) => catalogue.find((trip) => trip.slug === slug))
+        .filter((trip) => trip !== undefined);
+    const trips =
+        picked.length > 0
+            ? picked
+            : featured.length > 0
+              ? featured
+              : catalogue.slice(0, 4);
 
     /* The three purposes, from the home page's row. The band that renders them
      is the design's own; only the words moved. */
@@ -77,30 +92,34 @@ export default async function HomePage() {
                     }}
                 >
                     <Reveal>
-                        <Eyebrow number="01">Our purpose</Eyebrow>
-                        <h2
-                            style={{
-                                fontSize: "var(--text-h1)",
-                                marginTop: 20,
-                                maxWidth: "14ch",
-                            }}
-                        >
-                            Mindful journeys in Bhutan
-                        </h2>
-                    </Reveal>
-                    <div>
-                        <Reveal delay={300}>
-                            <p
+                        {purpose?.eyebrow && (
+                            <Eyebrow number="01">{purpose.eyebrow}</Eyebrow>
+                        )}
+                        {purpose?.title && (
+                            <h2
                                 style={{
-                                    fontSize: "var(--text-lead)",
-                                    lineHeight: "var(--leading-lead)",
+                                    fontSize: "var(--text-h1)",
+                                    marginTop: 20,
+                                    maxWidth: "14ch",
                                 }}
                             >
-                                We are a small Bhutanese company. We share the
-                                practice of awareness in a country where it
-                                still shapes daily life.
-                            </p>
-                        </Reveal>
+                                {purpose.title}
+                            </h2>
+                        )}
+                    </Reveal>
+                    <div>
+                        {page?.lead && (
+                            <Reveal delay={300}>
+                                <p
+                                    style={{
+                                        fontSize: "var(--text-lead)",
+                                        lineHeight: "var(--leading-lead)",
+                                    }}
+                                >
+                                    {page.lead}
+                                </p>
+                            </Reveal>
+                        )}
                         <div
                             style={{
                                 display: "grid",
@@ -139,10 +158,21 @@ export default async function HomePage() {
             {/* 02 — Our trips */}
             <Section
                 num="02"
-                eyebrow="Our trips"
-                title="Four journeys, each with time to spare"
+                eyebrow={tripsBand?.eyebrow ?? undefined}
+                title={tripsBand?.title ?? undefined}
                 style={{ paddingTop: 0 }}
             >
+                {tripsBand?.lead && (
+                    <Prose
+                        html={tripsBand.lead}
+                        compact
+                        style={{
+                            marginTop: 16,
+                            color: "var(--text-muted)",
+                            maxWidth: "var(--measure-narrow)",
+                        }}
+                    />
+                )}
                 <div
                     className="lp-trip-grid"
                     style={{

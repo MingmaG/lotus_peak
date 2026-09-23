@@ -345,6 +345,7 @@ export const REFLECTIONS: Reflection[] = [
 
 export const SETTINGS: SiteSettings = {
   brand: 'Lotus Peak',
+  legalName: 'Lotus Peak Tours & Travel',
   line: 'Small-group journeys in Bhutan.',
   nav: [
     { label: 'Our trips', href: '/trips' },
@@ -404,6 +405,12 @@ export const SETTINGS: SiteSettings = {
       url: 'https://www.facebook.com/profile.php?id=61588546391091',
     },
   ],
+  journeyBands: {
+    places: { title: 'Where you will go', more: 'View more destinations' },
+    culture: { title: 'Culture on the way', more: 'Know more about the culture' },
+    journal: { title: 'From the journal', more: 'Read the whole journal' },
+    related: { title: 'Other journeys', more: 'View more trips' },
+  },
   contact: {
     phone: '+975 17984485',
     email: 'info@lotuspeak.org',

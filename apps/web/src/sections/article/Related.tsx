@@ -29,7 +29,7 @@ export function RelatedBand({
         <Divider variant="kera" />
         <div style={{ marginTop: 'var(--space-8)' }}>
           <Reveal>
-            <Eyebrow>{title}</Eyebrow>
+            {title && <Eyebrow>{title}</Eyebrow>}
             {lead && (
               <p
                 style={{

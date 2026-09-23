@@ -1,6 +1,6 @@
 import { journalCategoryLabel } from '@lotuspeak/api-contracts'
 import { TrekCard } from '@/design-system'
-import { fmt, type Trip } from '@/content/types'
+import { fmt, type SiteSettings, type Trip } from '@/content/types'
 import { Reveal } from '@/motion'
 import { PageCard } from '@/sections/article/PageCard'
 import { CardGrid, RelatedBand } from '@/sections/article/Related'
@@ -15,13 +15,17 @@ import { CardGrid, RelatedBand } from '@/sections/article/Related'
  * says; what fills each one when the office chose nothing is decided in the
  * admin panel, where the joins are, not here.
  */
-export function TripRelated({ trip }: { trip: Trip }) {
+export function TripRelated({ trip, copy }: { trip: Trip; copy: SiteSettings['journeyBands'] }) {
   const { sections } = trip
+
+  /* Each band's heading and link words are the office's, from Company → On
+     the site. No words, no link. */
+  const more = (href: string, label: string) => (label ? { href, label } : undefined)
 
   return (
     <>
       {sections.destinations && trip.destinations.length > 0 && (
-        <RelatedBand title="Where you will go" more={{ href: '/destinations', label: 'View more destinations' }}>
+        <RelatedBand title={copy.places.title} more={more('/destinations', copy.places.more)}>
           <CardGrid>
             {trip.destinations.map((place) => (
               <PageCard
@@ -38,7 +42,7 @@ export function TripRelated({ trip }: { trip: Trip }) {
       )}
 
       {sections.culture && trip.culture.length > 0 && (
-        <RelatedBand title="Culture on the way" more={{ href: '/culture', label: 'Know more about the culture' }}>
+        <RelatedBand title={copy.culture.title} more={more('/culture', copy.culture.more)}>
           <CardGrid>
             {trip.culture.map((article) => (
               <PageCard
@@ -56,7 +60,7 @@ export function TripRelated({ trip }: { trip: Trip }) {
       )}
 
       {sections.journal && trip.posts.length > 0 && (
-        <RelatedBand title="From the journal" more={{ href: '/journal', label: 'Read the whole journal' }}>
+        <RelatedBand title={copy.journal.title} more={more('/journal', copy.journal.more)}>
           <CardGrid>
             {trip.posts.map((post) => (
               <PageCard
@@ -74,7 +78,7 @@ export function TripRelated({ trip }: { trip: Trip }) {
       )}
 
       {sections.related && trip.related.length > 0 && (
-        <RelatedBand title="Other journeys" more={{ href: '/trips', label: 'View more trips' }}>
+        <RelatedBand title={copy.related.title} more={more('/trips', copy.related.more)}>
           <div
             style={{
               display: 'grid',
