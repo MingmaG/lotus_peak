@@ -1,27 +1,17 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Loader2, Search, Upload } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, Search, Upload } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
-import { toast } from 'sonner';
 
-import { MediaDetailsFields } from './media-picker';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
 import { UploadDialog } from './upload-dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ApiClientError, apiDelete, apiGet, apiPatch, query } from '@/lib/api-client';
-import { fileSize, formatDate } from '@/lib/format';
+import { apiGet, query } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 
 interface Media {
@@ -54,16 +44,46 @@ interface Media {
  *
  * **It has a focal point control.** The design crops hard — parallax bands,
  * masked strips, 3/4 masonry cells — and a face centred in a 3/2 photograph is
- * not centred in a 16/9 crop of it. Clicking the preview sets where the crop
- * holds, which is the difference between a portrait and the top of somebody's
- * head.
+ * not centred in a 16/9 crop of it. A photograph's own page sets where the
+ * crop holds, which is the difference between a portrait and the top of
+ * somebody's head.
+ *
+ * The filters live in the address, so a photograph opened from the backlog
+ * returns to the backlog — see `MediaEditor`.
  */
-export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDelete: boolean }) {
+export function MediaLibrary({ canWrite }: { canWrite: boolean }) {
   const client = useQueryClient();
-  const [search, setSearch] = React.useState('');
-  const [needsAlt, setNeedsAlt] = React.useState(false);
-  const [open, setOpen] = React.useState<Media | null>(null);
-  const [draft, setDraft] = React.useState<Partial<Media>>({});
+  const router = useRouter();
+  const params = useSearchParams();
+  const search = params.get('q') ?? '';
+  const needsAlt = params.get('needsAlt') === '1';
+
+  const setFilters = React.useCallback(
+    (next: { q?: string; needsAlt?: boolean }) => {
+      const out = new URLSearchParams(params.toString());
+      if (next.q !== undefined) {
+        if (next.q) out.set('q', next.q);
+        else out.delete('q');
+      }
+      if (next.needsAlt !== undefined) {
+        if (next.needsAlt) out.set('needsAlt', '1');
+        else out.delete('needsAlt');
+      }
+      const qs = out.toString();
+      router.replace(qs ? `/media?${qs}` : '/media', { scroll: false });
+    },
+    [params, router],
+  );
+  const listQuery = params.toString();
+
+  /* Typed into locally and written to the address a beat later: an input
+     bound straight to the URL drops keystrokes while each navigation lands. */
+  const [text, setText] = React.useState(search);
+  React.useEffect(() => {
+    if (text === search) return;
+    const timer = window.setTimeout(() => setFilters({ q: text }), 250);
+    return () => window.clearTimeout(timer);
+  }, [text, search, setFilters]);
 
   const { data, isLoading } = useQuery<{ items: Media[]; total: number }>({
     queryKey: ['media', 'library', search, needsAlt],
@@ -77,33 +97,6 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
     queryFn: () => apiGet('/api/media?needsAlt=1&perPage=1'),
   });
 
-  const save = useMutation({
-    mutationFn: () => apiPatch(`/api/media/${open!.id}`, draft),
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ['media'] });
-      setOpen(null);
-      setDraft({});
-      toast.success('Saved');
-    },
-    onError: (error: Error) =>
-      toast.error(
-        error instanceof ApiClientError && error.fields
-          ? (Object.values(error.fields)[0] ?? error.message)
-          : error.message,
-      ),
-  });
-
-  const destroy = useMutation({
-    mutationFn: (id: string) => apiDelete(`/api/media/${id}`),
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ['media'] });
-      setOpen(null);
-      toast.success('Deleted');
-    },
-    /* A 409 here is the useful case: the message names where it is used. */
-    onError: (error: Error) => toast.error(error.message, { duration: 8_000 }),
-  });
-
   /**
    * Files chosen but not yet sent.
    *
@@ -115,7 +108,6 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
   const [pending, setPending] = React.useState<File[]>([]);
 
   const items = data?.items ?? [];
-  const current = open ? { ...open, ...draft } : null;
 
   return (
     <div
@@ -132,8 +124,8 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            value={text}
+            onChange={(event) => setText(event.target.value)}
             placeholder="Search by filename, description or caption…"
             className="pl-8.5"
           />
@@ -141,7 +133,7 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
 
         <Button
           variant={needsAlt ? 'default' : 'outline'}
-          onClick={() => setNeedsAlt((value) => !value)}
+          onClick={() => setFilters({ needsAlt: !needsAlt })}
           className="shrink-0"
         >
           <AlertTriangle className="mr-1.5 size-4" />
@@ -200,13 +192,9 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
           {items.map((media) => {
             const undescribed = !media.alt && !media.isDecorative;
             return (
-              <button
+              <Link
                 key={media.id}
-                type="button"
-                onClick={() => {
-                  setOpen(media);
-                  setDraft({});
-                }}
+                href={listQuery ? `/media/${media.id}?${listQuery}` : `/media/${media.id}`}
                 className={cn(
                   'overflow-hidden rounded-lg border text-left transition-colors hover:border-primary/50',
                   undescribed && 'border-destructive/40',
@@ -232,79 +220,11 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
                       : media.alt || 'Needs a description'}
                   </p>
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>
       )}
-
-      <Sheet open={open !== null} onOpenChange={(value) => !value && setOpen(null)}>
-        <SheetContent className="flex w-full flex-col overflow-y-auto sm:max-w-lg">
-          {current && (
-            <>
-              <SheetHeader>
-                <SheetTitle className="truncate">{current.filename}</SheetTitle>
-                <SheetDescription>
-                  {current.width && current.height
-                    ? `${current.width} × ${current.height} · ${fileSize(current.sizeBytes)} · ${current.renditionCount} renditions · added ${formatDate(current.createdAt)}`
-                    : fileSize(current.sizeBytes)}
-                </SheetDescription>
-              </SheetHeader>
-
-              <div className="flex-1 space-y-5 py-4">
-                <FocalPicker
-                  url={current.url}
-                  x={current.focalX}
-                  y={current.focalY}
-                  disabled={!canWrite}
-                  onChange={(focalX, focalY) => setDraft((value) => ({ ...value, focalX, focalY }))}
-                />
-
-                <MediaDetailsFields
-                  alt={current.alt}
-                  isDecorative={current.isDecorative}
-                  caption={current.caption ?? ''}
-                  credit={current.credit ?? ''}
-                  onChange={(patch) => setDraft((value) => ({ ...value, ...patch }))}
-                />
-              </div>
-
-              <SheetFooter className="flex-row justify-between gap-2 border-t pt-4">
-                {canDelete ? (
-                  <Button
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => {
-                      if (window.confirm('Delete this photograph and everything built from it?')) {
-                        destroy.mutate(current.id);
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                ) : (
-                  <span />
-                )}
-
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setOpen(null)}>
-                    Close
-                  </Button>
-                  {canWrite && (
-                    <Button
-                      onClick={() => save.mutate()}
-                      disabled={Object.keys(draft).length === 0 || save.isPending}
-                    >
-                      {save.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-                      Save
-                    </Button>
-                  )}
-                </div>
-              </SheetFooter>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
 
       <UploadDialog
         files={pending}
@@ -314,83 +234,10 @@ export function MediaLibrary({ canWrite, canDelete }: { canWrite: boolean; canDe
           /* Both filters are cleared, because the commonest way a fresh upload
              goes missing is that the list is still showing a search, or the
              "Needs a description" backlog it is no longer part of. */
-          setSearch('');
-          setNeedsAlt(false);
+          setText('');
+          setFilters({ q: '', needsAlt: false });
         }}
       />
-    </div>
-  );
-}
-
-/**
- * Where a crop holds.
- *
- * Click the photograph. The three sample frames underneath show what that does
- * at the three shapes the design actually crops to, which is the only way to
- * tell whether a focal point is right without publishing it.
- */
-function FocalPicker({
-  url,
-  x,
-  y,
-  onChange,
-  disabled,
-}: {
-  url: string;
-  x: number;
-  y: number;
-  onChange: (x: number, y: number) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <div className="space-y-2">
-      <Label>Where the crop holds</Label>
-      <p className="text-xs text-muted-foreground">
-        Click the part that must stay in frame. The site crops hard, and this is what keeps a
-        face in the picture at 16/9.
-      </p>
-
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={(event) => {
-          const box = event.currentTarget.getBoundingClientRect();
-          onChange(
-            Math.min(1, Math.max(0, (event.clientX - box.left) / box.width)),
-            Math.min(1, Math.max(0, (event.clientY - box.top) / box.height)),
-          );
-        }}
-        className="relative block w-full overflow-hidden rounded-lg border disabled:cursor-not-allowed"
-      >
-        <img src={url} alt="" className="w-full" />
-        <span
-          className="pointer-events-none absolute size-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,.4)]"
-          style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
-        />
-      </button>
-
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { ratio: '16/9', label: 'A band' },
-          { ratio: '1/1', label: 'A square' },
-          { ratio: '3/4', label: 'A masonry cell' },
-        ].map((sample) => (
-          <div key={sample.ratio} className="space-y-1">
-            <div
-              className="overflow-hidden rounded border bg-muted"
-              style={{ aspectRatio: sample.ratio }}
-            >
-              <img
-                src={url}
-                alt=""
-                className="size-full object-cover"
-                style={{ objectPosition: `${x * 100}% ${y * 100}%` }}
-              />
-            </div>
-            <p className="text-center text-[10px] text-muted-foreground">{sample.label}</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
