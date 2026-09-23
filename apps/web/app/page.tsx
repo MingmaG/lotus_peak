@@ -70,7 +70,13 @@ export default async function HomePage() {
                     crumbs: [],
                 })}
             />
-            <HomeHero image={IMG.hero} alt={altFor(IMG.hero)} />
+            {/* The hero's one line is the home page's description in the
+             panel — the sentence that already says what Lotus Peak is. */}
+            <HomeHero
+                image={IMG.hero}
+                alt={altFor(IMG.hero)}
+                line={page?.seo.description ?? settings.defaultSeo.description}
+            />
 
             {/* 01 — Our purpose */}
             <section
