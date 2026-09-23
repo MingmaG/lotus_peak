@@ -18,7 +18,13 @@ import type { PageBand, SitePage } from './types'
  * designed.
  */
 
-/** The `points` band's items — About's commitments, the home page's purposes. */
+/**
+ * The `points` band's items — About's commitments, the home page's purposes.
+ *
+ * `body` is sanitised HTML, like every rich-text field out of the provider, so
+ * it is drawn with `Prose`. Put in a `<p>` as text it shows the office its own
+ * `<p>` tags, which is how this was found.
+ */
 export function pointsFrom(page: SitePage | null, index = 0): {
   title: string
   body: string
@@ -53,9 +59,9 @@ export function figurePairsFrom(page: SitePage | null): {
 
     pairs.push({
       title: prose.title ?? '',
-      /* The layout puts this in a `<p>` of its own, so the wrapping paragraph
-         the editor produced is unwrapped rather than nested. */
-      body: stripOuterParagraph(prose.body),
+      /* Sanitised HTML, drawn with `Prose` — a second paragraph the office
+         adds is a paragraph, not two run together. */
+      body: prose.body,
       src: figure.src,
       alt: figure.alt,
     })
@@ -79,14 +85,4 @@ function stripOuterParagraph(html: string): string {
   /* Only when there is exactly one paragraph — two would concatenate into a
      single run-on sentence. */
   return match[1].includes('<p>') ? html : match[1]
-}
-
-/** `<strong>` and `<em>` survive; everything else is dropped. */
-export function plainText(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .trim()
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Button, Divider, Eyebrow, Reflection, SiteIcon, TrekCard } from '@/design-system'
+import { Prose } from '@/components/site/Prose'
 import { getContent } from '@/content'
 import { pointsFrom } from '@/content/page-copy'
 import { fmt } from '@/content/types'
@@ -78,7 +79,7 @@ export default async function HomePage() {
                 <Reveal key={t} delay={250 + i * 120}>
                   <Divider variant="gold" />
                   <h3 style={{ fontSize: 'var(--text-h3)', marginTop: 24 }}>{t}</h3>
-                  <p style={{ marginTop: 14, color: 'var(--text-muted)' }}>{b}</p>
+                  <Prose html={b} compact style={{ marginTop: 14, color: 'var(--text-muted)' }} />
                 </Reveal>
               ))}
             </div>
