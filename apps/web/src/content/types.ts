@@ -331,6 +331,8 @@ export type SiteSettings = {
   /** The registered name. "Lotus Peak Tours & Travel". */
   legalName: string
   line: string
+  /** The words over the home page's photograph; the tagline when the office left it empty. */
+  strapline: string
   nav: { label: string; href: string }[]
   navCta: { label: string; href: string }
   footer: {

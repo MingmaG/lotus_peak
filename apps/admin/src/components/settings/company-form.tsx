@@ -828,6 +828,22 @@ export function CompanyForm({ initial }: { initial: CompanyFormValue }) {
         {tab === 'site' && (
           <>
             <Section
+              title="The home page"
+              description="The words laid over the photograph at the top of the home page, above the Explore trips button."
+            >
+              <Field
+                label="Headline over the photograph"
+                hint="A few words. Left empty, the tagline is used."
+              >
+                <Input
+                  value={form.strapline}
+                  maxLength={200}
+                  onChange={(event) => set('strapline', event.target.value)}
+                />
+              </Field>
+            </Section>
+
+            <Section
               title="The footer"
               description="The foot of every page. The address, the telephone numbers and the icons are the ones on the other tabs — they are not typed again here."
             >

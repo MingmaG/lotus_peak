@@ -234,6 +234,8 @@ export interface ApiCompany {
   /** What the site calls itself. "Lotus Peak". */
   name: string;
   tagline: string;
+  /** The words over the home page's photograph. Empty: the tagline. */
+  strapline: string;
   description: string;
   foundedYear: number | null;
   /** Tourism Council of Bhutan licence, shown in the footer. */

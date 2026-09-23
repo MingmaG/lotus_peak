@@ -33,7 +33,11 @@ const MOTION_READY = `try{if(!matchMedia('(prefers-reduced-motion: reduce)').mat
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const content = getContent()
-  const [settings, trips] = await Promise.all([content.settings.get(), content.trips.list()])
+  const [settings, trips, destinations] = await Promise.all([
+    content.settings.get(),
+    content.trips.list(),
+    content.destinations.list(),
+  ])
 
   return (
     <html lang="en">
@@ -61,6 +65,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SiteChrome
           settings={settings}
           trips={trips.map((t) => ({ slug: t.slug, title: t.title, durationDays: t.durationDays }))}
+          /* Valleys only: the map's places are towns and districts, and a
+             place page (a lhakhang, a dzong) is never what one of them means. */
+          destinations={destinations
+            .filter((d) => d.parentSlug === null)
+            .map((d) => ({ name: d.name, path: d.path }))}
         >
           {children}
         </SiteChrome>

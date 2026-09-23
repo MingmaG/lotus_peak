@@ -238,6 +238,7 @@ async function base(settings: SiteSettings): Promise<ApiSite> {
       legalName: settings.legalName,
       name: settings.brand,
       tagline: settings.line,
+      strapline: settings.strapline,
       description: settings.defaultSeo.description,
       foundedYear: null,
       licenceNumber: null,
