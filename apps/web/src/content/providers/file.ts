@@ -21,7 +21,7 @@ import {
   fileDestinationPage,
   filePosts,
 } from './file-sections'
-import { TRIPS } from '../data/trips'
+import { TRIPS, type TripRecord } from '../data/trips'
 import type { ContentRepository, EnquiryInput } from '../repository'
 import type { Activity, GalleryImage, PageBand, Season, SitePage, Trip } from '../types'
 
@@ -39,16 +39,55 @@ const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order
  * provider stays the fixture the API provider is checked against.
  */
 const withAlt = {
-  trip: (trip: Trip): Trip => ({
+  trip: (trip: TripRecord): Trip => ({
     ...trip,
     heroAlt: altFor(trip.heroImage),
-    gallery: trip.gallery.map(
-      ([src, ratio, width]) => [src, ratio, width, altFor(src)] as [string, string?, string?, string?],
-    ),
+    gallery: trip.gallery.map(([src]) => ({
+      src,
+      alt: altFor(src),
+      caption: null,
+      credit: null,
+      width: null,
+      height: null,
+      focal: [0.5, 0.5],
+    })),
+    sections: { gallery: true, destinations: true, culture: true, journal: true, related: true },
+    destinations: [],
+    culture: [],
+    posts: [],
+    related: [],
   }),
   activity: (row: Activity): Activity => ({ ...row, imageAlt: altFor(row.image) }),
   season: (row: Season): Season => ({ ...row, imageAlt: altFor(row.image) }),
   gallery: (row: GalleryImage): GalleryImage => ({ ...row, alt: altFor(row.src) }),
+}
+
+/**
+ * The bands at the foot of a journey, joined the way the admin panel joins
+ * them when the office has chosen nothing: the places whose journeys include
+ * it, the culture linked to those places, and the next few journeys in order.
+ *
+ * The journal is empty in this provider — see `filePosts` — so `posts` is too.
+ */
+function fileTripLinks(slug: string): Pick<Trip, 'destinations' | 'culture' | 'posts' | 'related'> {
+  /* Valleys only: a place inherits its valley's journeys, so filtering the
+     whole list would put every place in Paro on the route of every journey
+     through it. */
+  const destinations = fileDestinationList().filter(
+    (d) => !d.parentSlug && d.tripSlugs.includes(slug),
+  )
+  const route = new Set(destinations.map((d) => d.slug))
+  const culture = fileCultureList()
+    .filter((c) => fileCulturePage(c.slug)?.destinations.some((d) => route.has(d.slug)))
+    .slice(0, 3)
+
+  const catalogue = [...TRIPS].sort(byOrder)
+  const at = catalogue.findIndex((t) => t.slug === slug)
+  const related = [...catalogue.slice(at + 1), ...catalogue.slice(0, at)]
+    .slice(0, 3)
+    .map(withAlt.trip)
+
+  return { destinations, culture, posts: [], related }
 }
 
 /**
@@ -301,7 +340,11 @@ function fileLlmsFullInput() {
       faq: trip.faq,
       gallery: [],
       departures: [],
-      relatedSlugs: [],
+      sections: { gallery: true, destinations: true, culture: true, journal: true, related: true },
+      destinations: [],
+      culture: [],
+      posts: [],
+      related: [],
       featured: false,
       seo: FILE_SEO,
     })),
@@ -470,7 +513,7 @@ export function createFileProvider(): ContentRepository {
       },
       async bySlug(slug) {
         const trip = TRIPS.find((t) => t.slug === slug)
-        return trip ? withAlt.trip(trip) : null
+        return trip ? { ...withAlt.trip(trip), ...fileTripLinks(trip.slug) } : null
       },
       async slugs() {
         return [...TRIPS].sort(byOrder).map((t) => t.slug)

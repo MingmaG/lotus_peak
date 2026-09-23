@@ -2,6 +2,19 @@ import { IMG } from '@/lib/assets'
 import type { Trip } from '../types'
 
 /**
+ * A journey as this fixture writes it.
+ *
+ * The page's bands below the itinerary — places, culture, entries, other
+ * journeys — are joins in the database and are joined here by the file
+ * provider, not typed out a second time. The gallery keeps the strip's old
+ * `[src, ratio, width]` rows, which the provider turns into photographs.
+ */
+export type TripRecord = Omit<
+  Trip,
+  'gallery' | 'sections' | 'destinations' | 'culture' | 'posts' | 'related'
+> & { gallery: [src: string, ratio?: string, width?: string][] }
+
+/**
  * The five journeys.
  *
  * `valleys` is verbatim from the design project. The itineraries, highlights,
@@ -60,7 +73,7 @@ const SHARED_FAQ = [
   },
 ]
 
-const GALLERY: Trip['gallery'] = [
+const GALLERY: TripRecord['gallery'] = [
   [IMG.chorten, '1/1', '28vw'],
   [IMG.bridge, '16/10', '42vw'],
   [IMG.dzong, '3/4', '26vw'],
@@ -69,7 +82,7 @@ const GALLERY: Trip['gallery'] = [
   [IMG.tashichho, '1/1', '28vw'],
 ]
 
-export const TRIPS: Trip[] = [
+export const TRIPS: TripRecord[] = [
   {
     slug: 'valleys',
     title: 'A mindfulness journey through Bhutan’s sacred valleys',

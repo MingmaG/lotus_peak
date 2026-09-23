@@ -8,13 +8,15 @@ import { getContent } from '@/content'
 import { fmt } from '@/content/types'
 import { IMG, altFor } from '@/lib/assets'
 import { ogImage } from '@/lib/seo'
-import { Reveal, Strip } from '@/motion'
+import { Reveal } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
 import { EnquiryForm } from '@/sections/shared/EnquiryForm'
 import { Centered, Fact, KeraRule, Section } from '@/sections/shared/Section'
 import { SectionNav } from '@/sections/trip/SectionNav'
 import { TripFaq, TripItinerary } from '@/sections/trip/TripItinerary'
+import { TripGallery } from '@/sections/trip/TripGallery'
 import { TripHero } from '@/sections/trip/TripHero'
+import { TripRelated } from '@/sections/trip/TripRelated'
 import { TripOverviewImages } from '@/sections/trip/TripOverviewImages'
 import { JsonLd } from '@/seo/JsonLd'
 import { graphForTrip } from '@/seo/graph'
@@ -60,6 +62,10 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
     content.settings.get(),
   ])
 
+  /* Hidden by the office, or nothing to show: either way there is no band,
+     and the sub-nav must not offer a jump to it. */
+  const showGallery = trip.sections.gallery && trip.gallery.length > 0
+
   const badges: [string, 'neutral' | 'pine' | 'saffron' | 'gold'][] = [
     [fmt.duration(trip), 'neutral'],
     [trip.difficulty, 'pine'],
@@ -90,7 +96,7 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         regions={fmt.regions(trip)}
       />
 
-      <SectionNav />
+      <SectionNav hide={showGallery ? [] : ['gallery']} />
 
       <Section id="overview" num="01" eyebrow="Overview" style={{ paddingBottom: 0 }}>
         <div
@@ -479,7 +485,16 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         </Section>
       )}
 
-      <Strip images={trip.gallery} />
+      {showGallery && (
+        <Section id="gallery" style={{ paddingTop: 0 }}>
+          <Reveal>
+            <Centered eyebrow="Photographs" title="What the days look like" />
+          </Reveal>
+          <div style={{ maxWidth: 'var(--container)', margin: 'var(--space-8) auto 0' }}>
+            <TripGallery photos={trip.gallery} title={trip.title} />
+          </div>
+        </Section>
+      )}
 
       <Section id="essential" style={{ paddingTop: 0 }}>
         <Reveal>
@@ -527,6 +542,8 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
           </div>
         </Reveal>
       </Section>
+
+      <TripRelated trip={trip} />
     </main>
   )
 }

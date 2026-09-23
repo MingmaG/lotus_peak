@@ -54,6 +54,9 @@
 --text-muted:var(--stone-2);
 --text-faint:var(--stone-1);
 --text-on-ground:var(--paper);
+--text-on-ground-muted:rgba(255,255,255,.72);/* captions and counters on a dark ground */
+--border-on-ground:rgba(255,255,255,.22);/* hairlines and quiet controls on a dark ground */
+--surface-on-ground:rgba(255,255,255,.08);/* a control's resting fill on a dark ground */
 --text-accent:var(--sky-deep);
 --border-hairline:rgba(31,29,26,.12);
 --border-strong:rgba(31,29,26,.32);

@@ -41,6 +41,7 @@ import type {
   SeasonKey,
   SiteSettings,
   Trip,
+  TripSections,
 } from '../../types'
 
 /**
@@ -149,7 +150,21 @@ export function toTripSummary(row: ApiTripSummary, index: number): Trip {
     excluded: [],
     faq: [],
     gallery: [],
+    sections: NO_SECTIONS,
+    destinations: [],
+    culture: [],
+    posts: [],
+    related: [],
   }
+}
+
+/** A card draws none of the bands; saying so keeps a summary from claiming any. */
+const NO_SECTIONS: TripSections = {
+  gallery: false,
+  destinations: false,
+  culture: false,
+  journal: false,
+  related: false,
 }
 
 export function toTrip(row: ApiTrip): Trip {
@@ -205,13 +220,20 @@ export function toTrip(row: ApiTrip): Trip {
       question: item.question,
       answer: renderStoredRichText(item.answer),
     })),
-    gallery: row.gallery.map((item) => {
-      const cell: [string, string?, string?, string?] = [imagePath(item.image)]
-      if (item.ratio) cell[1] = item.ratio
-      if (item.width) cell[2] = item.width
-      cell[3] = item.image.alt
-      return cell
-    }),
+    gallery: row.gallery.map((item) => ({
+      src: imagePath(item.image),
+      alt: item.image.alt,
+      caption: item.image.caption,
+      credit: item.image.credit,
+      width: item.image.width || null,
+      height: item.image.height || null,
+      focal: item.image.focal,
+    })),
+    sections: row.sections,
+    destinations: row.destinations.map((d, i) => toDestination(d, i)),
+    culture: row.culture.map((c, i) => toCultureArticle(c, i)),
+    posts: row.posts.map((p, i) => toPostSummary(p, i)),
+    related: row.related.map((t, i) => toTripSummary(t, i)),
   }
 }
 
