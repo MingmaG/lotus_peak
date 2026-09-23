@@ -70,4 +70,5 @@
 --scrim:rgba(12,62,92,.55);/* modal grounds — lotus sky ink, never pine */
 --glow-veil:drop-shadow(0 1px 1px rgba(255,255,255,.95)) drop-shadow(0 0 7px rgba(255,255,255,.8)) drop-shadow(0 0 18px rgba(255,255,255,.6));/* @kind other — halo for chrome standing on imagery with no plate behind it. A filter, not a text-shadow: the dignity rail's gold rule and its four markers are boxes, and a text-shadow would leave them to vanish on a dark hero while only the caps survived. */
 --protection:linear-gradient(to top,rgba(12,62,92,.58),rgba(12,62,92,0) 60%);/* @kind other */
+--cover-scrim:linear-gradient(to bottom,rgba(12,62,92,.5),rgba(12,62,92,0) 38%);/* @kind other — top-weighted, for a cover photograph with no type on it: only the white nav stands on the image, so only the top needs shade */
 }

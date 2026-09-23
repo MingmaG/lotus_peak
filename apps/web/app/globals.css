@@ -39,6 +39,10 @@
   .lp-three-col { grid-template-columns: minmax(0, 1fr) !important }
   .lp-facts { grid-template-columns: 1fr 1fr !important }
 }
+/* The cover photograph above a page's heading (sections/shared/Cover.tsx). */
+.lp-cover { height: var(--cover-h) }
+@media (max-width: 900px) { .lp-cover { height: var(--cover-h-narrow) } }
+
 /* Gallery: a column layout so the photographs keep their own proportions.
    The Reveal wrappers carry `break-inside: avoid` at their call site. */
 .lp-gallery { column-count: 3; column-gap: var(--space-6) }
