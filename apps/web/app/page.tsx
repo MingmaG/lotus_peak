@@ -15,7 +15,7 @@ import { IMG, altFor } from "@/lib/assets";
 import { Reveal, Split, Strip } from "@/motion";
 import { HomeHero } from "@/sections/home/HomeHero";
 import { Seasons } from "@/sections/home/Seasons";
-import { BandInquiry, BandLink } from "@/sections/shared/BandCta";
+import { BandLink, PaperInquiry } from "@/sections/shared/BandCta";
 import { Section } from "@/sections/shared/Section";
 import { JsonLd } from "@/seo/JsonLd";
 import { graphForPage } from "@/seo/graph";
@@ -377,9 +377,7 @@ export default async function HomePage() {
           from this sentence. They used to be typed here, and the first time
           the office changed the telephone number the home page kept the old
           one for three weeks. */}
-            <BandInquiry
-                src={IMG.bridge}
-                height="70vh"
+            <PaperInquiry
                 eyebrow="Begin"
                 title="Write to us"
                 body={`Tell us what you are hoping for. A festival, a long walk, some days of silence. We reply ${settings.contact.replyPromise.toLowerCase()}. Or call us at ${settings.contact.phone}.`}
