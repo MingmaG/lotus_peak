@@ -511,9 +511,14 @@
 }
 
 /* Footer links are set at reading size in a tight column, which is a 28px
-   target on a screen that is touched rather than pointed at. */
+   target on a screen that is touched rather than pointed at.
+
+   Not the social marks: they are already a 40px target, and this selector
+   outranks .lp-footer-social, so on a phone it turned each ring from a
+   centring grid into an inline block with padding and the mark sat low and
+   off-centre inside its circle. */
 @media (pointer: coarse) {
-  .lp-footer-cols a { display: inline-block; padding-block: 6px }
+  .lp-footer-cols a:not(.lp-footer-social) { display: inline-block; padding-block: 6px }
 }
 
 /* ---------------------------------------------------------------------------
