@@ -39,6 +39,13 @@
   .lp-three-col { grid-template-columns: minmax(0, 1fr) !important }
   .lp-facts { grid-template-columns: 1fr 1fr !important }
 }
+/* The home hero's scroll cue stands beside the headline and button. On a
+   phone there is no room beside them, and a phone needs no telling to scroll. */
+@media (max-width: 700px) {
+  .lp-hero-row { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-hero-row > :first-child { grid-column: 1 !important }
+  .lp-hero-cue { display: none }
+}
 /* The cover photograph above a page's heading (sections/shared/Cover.tsx). */
 .lp-cover { height: var(--cover-h) }
 @media (max-width: 900px) { .lp-cover { height: var(--cover-h-narrow) } }

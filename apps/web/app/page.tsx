@@ -70,12 +70,12 @@ export default async function HomePage() {
                     crumbs: [],
                 })}
             />
-            {/* The hero's one line is the home page's description in the
-             panel — the sentence that already says what Lotus Peak is. */}
+            {/* The hero's headline is the strapline in the panel's company
+             settings (the site tab), falling back to the tagline. */}
             <HomeHero
                 image={IMG.hero}
                 alt={altFor(IMG.hero)}
-                line={page?.seo.description ?? settings.defaultSeo.description}
+                line={settings.strapline}
             />
 
             {/* 01 — Our purpose */}

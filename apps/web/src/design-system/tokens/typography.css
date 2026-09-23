@@ -6,6 +6,9 @@
 --font-display:"Commissioner","Commissioner Fallback","Helvetica Neue",Arial,sans-serif;
 --font-serif-display:var(--font-display);
 --font-sans-body:"Commissioner","Commissioner Fallback","Helvetica Neue",Arial,sans-serif;
+/* The one exception to one family: the words over the home photograph, asked for in
+   a face of their own. Marcellus is a carved, inscription-cut serif. */
+--font-hero:"Marcellus",Georgia,"Times New Roman",serif;
 --weight-display:700;
 --weight-semibold:600;
 /* Scale — generous: 18px body, bold headings, readable labels */
