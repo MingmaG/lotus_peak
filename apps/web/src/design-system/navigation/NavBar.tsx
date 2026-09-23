@@ -68,7 +68,10 @@ export function NavBar({
   const mapTarget = mapHref ?? cta?.href ?? items[0]?.href
 
   // Publish the bar height. The nav itself changes height when scrolled, so
-  // this is observed rather than measured once.
+  // this is observed rather than measured once. It is the border box that is
+  // watched: scrolling changes only the padding, which leaves the content box —
+  // the observer's default — the same size, so --nav-h stuck at the unscrolled
+  // height and the trip sub-nav hung a padding-width gap below the bar.
   useIsomorphicLayoutEffect(() => {
     const el = barRef.current
     if (!el) return
@@ -76,7 +79,7 @@ export function NavBar({
       document.documentElement.style.setProperty('--nav-h', `${Math.round(el.getBoundingClientRect().height)}px`)
     write()
     const ro = new ResizeObserver(write)
-    ro.observe(el)
+    ro.observe(el, { box: 'border-box' })
     return () => ro.disconnect()
   }, [scrolled])
 
