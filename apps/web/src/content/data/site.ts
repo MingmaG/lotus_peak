@@ -347,6 +347,7 @@ export const SETTINGS: SiteSettings = {
   brand: 'Lotus Peak',
   legalName: 'Lotus Peak Tours & Travel',
   line: 'Small-group journeys in Bhutan.',
+  strapline: 'Mindful journeys in Bhutan',
   nav: [
     { label: 'Our trips', href: '/trips' },
     { label: 'Where we go', href: '/destinations' },

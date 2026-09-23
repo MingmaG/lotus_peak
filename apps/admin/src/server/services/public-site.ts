@@ -262,6 +262,7 @@ export async function getSite(): Promise<ApiSite> {
     legalName: company.legalName,
     name: company.name,
     tagline: company.tagline,
+    strapline: company.strapline,
     description: company.description,
     foundedYear: company.foundedYear,
     licenceNumber: company.licenceNumber,

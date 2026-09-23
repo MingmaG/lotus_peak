@@ -159,6 +159,7 @@ function fileSite(): ApiSite {
       legalName: s.legalName,
       name: s.brand,
       tagline: s.line,
+      strapline: s.strapline,
       description: s.defaultSeo.description,
       foundedYear: null,
       licenceNumber: null,
