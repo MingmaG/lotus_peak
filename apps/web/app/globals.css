@@ -107,6 +107,48 @@
   .lp-nav-search-wrap { display: none !important }
 }
 
+/* The menu panel's search box: the phone's way in, since the bar's box above
+   is hidden there. Above that width the bar's own box is always in view, and
+   a second one in the panel would be the same control twice. */
+.lp-menu-search { display: none }
+@media (max-width: 720px) {
+  .lp-menu-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    width: 100%;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: var(--space-2);
+  }
+  .lp-menu-search:focus-within { border-bottom-color: var(--sky-deep) }
+  .lp-menu-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    /* 16px or more, or iOS zooms the page when the box takes focus. */
+    font-size: var(--text-lead);
+    padding: var(--space-2) 0;
+  }
+  .lp-menu-search input::placeholder { color: var(--text-faint) }
+  .lp-menu-search input::-webkit-search-cancel-button { display: none }
+  .lp-menu-search button {
+    border: 0;
+    background: transparent;
+    padding: var(--space-3) 0 var(--space-3) var(--space-3);
+    color: var(--text-accent);
+    font-family: inherit;
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-nav);
+    text-transform: uppercase;
+    font-weight: 500;
+    cursor: pointer;
+  }
+}
+
 /* Below 380px the brand and the Menu button are together wider than the
    screen — an iPhone SE is 320px, and the page scrolled sideways on it.
    The wordmark loses two points and its letter-spacing, and the gutter
@@ -633,4 +675,83 @@
 @media (prefers-reduced-motion: reduce) {
   .lp-mosaic-tile:hover img,
   .lp-mosaic-tile:focus-visible img { transform: none }
+}
+
+/* ---------------------------------------------------------------------------
+   Search (app/search, src/sections/search/SearchView.tsx).
+
+   The box is the navigation's outlined field at reading size: one hairline
+   underneath rather than a boxed input, so the page reads as a question
+   rather than a form. Results are rows, not cards — a result list is scanned,
+   and cards make the eye travel twice as far between titles.
+   --------------------------------------------------------------------------- */
+.lp-search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--border-strong);
+  padding-bottom: var(--space-3);
+  color: var(--ink);
+  transition: border-color var(--dur-quick) var(--ease-breath);
+}
+.lp-search-field:focus-within { border-bottom-color: var(--sky-deep) }
+.lp-search-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: var(--text-h3);
+  line-height: var(--leading-heading);
+  padding: var(--space-2) 0;
+}
+.lp-search-field input::placeholder { color: var(--text-faint) }
+/* The browser's own clear cross sits beside our glyph and is a 12px target;
+   emptying the box by keyboard is one shortcut away. */
+.lp-search-field input::-webkit-search-cancel-button { display: none }
+
+.lp-search-hit {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  padding: var(--space-5) 0;
+  color: inherit;
+  text-decoration: none;
+}
+/* The site's link hover underlines; on a row that is a picture and three lines
+   it underlines a paragraph. The title turning sky is the hover here. */
+.lp-search-hit:hover { color: inherit; text-decoration: none }
+.lp-search-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--surface-sunken);
+}
+.lp-search-thumb img { transition: transform var(--dur-slow) var(--ease-settle) }
+.lp-search-hit:hover .lp-search-thumb img,
+.lp-search-hit:focus-visible .lp-search-thumb img { transform: scale(1.04) }
+.lp-search-hit:hover > span:last-child > span:nth-child(2) { color: var(--text-accent) }
+
+.lp-search-hit mark {
+  background: var(--sky-wash);
+  color: inherit;
+  padding: 0 .08em;
+}
+
+.lp-search-browse {
+  color: var(--text-body);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 4px;
+}
+
+/* On a phone the picture is a small square beside the words, not a column
+   that squeezes them into a third of the screen. */
+@media (max-width: 620px) {
+  .lp-search-hit { grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-4) }
+  .lp-search-thumb { aspect-ratio: 1 }
 }
