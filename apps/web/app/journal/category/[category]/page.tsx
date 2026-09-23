@@ -39,11 +39,11 @@ export async function generateMetadata({
   const posts = await getContent().posts.list({ category: category.key, limit: 1 })
   const path = `/journal/category/${category.key}`
   return {
-    title: `${category.label} — Journal`,
+    title: `Journal: ${category.label}`,
     description: category.description,
     alternates: { canonical: path },
     robots: { index: posts.length > 0, follow: true },
-    openGraph: { title: `${category.label} — Journal`, description: category.description, url: path },
+    openGraph: { title: `Journal: ${category.label}`, description: category.description, url: path },
   }
 }
 
@@ -66,7 +66,7 @@ export default async function JournalShelfPage({ params }: { params: Promise<{ c
       <JsonLd
         graph={await graphForIndex({
           path,
-          title: `${category.label} — Journal`,
+          title: `Journal: ${category.label}`,
           description: category.description,
           crumbs: [
             { name: 'Journal', path: '/journal' },
@@ -76,7 +76,7 @@ export default async function JournalShelfPage({ params }: { params: Promise<{ c
         })}
       />
       <JournalIndex
-        eyebrow="Journal"
+        eyebrow="Notes from Bhutan"
         title={category.label}
         lead={category.description}
         current={category.key}

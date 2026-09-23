@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const shipped: Metadata = {
   title: 'Culture',
   description:
-    'Tshechu, dzongs, textiles, Jomzo and the thirteen arts, Gross National Happiness, kira and gho, archery, and what is on the table — what you will see on a journey with us, and a little of what it means.',
+    'Tshechu, dzongs, textiles, Jomzo and the thirteen arts, Gross National Happiness, kira and gho, archery, and what is on the table. What you will see on a journey with us, and what it means.',
   alternates: { canonical: '/culture' },
   openGraph: { images: ogImage(IMG.tshechu) },
   }

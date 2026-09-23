@@ -92,12 +92,11 @@ interface TripJson {
 }
 
 /**
- * A valley, or — with `parent` — a place inside one.
+ * A valley, or, with `parent`, a place inside one.
  *
- * `standfirst` and `body` are what the migration makes of the old one-paragraph
- * `detail`: its first sentence, and the rest as the start of the body. The
- * Thimphu and Bumthang bodies continue with what were their journal entries,
- * and the three places *are* what were journal entries.
+ * The researched pages: six valleys and sixteen places, each a standfirst and
+ * a body of blocks. Sources for every page, and what was left out because
+ * they disagreed, are in `docs/CONTENT-SOURCES.md`.
  */
 interface DestinationJson {
   slug: string;
@@ -139,8 +138,8 @@ interface CultureJson {
   slug: string;
   title: string;
   standfirst: string;
-  /** Plain text; one paragraph. */
-  body: string;
+  /** The page, as blocks. A plain paragraph is still accepted. */
+  body: string | Block[];
   icon: string;
   image: string;
   order: number;
@@ -176,7 +175,7 @@ export async function seedCatalogue(images: ImageMap): Promise<void> {
   const destinationIds = await seedDestinations(media, images);
   await linkTripsToDestinations(tripIds, destinationIds);
   await seedActivities(media, tripIds);
-  await seedCulture(media, destinationIds);
+  await seedCulture(media, destinationIds, images);
   await seedGallery(media);
   await seedReflections(tripIds);
 }
@@ -359,7 +358,7 @@ function seasonKeysFrom(label: string): SeasonKey[] {
   return keys;
 }
 
-async function seedDestinations(
+export async function seedDestinations(
   media: (src?: string | null) => string | null,
   images: ImageMap,
 ): Promise<Map<string, string>> {
@@ -555,15 +554,22 @@ async function seedActivities(
   console.log(`  activities   ${activities.length}`);
 }
 
-async function seedCulture(
+export async function seedCulture(
   media: (src?: string | null) => string | null,
   destinationIds: Map<string, string>,
+  images: ImageMap,
 ): Promise<void> {
   for (const article of culture as CultureJson[]) {
+    const body =
+      typeof article.body === 'string'
+        ? article.body
+          ? asParagraphs(article.body)
+          : ''
+        : blocksToHtml(article.body, images, article.slug).html;
     const base = {
       title: article.title,
       standfirst: article.standfirst,
-      body: article.body ? asParagraphs(article.body) : '',
+      body,
       icon: ICON[article.icon] ?? 'CHORTEN',
       imageId: media(article.image),
       sortOrder: article.order,

@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const shipped: Metadata = {
   title: 'Where we go',
   description:
-    'Paro, Thimphu, Punakha, Bumthang, Trongsa and Phobjikha — the six valleys our journeys move through, and what is in each of them.',
+    'Paro, Thimphu, Punakha, Bumthang, Trongsa and Phobjikha: the six valleys our journeys move through, and the places in each of them.',
   alternates: { canonical: '/destinations' },
   openGraph: { images: ogImage(IMG.paroDzong) },
   }

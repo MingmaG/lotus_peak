@@ -5,11 +5,129 @@
     "icon": "chorten",
     "image": "/assets/imagery/cham-masked-dance.webp",
     "order": 1,
-    "standfirst": "Annual festivals held in dzong courtyards on the tenth day of a lunar month, honouring Guru Rinpoche.",
-    "body": "Masked cham dances, a giant thongdrel unrolled at dawn, and the whole valley in its finest dress. Paro Tshechu falls in spring, Thimphu Tshechu in September.",
+    "standfirst": "Festivals held on the tenth day of a lunar month in honour of Guru Rinpoche, when a valley gathers in its dzong courtyard for masked dances and blessings.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Tshechu means “tenth day”. In the lunar calendar the tenth day of each month is associated with Guru Rinpoche, the eighth-century master credited with bringing Vajrayana Buddhism to the Himalaya, and the great events of his life are held to have fallen on tenth days. Every district holds a tshechu, usually in the courtyard of its dzong, and many temples and villages hold their own. The month differs from place to place, so somewhere in the country there is a festival in most seasons."
+      },
+      {
+        "kind": "text",
+        "body": "A tshechu is a religious occasion first. The dances are teachings, performed by monks and by lay dancers trained for them, and watching them is held to bring merit. It is also the largest social gathering of the year for most families. People come in from outlying villages in their best kira and gho, bring food to share, and meet relatives they may not have seen since the last one."
+      },
+      {
+        "kind": "heading",
+        "text": "The dances"
+      },
+      {
+        "kind": "text",
+        "body": "The masked dances are called cham. Each has its own costume, music and choreography, and each carries a meaning: the victory of the teaching over obstacles, the nature of death and what follows it, or an episode from the life of Guru Rinpoche. The music comes from long horns, cymbals and drums played by monks at the edge of the courtyard, and a single dance can last an hour or more."
+      },
+      {
+        "kind": "text",
+        "body": "Some dances return at almost every festival. In the Black Hat dance (Shana), dancers in broad-brimmed hats and brocade robes perform a ritual that subdues harmful forces and purifies the ground. In the Dance of the Lords of the Cremation Ground (Durdag), dancers in white skull masks represent the protectors of the charnel grounds. The Dance of the Judgement of the Dead (Raksha Mangcham) is a long drama in which the Lord of Death weighs a person’s good and bad deeds while demons and deities argue the case. It is a lesson in cause and effect, told plainly enough for a child to follow."
+      },
+      {
+        "kind": "text",
+        "body": "One masked dance is on UNESCO’s list of the intangible cultural heritage of humanity: the Drum Dance of Drametse, from a village in eastern Bhutan, inscribed in 2008. Its calm opening represents peaceful deities and its fast, athletic second part wrathful ones, and it has come to stand for Bhutanese dance far beyond its home village."
+      },
+      {
+        "kind": "heading",
+        "text": "Atsaras"
+      },
+      {
+        "kind": "text",
+        "body": "Between and during the dances, masked clowns called atsaras move through the courtyard and the crowd. The name is usually traced to the Sanskrit acharya, a teacher. They tease the audience, mimic the dancers, collect offerings and keep people back from the dance ground, and their humour can be bawdy. The joking has a purpose: it deflates self-importance, and the atsaras are part of the ritual rather than a break from it. If one singles you out, laugh and play along."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/alo.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "The thongdrel"
+      },
+      {
+        "kind": "text",
+        "body": "Many tshechus end with the display of a thongdrel, a very large appliqué thangka hung against the wall of the dzong or a building beside the courtyard. It is raised before dawn on the last day and taken down before the sun reaches it. The name means “liberation on sight”, and seeing it is believed to cleanse the viewer of wrongdoing. People arrive in the dark to queue, pray and touch their heads to its lower edge. At Paro the thongdrel shows Guru Rinpoche with his eight manifestations."
+      },
+      {
+        "kind": "heading",
+        "text": "When they fall"
+      },
+      {
+        "kind": "text",
+        "body": "Festival dates follow the lunar calendar, so they move against the Western calendar from year to year, sometimes by several weeks. The Department of Tourism publishes each year’s festival calendar once the dates are set. Paro Tshechu, at Rinpung Dzong, falls in spring, usually in March or April. Thimphu Tshechu, at Tashichho Dzong, falls in autumn, usually in September or October. Punakha holds its festival in February or March, and Trongsa and the Bumthang valley have theirs from autumn into early winter."
+      },
+      {
+        "kind": "text",
+        "body": "Our festival journeys are timed to the published dates, so the lunar month sets the departure rather than us. The timings on this page are correct as of 2026; we check the calendar each season and confirm the exact days in the journey notes."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Name",
+            "“Tenth day”, the day of Guru Rinpoche"
+          ],
+          [
+            "Where",
+            "Dzong and temple courtyards"
+          ],
+          [
+            "Length",
+            "Usually several days"
+          ],
+          [
+            "Paro Tshechu",
+            "Spring, usually March or April"
+          ],
+          [
+            "Thimphu Tshechu",
+            "Autumn, usually September or October"
+          ],
+          [
+            "Dates",
+            "Published each year by the Department of Tourism"
+          ],
+          [
+            "Dress",
+            "Long sleeves, long trousers or skirt"
+          ]
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "A festival day"
+      },
+      {
+        "kind": "text",
+        "body": "A festival day starts early. The first dances begin in the morning, the galleries and the edges of the courtyard fill by mid-morning, and by midday the stalls outside the dzong are selling tea, snacks and toys. Families sit for hours on rugs with their lunch, and children drift between the dancing and the stalls. The pace is slow, and the best way to watch is to find a place, keep it, and let the day come to you."
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Dress modestly: long sleeves and long trousers or a long skirt. Bhutanese will be in their finest national dress, and a kira or gho is welcome on a visitor too.",
+          "Never walk across the dance ground, even between dances. Go round the edge.",
+          "Photographing the dances is generally allowed, but without flash, without stepping into the dancers’ space and without standing in front of people who are seated. Inside the temples it is not allowed.",
+          "At the thongdrel, give way to those who have come to worship. It is a moment of devotion, not a photocall.",
+          "The big festivals are crowded, especially at weekends and on the last day. Keep bags small and agree a meeting point with your guide."
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Not every tshechu is a large one. Village festivals keep the same shape on a smaller scale, with fewer visitors, and some dances are only performed in a single valley. If the timing of your journey allows, ask us what is on nearby."
+      }
+    ],
     "destinations": [
       "paro",
-      "thimphu"
+      "rinpung-dzong",
+      "thimphu",
+      "tashichho-dzong",
+      "punakha-dzong",
+      "trongsa-dzong"
     ]
   },
   {
@@ -18,11 +136,124 @@
     "icon": "dzong-long",
     "image": "/assets/imagery/tashichho-dzong.jpg",
     "order": 2,
-    "standfirst": "Fortress-monasteries that hold both the district administration and the monastic body.",
-    "body": "Whitewashed walls, a central utse tower, and windows framed in painted timber.",
+    "standfirst": "Fortress-monasteries built from the seventeenth century on, which still house a district’s administration and its monastic body behind one set of walls.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "A dzong is the building that holds a district together. Behind its walls sit the offices of the district administration and the quarters, temples and assembly halls of the district’s monks. Most of Bhutan’s twenty districts have one, and in many valleys it is by far the largest building, set on a spur or at a river junction where it once guarded the way through."
+      },
+      {
+        "kind": "heading",
+        "text": "The Zhabdrung and the dual system"
+      },
+      {
+        "kind": "text",
+        "body": "The dzongs as they stand now owe most to Zhabdrung Ngawang Namgyal, a lama of the Drukpa Kagyu school who came to Bhutan from Tibet in 1616. Over the following decades he brought the western valleys under one authority, and he built dzongs as he went. Simtokha, completed in 1629, is usually counted as the first, and it is the oldest to survive in something close to its original form. Punakha followed in 1637 to 1638, and Paro, Trongsa and others were founded in his time or soon after."
+      },
+      {
+        "kind": "text",
+        "body": "The Zhabdrung established the chhoesi, the dual system of government, which divided authority between the religious and the secular. The monastic side was led by the Je Khenpo, the chief abbot, and the civil side by the Desi, the temporal ruler. The dzong gave the arrangement a shape in stone, with monks and administrators each holding part of the building. The monarchy took the place of the Desi in 1907, but the division survives, and the Je Khenpo and the central monk body still move between Punakha in winter and Thimphu in summer."
+      },
+      {
+        "kind": "heading",
+        "text": "How a dzong is built"
+      },
+      {
+        "kind": "text",
+        "body": "The outer walls are massive and battered, leaning inwards as they rise, built of rammed earth or stone and whitewashed. The lower storeys have few openings. The upper ones break out into timber galleries and rabsel, projecting window bays with trefoil arches and painted frames. Near the top of the walls runs a broad band of red ochre, the kemar, which marks a building as sacred; you will see it on temples and monasteries as well."
+      },
+      {
+        "kind": "text",
+        "body": "By tradition, dzongs were built without drawn plans. A lama chose the site and set its dimensions, and master builders carried the proportions in their heads and passed them on by apprenticeship. The timber frame and roofs are joined without nails, the beams and columns locking together by joinery alone. The finest timber is the kachen, the carved and painted pillar with a tapering shaft, a beaded neck and a broad capital, which marks the important rooms of dzongs, temples and palaces."
+      },
+      {
+        "kind": "heading",
+        "text": "Inside the walls"
+      },
+      {
+        "kind": "text",
+        "body": "Beyond the gate lie one or more courtyards, the dochey, paved in stone and ringed by galleries. In the larger dzongs a central tower, the utse, stands between them, and the courtyards on either side are divided between the monks and the administration. The dochey is also where the tshechu is danced, and on festival days its galleries fill with spectators."
+      },
+      {
+        "kind": "text",
+        "body": "Around the courtyards are the lhakhangs, each with its main image, its murals and its butter lamps, and the monks’ quarters. Some chapels are open only to monks or for particular ceremonies. The murals by the entrance often show the Wheel of Life and the four guardian kings, and your guide will read them with you."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/gelongs-walking.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting a dzong"
+      },
+      {
+        "kind": "text",
+        "body": "Dzongs are working buildings, not museums. Visitors can usually enter the courtyards and some of the temples, but hours vary from one dzong to the next, and some limit visits while the offices are at work or during ceremonies. We plan the timing of each visit around this. Hours and access are as stated as of 2026; we check them each season and confirm them in the journey notes."
+      },
+      {
+        "kind": "text",
+        "body": "Bhutanese visitors wear national dress, with a kabney for men and a rachu for women. Visitors from abroad are not expected to wear national dress, but they are expected to dress with care."
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Long sleeves and long trousers or an ankle-length skirt. No shorts and no bare shoulders.",
+          "Hats off at the gate, and shoes off at the door of a temple room.",
+          "No photography inside the temples. In the courtyards it is usually allowed; ask your guide.",
+          "Walk clockwise around the utse, chortens and prayer wheels, and keep your voice low.",
+          "Do not touch statues or offerings, and when seated, do not point your feet towards the altar."
+        ]
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "What it holds",
+            "District administration and monk body"
+          ],
+          [
+            "Built",
+            "Mostly from the seventeenth century, many rebuilt since"
+          ],
+          [
+            "Oldest surviving",
+            "Simtokha Dzong, 1629"
+          ],
+          [
+            "Construction",
+            "Rammed earth and stone, timber joined without nails"
+          ],
+          [
+            "Dress",
+            "Long sleeves, long trousers or skirt, no hats"
+          ],
+          [
+            "Photography",
+            "Not inside temples"
+          ]
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "On the World Heritage tentative list"
+      },
+      {
+        "kind": "text",
+        "body": "In 2012 Bhutan placed five dzongs together on UNESCO’s World Heritage tentative list, under the title “Dzongs: the centre of temporal and religious authorities”: Punakha, Wangdue Phodrang, Paro (Rinpung), Trongsa and Dagana. A tentative listing is a statement of intent, not an inscription, and the five remain nominated rather than listed."
+      },
+      {
+        "kind": "text",
+        "body": "Weeks after the listing, in June 2012, Wangdue Phodrang Dzong burned to the ground. It was rebuilt on the old lines by traditional methods, with modern fire and earthquake protection hidden inside, and consecrated in November 2022. Fire, earthquake and flood have damaged most dzongs at some point, and many have been rebuilt more than once. That is part of the tradition too: a dzong is kept alive by the same crafts that made it."
+      }
+    ],
     "destinations": [
+      "rinpung-dzong",
+      "tashichho-dzong",
       "punakha-dzong",
-      "trongsa-dzong"
+      "trongsa-dzong",
+      "simtokha-dzong"
     ]
   },
   {
@@ -31,9 +262,117 @@
     "icon": "pavilion",
     "image": "/assets/textures/kera-full.jpg",
     "order": 3,
-    "standfirst": "Weaving is one of the thirteen traditional arts.",
-    "body": "A kera, the woven belt that fastens the kira, carries patterns particular to its valley and its weaver.",
-    "destinations": []
+    "standfirst": "Weaving, thagzo, is one of Bhutan’s thirteen traditional arts, and the cloth a person wears still says a good deal about where it was made and by whom.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Every kira, gho and kera in the country began on a loom, and until recently almost all of them on a loom in someone’s house. Weaving has been women’s work for generations, learned as girls on their mothers’ looms and done in the quieter months of the farming year. Cloth has long been a form of wealth, given at weddings and offered at temples, and in the past it was paid as tax. It remains the most visible of the traditional arts, because people wear it every day."
+      },
+      {
+        "kind": "heading",
+        "text": "Three looms"
+      },
+      {
+        "kind": "text",
+        "body": "The oldest and most common is the backstrap loom. The warp is stretched between a fixed point, a post or a wall, and a strap around the weaver’s back, and she controls the tension by leaning back into it. It weaves narrow panels, so a kira is usually made of three panels sewn edge to edge. Its strength is patterning: the finest designs, picked out thread by thread in supplementary weft, are made on it."
+      },
+      {
+        "kind": "text",
+        "body": "The horizontal frame loom, worked with foot pedals, is used mainly in central Bhutan, in Thimphu and among the herders of Merak and Sakteng in the east. It is faster and suits woollen cloth. The third is the card loom, used for narrow bands such as belts and straps, where the pattern is formed by turning a stack of small cards between each pass of the weft."
+      },
+      {
+        "kind": "heading",
+        "text": "Regional cloths"
+      },
+      {
+        "kind": "text",
+        "body": "Kishuthara is the most prized. It is a kira with a white or pale ground covered in dense silk brocade, and the finest come from Lhuentse in the north-east, above all from the village of Khoma. A single piece can take many months, and the most complex more than a year. Eastern weavers are also known for aikapur, cloth patterned in supplementary warp."
+      },
+      {
+        "kind": "text",
+        "body": "Yathra belongs to Bumthang, and especially to Chhume. It is a thick woollen cloth, woven in panels with geometric patterns, first made for warmth in a high, cold valley and now also turned into jackets, blankets and runners. Traditional yathra was coloured with vegetable dyes, and weavers in Chhume have been reviving natural dyeing as imported yarn has spread. On the road through the valley you will pass workshops with looms at the door."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/traditional-dress.jpg",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Fibre and colour"
+      },
+      {
+        "kind": "text",
+        "body": "Cotton, raw silk and, increasingly, acrylic are the main fibres today. Much of the silk is bura, raw or wild silk, and some is imported. In the north and east, herders weave yak hair into tents, rain cloaks and bags, and sheep’s wool into cloth. Nettle fibre was once widely spun and woven, and is still worked in a few places."
+      },
+      {
+        "kind": "text",
+        "body": "The traditional dyes come from plants and insects. Blue is indigo, from broad-leaved shrubs. Red comes from lac, a resin left on branches by an insect, and from madder root. Yellow comes from the leaves of Symplocos trees, and browns from walnut. Natural dyes give softer, slightly uneven colour that fades gently with age. Chemical dyes are now far more common, and neither is in itself the mark of a good or a poor cloth."
+      },
+      {
+        "kind": "heading",
+        "text": "The Royal Textile Academy"
+      },
+      {
+        "kind": "text",
+        "body": "In Thimphu, the Royal Textile Academy was instituted in 2005 under the patronage of Her Majesty the Gyalyum Sangay Choden Wangchuck, building on a textile museum opened in 2001. It houses the Textile Museum, teaches weaving and conservation, and documents regional designs before they are lost. Its galleries are the clearest introduction to the subject in the country, and a morning there makes every loom you see afterwards easier to read."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "One of the thirteen arts",
+            "Thagzo, weaving"
+          ],
+          [
+            "Looms",
+            "Backstrap, horizontal frame, card"
+          ],
+          [
+            "Fibres",
+            "Cotton, raw silk, wool, yak hair, nettle"
+          ],
+          [
+            "Best-known cloths",
+            "Kishuthara (Lhuentse), yathra (Bumthang)"
+          ],
+          [
+            "Time for a fine kira",
+            "Many months, sometimes more than a year"
+          ],
+          [
+            "To see more",
+            "Royal Textile Academy, Thimphu"
+          ]
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "Buying well"
+      },
+      {
+        "kind": "text",
+        "body": "A handwoven kira takes weeks at the very least and often months, and the price reflects it. Machine-made cloth with Bhutanese patterns, much of it from India, is sold alongside and costs a fraction as much. There is nothing wrong with buying it, as long as you know which one you are paying for."
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Turn the cloth over. Hand-picked patterns show floats and small irregularities on the back; machine cloth tends to be uniform on both faces.",
+          "Buy from the weaver where you can, or from a cooperative or shop that can tell you who made the piece.",
+          "Ask how long it took. Weavers are usually glad to say, and the answer explains the price.",
+          "Antiques may not be taken out of the country. If a textile looks old, ask before you buy it."
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "If you would like to watch a loom at work, tell us. Weaving households are easy to visit when someone is at the loom, and many of our journeys pass through valleys where a weaver will show you how a pattern is built, row by row."
+      }
+    ],
+    "destinations": [
+      "thimphu",
+      "bumthang"
+    ]
   },
   {
     "slug": "jomzo",
@@ -41,9 +380,131 @@
     "icon": "buddha",
     "image": "/assets/imagery/lam-with-sculpture.webp",
     "order": 4,
-    "standfirst": "Zorig Chusum, the thirteen arts: painting, sculpture, casting, woodwork, weaving and more.",
-    "body": "Jomzo shapes clay, copper and gold into sacred images, and the workshops are open — you can stand at the bench and watch a figure come up out of the clay.",
-    "destinations": []
+    "standfirst": "Zorig Chusum, the thirteen traditional arts, still make the statues, paintings, carvings and cloth of Bhutan’s temples and homes. Jimzo, clay sculpture, is where we begin.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Almost everything you see inside a dzong or temple was made by hand by someone trained in one of the thirteen arts: the statues on the altar, the murals on the walls, the carved and painted pillars, the brass lamps, the masks in the storeroom waiting for the next festival. The arts are practised as trades, learned by apprenticeship, and much of the work is still commissioned for religious use. Jomzo is our spelling of jimzo, clay sculpture, the art our journeys spend most time with."
+      },
+      {
+        "kind": "heading",
+        "text": "The thirteen arts"
+      },
+      {
+        "kind": "text",
+        "body": "Tradition credits the fifteenth-century treasure revealer Pema Lingpa, remembered as a smith as well as a teacher, with bringing many of these arts into Bhutan. Their grouping as thirteen is usually dated later, to the rule of the fourth Desi, Tenzin Rabgye, from 1680 to 1694. Both accounts are tradition as much as record, but the list itself is settled:"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Dezo: papermaking",
+          "Dozo: masonry and stonework",
+          "Garzo: blacksmithing",
+          "Jinzo (jimzo): clay sculpture and clay work",
+          "Lhazo: painting, from thangkas and murals to furniture",
+          "Lugzo: bronze casting",
+          "Parzo: carving in wood, slate and stone",
+          "Shagzo: woodturning, such as the lidded dapa bowls",
+          "Shingzo: carpentry and timber building",
+          "Thagzo: weaving",
+          "Trozo: gold and silver smithing",
+          "Tshazo: cane and bamboo work",
+          "Tshemazo: needlework, embroidery and appliqué"
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "Where the arts are taught"
+      },
+      {
+        "kind": "text",
+        "body": "In 1971 a school of traditional arts opened in Thimphu under royal command. It is now the National Institute for Zorig Chusum, still called the Painting School by many, and its students train for four to six years in painting, sculpture, carving, embroidery and other arts. A second institute, in Trashiyangtse in the east, teaches the same arts. Visitors can often walk through the classrooms and watch, though access follows the academic year; this is as of 2026, checked each season and confirmed in the journey notes."
+      },
+      {
+        "kind": "heading",
+        "text": "Jimzo: how a clay figure is made"
+      },
+      {
+        "kind": "text",
+        "body": "Clay sculpture begins with the right earth. The clay is cleaned and kneaded, and often mixed with fibre, including shredded handmade paper or beaten Daphne bark, which binds it and stops it cracking as it dries. Larger figures are built up over an armature, and many are formed hollow."
+      },
+      {
+        "kind": "text",
+        "body": "The sculptor works to fixed proportions, the same canon of measurement painters use, so that a Buddha or a protector is recognisable by its form as well as by what it holds. Fingers, ornaments and faces are modelled separately or pressed from moulds and joined on. When the figure has dried it is painted, and the face is often gilded. Before a statue goes on an altar it is filled with rolled prayers and consecrated, and only then is it treated as an object of worship."
+      },
+      {
+        "kind": "text",
+        "body": "Clay is also pressed into the small votive figures called tsa-tsa, left in caves, at chortens and on hillsides. At a jimzo workshop, if the master is willing, you can try a simple piece yourself. What you take away is a sense of how many hours sit inside the statues you pass in every temple."
+      },
+      {
+        "kind": "heading",
+        "text": "Painting, casting, carving and paper"
+      },
+      {
+        "kind": "text",
+        "body": "Painters, lhazo, work on thangkas, murals and furniture. A thangka starts as cotton stretched on a frame and primed. The figure is laid out on a grid of proportion lines before any colour goes on, and pigments, traditionally ground from minerals and plants, are bound with glue. The work moves from background to figure to the finest detail."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/thangkas.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "text",
+        "body": "Bronze casting, lugzo, uses the lost-wax method, which tradition says Newar craftsmen from Nepal brought in the seventeenth century. The figure is modelled in wax, often over a clay core, and encased in a clay mould. The mould is heated, the wax runs out, and molten metal is poured into the space it leaves. The mould is then broken away and the casting is chased, polished and often gilded. Roof finials, bells and ritual vessels are made the same way."
+      },
+      {
+        "kind": "text",
+        "body": "Carvers, parzo, make the masks worn in cham, the blocks used to print prayer flags and texts, and the panels of altars and windows. Papermakers, dezo, make deh-sho from the inner bark of the Daphne shrub: the bark is soaked, boiled and beaten to pulp, and the pulp is lifted from water on a screen and dried in sheets. The paper is strong and long-lasting, which is why monasteries used it for scriptures, and a small factory in Thimphu shows the whole process."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "The thirteen arts",
+            "Zorig Chusum"
+          ],
+          [
+            "Clay sculpture",
+            "Jimzo (Jomzo on our journeys)"
+          ],
+          [
+            "Formal training",
+            "Four to six years"
+          ],
+          [
+            "Institutes",
+            "Thimphu (1971) and Trashiyangtse"
+          ],
+          [
+            "Where to watch",
+            "Workshops and the institute in Thimphu"
+          ]
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "Visiting a workshop"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Ask before photographing a craftsperson or their work, and ask again inside anything consecrated.",
+          "Do not touch unfinished work, tools or paints unless you are invited to.",
+          "Do not step over or sit on anything laid on the floor. An image in progress is already treated with respect.",
+          "If you want to buy, ask the workshop directly. Pieces commissioned for a temple are not for sale.",
+          "Antiques may not be exported. New work bought from a workshop can go home with you."
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "The workshops are not a show put on for visitors. They are places of work, and the best visits are unhurried: a question or two, a long look at the bench, and time to see a figure change shape over an hour."
+      }
+    ],
+    "destinations": [
+      "thimphu"
+    ]
   },
   {
     "slug": "gross-national-happiness",
@@ -51,8 +512,122 @@
     "icon": "monastery",
     "image": "/assets/imagery/travel-with-heart.webp",
     "order": 5,
-    "standfirst": "Bhutan measures progress by well-being, culture, environment and good governance rather than output alone.",
-    "body": "It is the only carbon-negative country in the world, and the constitution requires that sixty per cent of it stay under forest.",
+    "standfirst": "Bhutan’s stated aim for government: progress judged by well-being, culture, environment and good governance, not by economic output alone.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "Gross National Happiness is the idea that a country’s development should be judged by more than what it produces. In Bhutan it is written into the constitution, measured by national surveys, and used, at least in principle, to test new policy. Abroad it is often misread as a claim that everyone in Bhutan is happy. It has never been that."
+      },
+      {
+        "kind": "heading",
+        "text": "Where the phrase came from"
+      },
+      {
+        "kind": "text",
+        "body": "The phrase is credited to the fourth King, Jigme Singye Wangchuck, who came to the throne in 1972. The most widely told account dates it to 1979, when, returning from a summit abroad, he told a journalist in India that Gross National Happiness was more important than Gross National Product. Versions of the remark differ, and the thinking behind it is older than the line. What matters is that the idea stuck and became the frame for the country’s development plans."
+      },
+      {
+        "kind": "heading",
+        "text": "Four pillars and nine domains"
+      },
+      {
+        "kind": "text",
+        "body": "GNH is usually described through four pillars: sustainable and equitable socio-economic development, conservation of the environment, preservation and promotion of culture, and good governance. For measurement these are broken into nine domains:"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Psychological well-being",
+          "Health",
+          "Education",
+          "Time use",
+          "Cultural diversity and resilience",
+          "Good governance",
+          "Community vitality",
+          "Ecological diversity and resilience",
+          "Living standards"
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Time use and community vitality are the two visitors tend to notice first. They ask how long people work and sleep, whether they give time to others, and whether they trust their neighbours, which are not the usual questions a government asks of its economy."
+      },
+      {
+        "kind": "heading",
+        "text": "Measuring it"
+      },
+      {
+        "kind": "text",
+        "body": "The Centre for Bhutan and GNH Studies runs the national GNH surveys and has published an index from them for 2010, 2015 and 2022. The index is built from 33 indicators across the nine domains. A person counts as happy in its terms when they have sufficiency in enough of those indicators, not because they said they felt happy on the day. The index rose from 0.743 in 2010 to 0.756 in 2015 and 0.781 in 2022."
+      },
+      {
+        "kind": "text",
+        "body": "The 2022 survey classed 9.5 per cent of people as deeply happy, 38.6 per cent as extensively happy, 45.5 per cent as narrowly happy and 6.4 per cent as unhappy. Those figures are worth reading closely. Close to half the population sits in the narrow band, and the survey is used to show where policy falls short as much as where it works."
+      },
+      {
+        "kind": "text",
+        "body": "GNH does not settle hard questions; it frames them. Bhutan’s own press reports openly on youth unemployment and on the number of young people leaving to study and work abroad, and those debates are part of the GNH conversation rather than outside it."
+      },
+      {
+        "kind": "heading",
+        "text": "In the constitution"
+      },
+      {
+        "kind": "text",
+        "body": "The constitution adopted in 2008 makes GNH a principle of state policy: Article 9 directs the state to promote the conditions that enable the pursuit of Gross National Happiness. Article 5 requires that at least 60 per cent of the country remain under forest for all time. The most recent national forest inventory puts actual cover at close to 70 per cent."
+      },
+      {
+        "kind": "text",
+        "body": "With that much forest, and electricity drawn almost entirely from hydropower, Bhutan’s national greenhouse gas inventories show its forests absorbing more carbon than the country emits. That is why it is often described as carbon negative. Since 2009 it has pledged to remain carbon neutral, so that its emissions never exceed what its forests absorb. The balance depends on keeping the forest and keeping emissions from transport and industry low, and the government treats it as a commitment to keep, not a finished fact."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/phobjikha-valley.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "What it means for travellers"
+      },
+      {
+        "kind": "text",
+        "body": "Tourism policy follows the same logic. Bhutan calls it High Value, Low Volume: fewer visitors, travelling with licensed guides and contributing more for each day they stay. Most international visitors pay a Sustainable Development Fee, which funds conservation, health, education and the protection of culture. As of 2026 it is US$ 100 per person per night, a reduced rate set to run until 31 August 2027. We check it each season and confirm it in the journey notes."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Phrase",
+            "The fourth King, widely dated to 1979"
+          ],
+          [
+            "Pillars",
+            "Four"
+          ],
+          [
+            "Domains",
+            "Nine, measured by 33 indicators"
+          ],
+          [
+            "GNH Index",
+            "0.743 (2010), 0.756 (2015), 0.781 (2022)"
+          ],
+          [
+            "Forest",
+            "At least 60 per cent by the constitution; close to 70 per cent in fact"
+          ],
+          [
+            "Sustainable Development Fee",
+            "US$ 100 per person per night, as of 2026"
+          ]
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "On the ground you will meet GNH less as an idea than as a set of choices: forest down to the roadside, rules that keep new buildings to traditional forms, a ban on plastic bags, and the time people give to a festival or a neighbour’s ceremony. It is an aim a small country holds itself to, imperfectly and in public, and it is more interesting for that than any claim to have arrived."
+      }
+    ],
     "destinations": []
   },
   {
@@ -61,9 +636,127 @@
     "icon": "stupa",
     "image": "/assets/imagery/traditional-dress.jpg",
     "order": 6,
-    "standfirst": "National dress worn daily: the kira for women, the gho for men, with a kabney or rachu scarf added inside dzongs and temples.",
-    "body": "",
-    "destinations": []
+    "standfirst": "Bhutan’s national dress, the kira for women and the gho for men, is worn to work, to school and to every festival, with a scarf of rank added for the dzong.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "In most countries national dress comes out for weddings and parades. In Bhutan it is what people wear to the office. Civil servants, teachers, schoolchildren and anyone with business at a dzong wear it on working days, and at a festival nearly everybody does. It belongs to driglam namzha, the code of conduct and dress that sets out how people present themselves on formal occasions."
+      },
+      {
+        "kind": "heading",
+        "text": "The gho"
+      },
+      {
+        "kind": "text",
+        "body": "The gho is a wide robe, hitched up to the knee and tied at the waist with a narrow woven belt, the kera, so that the cloth above the belt forms a deep pouch across the chest. That pouch once carried a wooden bowl, doma and whatever else a man needed for the day; now it is as likely to hold a phone. Long white cuffs are folded back over the sleeves, and the gho is worn with knee socks and shoes, or with embroidered boots on formal occasions."
+      },
+      {
+        "kind": "heading",
+        "text": "The kira"
+      },
+      {
+        "kind": "text",
+        "body": "The kira is an ankle-length rectangle of woven cloth, wrapped around the body over a long-sleeved blouse, the wonju, fastened at each shoulder with a brooch, the koma, and belted with a kera. Over it goes the tego, a short open jacket, with the cuffs of the wonju folded back over its sleeves. Many women now wear a two-piece version, a wrapped skirt with the tego, day to day, and keep the full kira for formal occasions."
+      },
+      {
+        "kind": "text",
+        "body": "The cloth is where individuality lies. A festival kira might be a kishuthara, silk brocade on a pale ground that takes months to weave; an everyday one is cotton or a machine-woven blend. People own a few good pieces and wear them for decades, and a fine kira is often handed down."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/guided-principle.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "heading",
+        "text": "Kabney and rachu"
+      },
+      {
+        "kind": "text",
+        "body": "In a dzong, at an official function or when meeting a senior official, men add the kabney, a long scarf of raw silk worn from the left shoulder across to the right hip. Its colour shows rank:"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Saffron: the King and the Je Khenpo",
+          "Orange: ministers",
+          "Green: judges",
+          "Blue: members of parliament",
+          "Red: holders of the title Dasho, conferred by the King",
+          "White with red stripes: gups, the elected heads of local government",
+          "White: everyone else"
+        ]
+      },
+      {
+        "kind": "text",
+        "body": "Women wear the rachu, a narrower cloth draped over the left shoulder. Women holding office wear the colours of their rank, and most women wear a red rachu woven with patterns. There is a correct way to wear, fold and handle both, taught in school as part of driglam namzha."
+      },
+      {
+        "kind": "heading",
+        "text": "When it is worn"
+      },
+      {
+        "kind": "text",
+        "body": "National dress has been required in schools, government offices and on formal occasions since 1989, when the rule was reinforced under driglam namzha. Outside those settings people wear what they like, and in towns you will see jeans and trainers at weekends. At festivals, weddings and religious ceremonies people put on the best they own, and at a large tshechu the courtyard becomes a survey of the country’s weaving."
+      },
+      {
+        "kind": "text",
+        "body": "Not everyone wears the same national dress. The herders of Merak and Sakteng in the east and of Laya in the north keep clothing of their own, including hats of felted yak hair in the east and conical bamboo hats in Laya, and they wear it with as much pride as any kira or gho."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Men",
+            "Gho, kera, white cuffs folded back"
+          ],
+          [
+            "Women",
+            "Kira, wonju, tego, koma, kera"
+          ],
+          [
+            "Formal addition",
+            "Kabney for men, rachu for women"
+          ],
+          [
+            "Required",
+            "Schools, government offices, formal occasions"
+          ],
+          [
+            "Visitors",
+            "Welcome to wear it, never expected to"
+          ]
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "Should visitors wear it?"
+      },
+      {
+        "kind": "text",
+        "body": "You are not expected to, and nobody will think less of you for not doing so. If you would like to, it is welcome, particularly at a festival, where many Bhutanese enjoy seeing a visitor make the effort. A simple gho or kira can be bought in Thimphu or Paro, and hotels and shops can often arrange one to borrow or hire. Your guide will show you how to put it on; the gho in particular takes practice and a second pair of hands. Visitors do not normally wear a kabney or rachu, which belong to the system of rank."
+      },
+      {
+        "kind": "text",
+        "body": "What is expected of every visitor, in national dress or not, is care at religious sites:"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "In a dzong, temple or monastery, cover your arms and legs: long sleeves, and long trousers or an ankle-length skirt.",
+          "No shorts, sleeveless tops or short skirts.",
+          "Take off your hat before you go in, and your shoes at the door of a temple room.",
+          "Simple, tidy clothes suit a dzong better than walking gear, though clean trekking clothes that cover you are fine."
+        ]
+      }
+    ],
+    "destinations": [
+      "thimphu",
+      "paro",
+      "tashichho-dzong",
+      "rinpung-dzong"
+    ]
   },
   {
     "slug": "archery",
@@ -71,9 +764,116 @@
     "icon": "pavilion",
     "image": "/assets/imagery/archery.webp",
     "order": 7,
-    "standfirst": "Datse is the national sport and it is played everywhere, over 145 m, with singing and dancing from the team at the far end when a shot lands.",
-    "body": "Khuru is its winter cousin: weighted darts thrown twenty metres at a small board.",
-    "destinations": []
+    "standfirst": "Datse, archery, is Bhutan’s national sport, shot over about 145 m at a small wooden target, with singing, dancing and taunting from both ends of the range.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "On almost any weekend, somewhere in every town, you will hear an archery match before you see it: singing, a burst of cheering, a call from the far end of the range. Archery was declared the national sport in 1971, the year Bhutan joined the United Nations, and it is played by farmers, officials and schoolboys alike. It is a sport, a social occasion and, in its traditional form, a contest in which luck is taken seriously."
+      },
+      {
+        "kind": "heading",
+        "text": "The range and the target"
+      },
+      {
+        "kind": "text",
+        "body": "The traditional range is about 145 m long, with a target at each end. Archers shoot from one end, walk to the other, and shoot back. The target is a narrow painted wooden board set upright in front of a low bank, and from the shooting line it looks impossibly small. A hit is called a karay, and when one lands the archer’s team-mates near the target break into a short song and dance in his honour."
+      },
+      {
+        "kind": "text",
+        "body": "Teams are traditionally of thirteen archers, each shooting two arrows a turn, and a match continues until one side reaches the agreed score, which can take a day or more. Village matches follow local custom, and the details vary from valley to valley."
+      },
+      {
+        "kind": "heading",
+        "text": "Bamboo and compound bows"
+      },
+      {
+        "kind": "text",
+        "body": "The traditional bow is made of bamboo, and so are the arrows, fletched with feathers. In recent decades imported compound bows, with pulleys and sights, have become common, and many matches between clubs and offices are shot with them over the same distance. Compound arrows fly faster and flatter, and scores rise accordingly. Tournaments for traditional archery require bamboo bows, and many archers still prefer them."
+      },
+      {
+        "kind": "text",
+        "body": "Bhutan has entered archers at the Olympic Games since 1984, its first Games, where they shoot the Olympic recurve event at 70 m. That is a different discipline from datse, and most Bhutanese archers never shoot it."
+      },
+      {
+        "kind": "heading",
+        "text": "Singing, dancing and luck"
+      },
+      {
+        "kind": "text",
+        "body": "An archery match is loud. Team-mates stand near the opposing target and shout, sing and mock the other side’s archers as they draw, and receive the same in return. The verbal sparring is an art of its own, with witty verses traded between teams. Women sing and dance for their side between rounds, with songs that praise their team and tease the other, and food and ara are shared through the day."
+      },
+      {
+        "kind": "text",
+        "body": "Traditional matches keep a close eye on luck. Teams have long consulted astrologers to choose an auspicious day and place, and sometimes to perform rites meant to weaken the other side. Much of this is played for fun now, but not all of it. A team that has lost a match will sometimes blame the day as readily as its archers."
+      },
+      {
+        "kind": "heading",
+        "text": "Tournaments"
+      },
+      {
+        "kind": "text",
+        "body": "Matches follow the calendar of holidays and festivals, and Losar, the new year, is the busiest time. Local celebrations nearly always include archery, and there is a season of national and open tournaments with sponsors and prize money. In towns many offices and companies field their own teams, and a lunchtime practice on a range beside the road is an ordinary sight."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Status",
+            "National sport since 1971"
+          ],
+          [
+            "Range",
+            "About 145 m"
+          ],
+          [
+            "Bows",
+            "Bamboo (traditional) and compound"
+          ],
+          [
+            "Team",
+            "Traditionally thirteen archers"
+          ],
+          [
+            "Busiest",
+            "Losar and public holidays"
+          ],
+          [
+            "Spectators",
+            "Behind the archers, never downrange"
+          ]
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "Khuru and degor"
+      },
+      {
+        "kind": "text",
+        "body": "Khuru is the lighter cousin: a heavy wooden dart with a metal point and flights, thrown by hand at a small target across an open field. It needs no bow, costs little, and is played in villages and schoolyards, especially in the cooler months and at Losar. Like archery, it comes with its own singing and taunting."
+      },
+      {
+        "kind": "image",
+        "src": "/assets/imagery/khuru.webp",
+        "ratio": "3/2"
+      },
+      {
+        "kind": "text",
+        "body": "Degor is older and quieter. Players throw a pair of flat, rounded stones at a peg set in the ground some distance away, and a stone that lands within a hand’s span of the peg scores. It is played mostly in the countryside, often at village festivals, and is more than the shot put it is sometimes compared to."
+      },
+      {
+        "kind": "heading",
+        "text": "Watching safely"
+      },
+      {
+        "kind": "text",
+        "body": "Visitors are welcome at almost any match. Ask your guide to find one, and ask the teams before you photograph anyone close up. An arrow shot over 145 m does not always land where it was aimed, and spectators at Bhutanese ranges have been hurt. Stand well behind the archers or well to the side of the target, never in the line between them, and move when the players tell you to. The team standing by the target knows exactly when to step aside; visitors do not."
+      }
+    ],
+    "destinations": [
+      "thimphu",
+      "paro"
+    ]
   },
   {
     "slug": "food",
@@ -81,8 +881,116 @@
     "icon": "chorten",
     "image": "/assets/imagery/cuisine.webp",
     "order": 8,
-    "standfirst": "Red rice, and chilli treated as a vegetable rather than a spice.",
-    "body": "Ema datshi — chillies and cheese — is the national dish. Every meal on our journeys is included, and there is always something mild alongside.",
-    "destinations": []
+    "standfirst": "Red rice, cheese, and chillies eaten as a vegetable: Bhutanese food is simple, warming and often hot, and there is always something mild on the table.",
+    "body": [
+      {
+        "kind": "text",
+        "body": "A Bhutanese meal is built on rice, with two or three dishes eaten alongside, set out together rather than in courses. Home cooking is simple and done on one or two burners, and the same dishes turn up in farmhouses and hotels, adjusted for heat. What surprises most visitors is not the spice itself but the role of chilli: here it is the vegetable, not the seasoning."
+      },
+      {
+        "kind": "heading",
+        "text": "Rice and chilli"
+      },
+      {
+        "kind": "text",
+        "body": "Red rice is grown in the western valleys, among them Paro and Punakha, and semi-milled so that some of the red bran stays on. Cooked, it is pink, slightly sticky and nutty, and it holds together well enough to be eaten by hand. White rice, buckwheat and maize are eaten too, depending on the valley and the altitude."
+      },
+      {
+        "kind": "text",
+        "body": "Chillies grow almost everywhere. They are eaten fresh through the summer and dried on roofs in autumn, when whole villages turn red with them. Ema datshi, chillies cooked with cheese, is the national dish: the chillies are split and simmered with datshi, a soft local cheese, and sometimes onion and tomato, until the cheese melts into a sauce. It appears at almost every meal, and a home cook’s version is hotter than a hotel’s."
+      },
+      {
+        "kind": "heading",
+        "text": "Dishes you will meet"
+      },
+      {
+        "kind": "list",
+        "items": [
+          "Kewa datshi: potatoes cooked with cheese, usually far milder than ema datshi.",
+          "Shamu datshi: mushrooms with cheese, best in the months when wild mushrooms are gathered.",
+          "Phaksha paa: pork, often fatty or dried, cooked with radish or greens and dried red chillies.",
+          "Jasha maru: diced chicken cooked with tomato, garlic, ginger and chilli.",
+          "Momo: steamed dumplings filled with meat, cheese or vegetables, a Tibetan dish now eaten everywhere.",
+          "Hoentey: buckwheat dumplings from the Haa valley, filled with greens, cheese and spices.",
+          "Puta: buckwheat noodles from Bumthang, where buckwheat grows better than rice.",
+          "Ezay: a relish of chilli, onion and sometimes cheese, set beside everything else."
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "Tea, ara and doma"
+      },
+      {
+        "kind": "text",
+        "body": "Suja, butter tea, is made by churning tea with butter and salt. It is savoury rather than sweet, closer to a broth than a cup of tea, and it is often served with zao, rice roasted until it puffs, scattered on top or eaten from the hand. Sweet milk tea is just as common, and you will be offered one or the other in every home you enter."
+      },
+      {
+        "kind": "text",
+        "body": "Ara is the home-distilled spirit, made from rice, maize, millet or barley, clear and variable in strength. It is offered to guests and poured at festivals and archery matches, and in winter it is sometimes warmed with butter and egg. When offered food or drink, a guest traditionally declines once or twice, saying meshu meshu, before accepting. Accepting a little ara is polite; so is declining it."
+      },
+      {
+        "kind": "text",
+        "body": "Doma, areca nut wrapped in betel leaf with a smear of lime, is offered as a gesture of hospitality at meetings, after meals and at ceremonies, and chewing it stains the mouth red. You are welcome to try it, but it is strong, and a polite refusal is entirely acceptable."
+      },
+      {
+        "kind": "heading",
+        "text": "Eating the Bhutanese way"
+      },
+      {
+        "kind": "text",
+        "body": "At home people eat with the right hand, working a little rice and curry into a ball and eating it from the fingers. Many make a small offering or say a short prayer before they begin. Hotels and restaurants set out cutlery, and nobody expects you to eat by hand, though you are welcome to try."
+      },
+      {
+        "kind": "text",
+        "body": "Meat is widely eaten, but killing is avoided on Buddhist grounds, so much of the meat sold comes from India. The sale of meat is suspended during certain holy months, among them Saga Dawa, the fourth month of the lunar calendar, and menus become more vegetarian for a while."
+      },
+      {
+        "kind": "facts",
+        "title": "At a glance",
+        "rows": [
+          [
+            "Staple",
+            "Red rice, semi-milled"
+          ],
+          [
+            "National dish",
+            "Ema datshi, chillies and cheese"
+          ],
+          [
+            "Mild choices",
+            "Kewa datshi, vegetables, dal, eggs"
+          ],
+          [
+            "Drinks",
+            "Suja, milk tea, ara"
+          ],
+          [
+            "Eating",
+            "By hand at home, cutlery in hotels"
+          ],
+          [
+            "Dietary needs",
+            "Tell us when you book"
+          ]
+        ]
+      },
+      {
+        "kind": "heading",
+        "text": "How our journeys handle food"
+      },
+      {
+        "kind": "text",
+        "body": "Every meal on our journeys is included, with a cup of tea or coffee alongside. Most are in family-run hotels and small restaurants, with a packed lunch on a long drive or a meal in a farmhouse when the day allows. Bhutanese dishes are always on the table, and so is something mild: kewa datshi, vegetables, dal, eggs and rice. You can eat as adventurously or as cautiously as you like, and nobody will mind which."
+      },
+      {
+        "kind": "text",
+        "body": "Vegetarian travellers eat well here, since much everyday food is meat-free. A vegan diet takes more planning, because cheese and butter go into many dishes, and a gluten-free diet is manageable because rice is the staple. Tell us about any allergy or dietary need when you book, and it goes into the notes for every kitchen we use. On the Jomolhari trek our cook plans the menu around the group before we set out."
+      }
+    ],
+    "destinations": [
+      "paro",
+      "punakha",
+      "bumthang"
+    ]
   }
 ]
