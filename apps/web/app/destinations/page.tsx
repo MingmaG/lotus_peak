@@ -7,9 +7,9 @@ import { getContent } from '@/content'
 import { fmt } from '@/content/types'
 import { IMG, altFor } from '@/lib/assets'
 import { ogImage } from '@/lib/seo'
-import { Parallax, Reveal, ScrollCue } from '@/motion'
+import { Parallax, Reveal } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
-import { heroOffset } from '@/sections/shared/Section'
+import { CoverImage, PageHeader } from '@/sections/shared/Cover'
 
 /**
  * The title and description come from this route's `Page` row.
@@ -68,59 +68,12 @@ export default async function DestinationsPage() {
           extra: page?.seo.schemaJson,
         })}
       />
-      <Parallax
-        src={IMG.paroDzong}
-        alt={altFor(IMG.paroDzong)}
-        speed={0.6}
-        priority
-        style={{ height: '82svh', minHeight: 560, display: 'flex', alignItems: 'flex-end', ...heroOffset }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to top,rgba(31,29,26,.78),rgba(31,29,26,.12) 55%,rgba(31,29,26,.3))',
-          }}
-        />
-        <div
-          style={{
-            position: 'relative',
-            padding: '0 var(--gutter) var(--space-8)',
-            maxWidth: 'var(--container)',
-            margin: '0 auto',
-            width: '100%',
-            boxSizing: 'border-box',
-            color: 'var(--paper)',
-            display: 'grid',
-            gap: 24,
-          }}
-        >
-          <Reveal>
-            <Eyebrow tone="inverse">Where we go</Eyebrow>
-          </Reveal>
-          <Reveal delay={240}>
-            <h1 style={{ fontSize: 'var(--text-display)', lineHeight: 1, maxWidth: '14ch' }}>Six valleys</h1>
-          </Reveal>
-          <Reveal delay={520}>
-            <p
-              style={{
-                fontSize: 'var(--text-lead)',
-                lineHeight: 'var(--leading-lead)',
-                maxWidth: 'var(--measure-narrow)',
-                color: 'rgba(255,255,255,.85)',
-              }}
-            >
-              Bhutan is small and the roads are slow. We would rather stay two nights in a valley than pass
-              through four.
-            </p>
-          </Reveal>
-          <Reveal delay={800}>
-            <div style={{ marginTop: 8 }}>
-              <ScrollCue />
-            </div>
-          </Reveal>
-        </div>
-      </Parallax>
+      <CoverImage image={IMG.paroDzong} alt={altFor(IMG.paroDzong)} />
+      <PageHeader
+        eyebrow="Where we go"
+        title="Six valleys"
+        standfirst="Bhutan is small and the roads are slow. We would rather stay two nights in a valley than pass through four."
+      />
 
       <section style={{ position: 'relative', padding: 'var(--space-9) var(--gutter) var(--space-10)' }}>
         <div

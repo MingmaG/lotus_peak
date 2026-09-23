@@ -26,12 +26,19 @@ export function useInquiry() {
   return useContext(Ctx)
 }
 
-/** Routes that open with a full-bleed hero and need white-on-image nav. */
+/**
+ * Routes that open with a full-bleed photograph and need white-on-image nav.
+ *
+ * Culture pieces, valleys and places open with the same `CoverImage` as a
+ * journal entry, and were missing here — an ink nav on a photograph.
+ */
 const INVERSE = (path: string) =>
   path === '/' ||
   path === '/culture' ||
   path === '/destinations' ||
   /^\/trips\/[^/]+$/.test(path) ||
+  /^\/culture\/[^/]+$/.test(path) ||
+  /^\/destinations\/[^/]+(\/[^/]+)?$/.test(path) ||
   /^\/journal\/[^/]+$/.test(path)
 
 export function SiteChrome({

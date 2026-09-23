@@ -6,6 +6,9 @@
 --measure-narrow:44ch;
 --container:1360px;
 --container-text:760px;
+/* A page's cover photograph. Shorter on a phone, so the title under it still reaches the first screen */
+--cover-h:clamp(360px,64svh,720px);
+--cover-h-narrow:clamp(240px,42svh,420px);
 /* Radii — sharp architecture, softened edge */
 --radius-sm:2px;--radius-md:2px;--radius-pill:999px;
 /* Hairlines & depth */
