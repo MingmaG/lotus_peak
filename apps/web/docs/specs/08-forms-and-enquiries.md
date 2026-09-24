@@ -68,8 +68,12 @@ Server action steps, in order:
    almost certainly a bot.
 4. `EnquiryInput.parse()`. Failure returns field errors rendered under the fields.
 5. `getContent().enquiries.create()`.
-6. Send mail (§4). Mail failure must **not** fail the request — the record is already stored;
-   log it and alert.
+6. Send mail (§4), after the response has gone out (`after()`), because the traveller should
+   not wait on two provider round trips for a message addressed to somebody else. Mail
+   failure must **not** fail the request — the record is already stored; it is logged, and
+   it is recorded on the Email screen. The one case where mail is awaited is the one where
+   nothing was recorded, because then whether it reached the office is the only honest
+   answer to give.
 7. Return `{ ok: true }`. The client opens the `Toast`:
    *"Sent. We will write back within two days."*
 
@@ -79,15 +83,43 @@ appears in the logs.
 
 ## 4. Mail
 
-> **Superseded.** This section describes mail sent from the website, which is not what was
-> built. The website holds no mail credential: it posts the enquiry to the panel, and the
-> panel sends both messages and records them. The behaviour below is still the contract —
-> it is implemented in `apps/admin/src/server/services/enquiry-mail.ts` (who is written to,
-> in which words) and `mailer.ts` (the Resend call, the log, the daily cap, the delivery
-> webhook). `src/lib/mail/` does not exist here and must not be created.
+> **As built, and it moved once.** Mail was briefly sent by the panel, from inside the
+> request that wrote the enquiry row. It is sent from *here* again, deliberately: a panel
+> that is down, restarting or mid-deploy took the office's notification down with it, and
+> an enquiry nobody is told about is the one failure this site cannot have.
+>
+> The split is now: `src/lib/mail/resend.ts` (the one POST) and `src/lib/mail/enquiry.ts`
+> (who is written to, in which words, and reporting it back) on this side;
+> `apps/admin/src/server/services/enquiry-mail.ts` (publishing the wording and the sender)
+> and `mailer.ts` (the log, the daily cap, the delivery webhook) on the panel's. The
+> website holds a mail credential and still holds no database credential — those are
+> different boundaries and only the second one is architectural.
 
-`src/lib/mail/` — an interface with a Resend adapter, a console adapter for dev, and an SMTP
-adapter for self-hosting. No provider SDK outside that directory.
+`src/lib/mail/` — one POST to Resend, no provider SDK, nothing outside that directory
+talking to a provider.
+
+The order matters and is not an implementation detail:
+
+1. The enquiry is posted to the panel and **recorded first**. That keeps the panel's rate
+   limit, its honeypot and its reference number in front of the provider rather than
+   behind it, and a 4xx from it sends nothing at all.
+2. The panel answers with the reference and what is left of the day's allowance — which
+   only it can count, because the messages are rows in its table.
+3. The two messages are rendered from the templates the panel publishes at
+   `/api/public/site/enquiry-mail`, cached here for the hour under the `emails` tag, and
+   handed to Resend. The office first: a cap, an outage or a crash between the two should
+   cost the courtesy rather than the lead.
+4. What was sent is reported to `/api/public/emails`, best-effort, so the Email screen, the
+   delivery webhook and tomorrow's allowance all still work. A report that fails costs a
+   row on a screen; a send that never happens costs a customer.
+
+**When the panel cannot be reached at all**, steps 1, 2 and 4 are gone and the mail goes
+anyway. It carries a notice — written in code, not in the office's editable copy, and drawn
+above everything else in the office's copy only — saying that this email is the only copy of
+the enquiry there is. The traveller's acknowledgement is still sent when the wording is in
+cache; when even that is missing, only the office copy goes, rendered from the seeded
+defaults, because a developer's default signed with the company's name in a stranger's inbox
+is worse than no acknowledgement at all.
 
 Two messages per enquiry:
 
@@ -97,10 +129,11 @@ Two messages per enquiry:
   HTML part. It confirms the two-day promise, repeats what they asked for, and gives the
   phone number. It does not upsell.
 
-If `RESEND_API_KEY` is absent, the message is rendered, recorded against the enquiry and
-logged rather than sent — so a misconfigured deploy never loses a record, and the office can
-read what *would* have gone out on the panel's Email screen. `/api/health` on the panel says
-so, and so does its Settings page.
+If `RESEND_API_KEY` is absent **on the website**, the message is rendered, reported against
+the enquiry as *Queued* and logged rather than sent — so a misconfigured deploy never loses a
+record, and the office can read what *would* have gone out on the panel's Email screen. If
+`MAIL_REPORT_SECRET` is absent on either side, mail still goes out and none of it is written
+down; `/api/health` on the panel says so, and so do its Settings and Email screens.
 
 ## 5. Privacy
 

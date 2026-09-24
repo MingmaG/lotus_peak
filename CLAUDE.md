@@ -96,6 +96,16 @@ the mechanism.
   worked. This has happened.
 - Preview is a short-lived, path-scoped signed token. It is not "draft mode on".
 
+**Enquiry mail goes the other way: the website sends it, the panel records it.** The
+panel holds no API key. An enquiry is written down first — that is what keeps the rate
+limit, the honeypot and the reference number in front of the provider — and the website
+then renders both messages from the templates it caches under the `emails` tag and hands
+them to Resend, reporting back to `/api/public/emails` so the Email screen, the delivery
+webhook and the daily cap still work. Sending from inside the panel's own request once
+meant that anything taking the panel down took the office's notification with it, and an
+enquiry nobody is told about is the one failure this site cannot have. A report that never
+arrives costs a row on a screen; a send that never happens costs a customer.
+
 ## 6. Verifying
 
 `npm run typecheck && npm run lint` is the floor, and it is not evidence that anything

@@ -1,15 +1,31 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
+
 import { EnquiryRefused, getContent } from '@/content'
+import type { EnquiryReceipt } from '@/content/repository'
+import { deliverEnquiryMail } from '@/lib/mail/enquiry'
 
 export const runtime = 'nodejs'
 
 /**
- * Enquiry intake — the only thing this website writes.
+ * Enquiry intake — the only thing this website writes, and the only thing it
+ * sends.
  *
- * It validates, then hands the record to the active content provider, which
- * posts it to the admin panel's public endpoint. Both ends validate: this one
- * so an obvious mistake is answered immediately and in the traveller's own
- * words, the admin one because it is reachable without going through here.
+ * It validates, hands the record to the active content provider, which posts
+ * it to the admin panel's public endpoint, and then writes and sends the two
+ * emails itself. Both ends validate: this one so an obvious mistake is
+ * answered immediately and in the traveller's own words, the admin one because
+ * it is reachable without going through here.
+ *
+ * ## Why the mail is sent from here
+ *
+ * It was sent by the panel, from inside the request that wrote the row, which
+ * meant a panel that was down, restarting or mid-deploy took the office's
+ * notification down with it — and a traveller who writes in during one of
+ * those is a traveller nobody in the office ever hears about. The record still
+ * belongs to the panel and is still tried first, because that is what puts its
+ * rate limit and its reference number in front of the provider rather than
+ * behind it. What changed is that failing to record no longer means failing to
+ * tell anybody.
  *
  * The in-memory rate limit is per instance and deliberately kept even though
  * the admin panel has a real one backed by a table. It costs a Map lookup and
@@ -96,26 +112,83 @@ export async function POST(request: Request) {
    * on its way while nothing had been written. An enquiry is the only thing
    * this site is for; losing one silently is the worst thing it can do.
    */
+  let receipt: EnquiryReceipt | null = null
+
   try {
-    const { id } = await getContent().enquiries.create(enquiry)
-    return NextResponse.json({ ok: true, id })
+    receipt = await getContent().enquiries.create(enquiry)
   } catch (error) {
     /* A refusal is repeated in its own words — it was written for the person
        reading it, and "several enquiries in a short time" is more use than
-       being told to send an email instead. */
+       being told to send an email instead.
+
+       Nothing is sent after one, deliberately: a 4xx is the panel's rate limit
+       or its honeypot saying no, and a mail sent past it would hand anybody
+       who found this route the office's inbox and the day's allowance. */
     if (error instanceof EnquiryRefused && error.status >= 400 && error.status < 500) {
       return NextResponse.json({ ok: false, error: error.message }, { status: error.status })
     }
 
+    /* Everything else — the panel is down, restarting, or not answering in
+       ten seconds — falls through to the mail below, which is the whole point
+       of sending it from here. */
     console.error('[enquiries] the enquiry could not be recorded', error)
-    return NextResponse.json(
-      {
-        ok: false,
-        /* No address here: the form that sent this knows the company's, from
-           the settings, and replaces this message with one that has it. */
-        error: 'We could not record that just now.',
-      },
-      { status: 502 },
-    )
   }
+
+  const forMail = {
+    name: enquiry.name,
+    email: enquiry.email,
+    phone: enquiry.phone,
+    country: enquiry.country,
+    tripSlug: enquiry.tripSlug,
+    travellers: enquiry.travellers,
+    preferredDates: enquiry.preferredDates,
+    message: enquiry.message,
+    restDays: enquiry.restDays,
+    source: enquiry.source,
+  }
+
+  if (receipt) {
+    /**
+     * Answered now, sent after.
+     *
+     * `after` runs once the response has gone, so the traveller is not kept
+     * waiting on two provider round trips for a message addressed to somebody
+     * else. It is safe here only because the enquiry is already written down:
+     * the office will see it whatever becomes of the mail, and the mail's own
+     * fate is recorded on the panel's Email screen.
+     */
+    const id = receipt.id
+    after(async () => {
+      await deliverEnquiryMail({ enquiry: forMail, receipt }).catch((error) => {
+        console.error('[enquiries] the mail for', id, 'failed outright', error)
+      })
+    })
+    return NextResponse.json({ ok: true, id })
+  }
+
+  /**
+   * Nothing was recorded, so the email *is* the enquiry.
+   *
+   * It is awaited rather than deferred, because whether it reached the office
+   * is now the only honest answer to give the person waiting — and it carries
+   * a notice saying it is the only copy there is.
+   */
+  const { officeSent } = await deliverEnquiryMail({ enquiry: forMail, receipt: null }).catch(
+    (error) => {
+      console.error('[enquiries] the enquiry reached nobody', error)
+      return { officeSent: false }
+    },
+  )
+
+  if (officeSent) return NextResponse.json({ ok: true })
+
+  return NextResponse.json(
+    {
+      ok: false,
+      /* No address here: the form that sent this knows the company's, from
+         the settings, and replaces this message with one that has it. */
+      error: 'We could not record that just now.',
+    },
+    { status: 502 },
+  )
 }

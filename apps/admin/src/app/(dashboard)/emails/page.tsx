@@ -4,7 +4,7 @@ import { EmailsScreen } from '@/components/crm/emails-screen';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import { requirePermission } from '@/lib/auth/session';
-import { mailConfigured } from '@/lib/env';
+import { mailReportConfigured } from '@/lib/env';
 
 export const metadata = { title: 'Email' };
 export const dynamic = 'force-dynamic';
@@ -23,7 +23,7 @@ export default async function EmailsPage() {
           </Button>
         }
       />
-      <EmailsScreen mailConfigured={mailConfigured()} />
+      <EmailsScreen recordingConfigured={mailReportConfigured()} />
     </>
   );
 }

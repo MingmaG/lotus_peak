@@ -58,7 +58,7 @@ const MEANING: Record<string, string> = {
   SKIPPED: 'Never attempted — the day’s sending allowance was already spent. Write to this person by hand.',
 };
 
-export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
+export function EmailsScreen({ recordingConfigured }: { recordingConfigured: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -153,14 +153,14 @@ export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
 
   return (
     <div className="space-y-4">
-      {!mailConfigured && (
+      {!recordingConfigured && (
         <div className="rounded-lg border border-status-attention/40 bg-status-attention/5 p-4 text-sm">
-          <p className="font-medium">Nothing is actually being sent.</p>
+          <p className="font-medium">This list cannot fill up.</p>
           <p className="mt-1 text-muted-foreground">
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">RESEND_API_KEY</code> is not
-            set, so every message below was written, recorded and logged rather than delivered.
-            That is the right default for a database full of test addresses — and it means the
-            wording can be checked before a key is ever added.
+            The website sends an enquiry’s email — that is deliberate, so a traveller still
+            reaches you on a day this panel is down — and then reports each message here. Without{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">MAIL_REPORT_SECRET</code> set on
+            both, that report is refused: mail is going out and none of it is written down.
           </p>
         </div>
       )}

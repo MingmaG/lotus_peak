@@ -291,8 +291,9 @@ export function EnquiryDetail({
           >
             {enquiry.messages.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Nothing sent. If that is a surprise, check that RESEND_API_KEY is set — without
-                it a message is recorded and logged rather than delivered.
+                Nothing recorded. The website sends an enquiry’s email and then writes it
+                here, so if that is a surprise, check that MAIL_REPORT_SECRET matches on
+                both — mail may well have gone out with nothing to show for it.
               </p>
             ) : (
               <ul className="divide-y text-sm">

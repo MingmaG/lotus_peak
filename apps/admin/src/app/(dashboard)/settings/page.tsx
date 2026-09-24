@@ -10,7 +10,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { can } from '@/lib/auth/permissions';
 import { requirePermission } from '@/lib/auth/session';
 import { db } from '@/lib/db';
-import { mailConfigured, mailWebhookConfigured, revalidationConfigured } from '@/lib/env';
+import { mailReportConfigured, mailWebhookConfigured, revalidationConfigured } from '@/lib/env';
 
 export const metadata = { title: 'Settings' };
 export const dynamic = 'force-dynamic';
@@ -73,11 +73,11 @@ export default async function SettingsPage() {
         : 'SITE_REVALIDATE_SECRET is not set. A save is recorded, and the site picks it up on its hourly refresh rather than at once.',
     },
     {
-      ok: mailConfigured(),
-      label: 'Email is sent',
-      detail: mailConfigured()
-        ? 'Enquiries are acknowledged and the office is notified.'
-        : 'RESEND_API_KEY is not set. Messages are written and recorded — you can read them on the Email screen — but nothing leaves this server.',
+      ok: mailReportConfigured(),
+      label: 'Sent email is recorded here',
+      detail: mailReportConfigured()
+        ? 'The website sends an enquiry’s email — so that it still reaches you when this panel does not — and writes each one to the Email screen.'
+        : 'MAIL_REPORT_SECRET is not set. Enquiries are still acknowledged and you are still notified, because the website does that; but it cannot write those messages to the Email screen, which will stay empty.',
     },
     {
       ok: mailWebhookConfigured(),

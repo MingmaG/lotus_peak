@@ -60,11 +60,20 @@ Set for real, per environment:
   `next.config.mjs` builds `images.remotePatterns` from it; get it wrong and
   every image is a 500 whose message names the hostname rather than the config.
 - `DATABASE_URL` (admin only, and never on the website).
-- `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_REPLY_TO`, `MAIL_OFFICE_TO` — unset means
-  enquiries are recorded and the message logged rather than sent, which is the
-  right default everywhere except production. The domain in `MAIL_FROM` must be
-  verified in Resend; that DKIM signature is the whole reason mail goes through
-  a provider rather than SMTP from the box, whose IP has no sending reputation.
+- `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_REPLY_TO`, `MAIL_OFFICE_TO` — **on the
+  website, not the panel.** The website sends an enquiry's two messages itself,
+  so that a panel which is down, restarting or mid-deploy cannot stop an
+  enquiry reaching the office. Unset means messages are rendered and reported
+  rather than sent, which is the right default everywhere except production.
+  The domain in `MAIL_FROM` must be verified in Resend; that DKIM signature is
+  the whole reason mail goes through a provider rather than SMTP from the box,
+  whose IP has no sending reputation. `MAIL_OFFICE_TO` is comma-separated and
+  is the one to check after a deploy: unset means nobody is written to.
+- `MAIL_REPORT_SECRET` (both, and they must match) — lets the website write
+  what it sent to the panel's Email screen. Unset on either side means mail
+  goes out and none of it is recorded: no log, no delivery events, and an
+  allowance that never counts down. The panel says so on Settings, on the Email
+  screen and in `/api/health`.
 - `RESEND_WEBHOOK_SECRET` — from the webhook's page in the Resend dashboard,
   beginning `whsec_`. Add a webhook pointing at
   `https://<the panel>/api/webhooks/resend`, subscribed to `email.delivered`,

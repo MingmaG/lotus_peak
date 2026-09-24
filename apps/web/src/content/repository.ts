@@ -1,4 +1,4 @@
-import type { ApiEnquiryInput } from '@lotuspeak/api-contracts'
+import type { ApiEmailRecord, ApiEnquiryInput, ApiEnquiryMail } from '@lotuspeak/api-contracts'
 
 import type {
   Activity,
@@ -62,6 +62,21 @@ export class EnquiryRefused extends Error {
     super(message)
     this.name = 'EnquiryRefused'
   }
+}
+
+/**
+ * What the panel answered when it wrote the enquiry down.
+ *
+ * `mailRemaining` is the day's provider allowance, which only the panel can
+ * count — the messages are rows in its table. A receipt that never arrived is
+ * `null` to the caller, and that is a different thing from an allowance of
+ * nought: nothing recorded the enquiry, so the mail is the only copy of it
+ * there is and it goes regardless.
+ */
+export interface EnquiryReceipt {
+  id: string
+  reference: string
+  mailRemaining: number
 }
 
 export type EnquiryInput = Omit<
@@ -152,7 +167,25 @@ export interface ContentRepository {
     llmsFullTxt(): Promise<string>
   }
 
-  enquiries: { create(input: EnquiryInput): Promise<{ id: string }> }
+  enquiries: {
+    create(input: EnquiryInput): Promise<EnquiryReceipt>
+    /**
+     * The words, the sender and the two switches an enquiry's mail is made of.
+     *
+     * Read like any other content — tagged, cached for the hour — because this
+     * site sends that mail itself, and the whole reason it does is the day the
+     * panel is not there to be asked.
+     */
+    mail(): Promise<ApiEnquiryMail>
+    /**
+     * What was sent, on its way to the panel's log.
+     *
+     * Best-effort by design and never awaited for the traveller's sake: the
+     * messages have already gone by the time this is called, and a report that
+     * fails costs the office a row on a screen rather than a customer.
+     */
+    report(messages: ApiEmailRecord[]): Promise<void>
+  }
 
   health(): Promise<{ ok: boolean; detail?: string }>
 }

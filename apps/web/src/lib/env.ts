@@ -24,3 +24,22 @@
 export function siteUrl(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://lotuspeak.org').replace(/\/$/, '')
 }
+
+/**
+ * Where the admin panel's public API is. Absolute, no trailing slash.
+ *
+ * Read by the content client, by the enquiry write and by the mail this site
+ * sends — three places, which is what puts it here rather than at any one of
+ * them. The message says what to run because an unset value produces a site
+ * with no content and an error that would otherwise name only a fetch.
+ */
+export function contentApiUrl(): string {
+  const url = process.env.CONTENT_API_URL
+  if (!url) {
+    throw new Error(
+      'CONTENT_API_URL is not set. This site reads its content from the admin ' +
+        "panel's public API — see apps/web/.env.example.",
+    )
+  }
+  return url.replace(/\/$/, '')
+}

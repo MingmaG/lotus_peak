@@ -1,74 +1,42 @@
 import 'server-only';
 
-import { Prisma, type EmailKind, type EmailStatus } from '@prisma/client';
+import { Prisma, type EmailStatus } from '@prisma/client';
+import type { ApiEmailRecord } from '@lotuspeak/api-contracts';
 
 import { db } from '@/lib/db';
-import { env, mailConfigured } from '@/lib/env';
+import { env } from '@/lib/env';
 
 /**
- * Handing a message to Resend, and writing down what became of it.
+ * The record of what the website sent, and what became of it.
  *
- * Two jobs in one file because they are one sequence, and the order is the
- * whole point: **write the record first, then do the thing that can fail.** A
- * message is stored before Resend is called, marked `PROCESSING` as it is
- * handed over, and `SENT` or `FAILED` by what comes back. A crash anywhere in
- * the middle leaves a row that says exactly how far it got.
+ * **This panel no longer sends anything.** The website renders both of an
+ * enquiry's messages and hands them to the provider itself, because a panel
+ * that is down, restarting, migrating or behind a broken deploy must not be
+ * able to stop an enquiry reaching the office — and until this change it
+ * could: the mail was sent from inside the same request that wrote the row, so
+ * whatever took the panel down took the enquiry with it.
  *
- * A log written only *after* a send completes cannot show a send that never
- * completed — and "the acknowledgement is stuck" is precisely the thing the
- * office needs to see.
+ * What is left here is the half that needs a database, which is the half the
+ * website cannot do:
  *
- * ## Why `fetch` and not the SDK
+ * - **the log** — one row per message, written from the website's report, kept
+ *   verbatim so the office can read what a traveller actually received;
+ * - **the allowance** — counted out of that table and answered to the website
+ *   when it records an enquiry, because nothing else knows how many messages
+ *   today has already spent;
+ * - **what happened next** — Resend's delivery notices arrive here, at the
+ *   side that holds the record they belong to.
  *
- * The request is one POST. `resend` would be a dependency, a version to keep
- * up and a wrapper over the same call; swapping in Postmark or Brevo means
- * rewriting {@link handOver} alone. §7 of the monorepo's rules says not to add
- * a dependency for what a small module does, and this is that module.
+ * ## The report is not the send
  *
- * ## Why an API and not SMTP
- *
- * A fresh server's IP has no sending reputation and cannot sign as the
- * company's domain, so mail either lands in spam or is refused outright. The
- * provider signs with DKIM for the domain instead.
- *
- * ## Recording is not optional; sending is
- *
- * With no `RESEND_API_KEY` the message is rendered, stored `QUEUED` and
- * logged. That is the correct development default — a seeded database full of
- * test addresses must not be able to email anybody — and it is what makes the
- * Email screen useful on day one: the office can read exactly what *would* go
- * out before a key is ever set.
+ * A report that never arrives costs the office a row on a screen. A send that
+ * never happens costs it a customer. So the website sends first and reports
+ * afterwards, best-effort, and everything in this file is written to accept a
+ * report that arrives late, twice, or not at all.
  */
-
-const ENDPOINT = 'https://api.resend.com/emails';
-
-/** Long enough for a slow provider, short enough not to hold a request open. */
-const TIMEOUT_MS = 10_000;
 
 /** Provider text kept at a length a table cell can show and a column can hold. */
 const ERROR_MAX = 1_000;
-
-export interface OutgoingEmail {
-  kind: EmailKind;
-  toEmail: string;
-  toName?: string | null;
-  /** Where the recipient's "Reply" goes. Not the same as the From address. */
-  replyTo?: string | null;
-  subject: string;
-  html: string;
-  text: string;
-  /** The template the words came from, for the Email screen's "Kind" column. */
-  templateId?: string | null;
-  enquiryId?: string | null;
-}
-
-export interface SendResult {
-  id: string;
-  status: EmailStatus;
-  /** True only when Resend accepted it. Acceptance is not arrival. */
-  sent: boolean;
-  error?: string;
-}
 
 /* -------------------------------------------------------------------------- */
 /*  The daily allowance                                                        */
@@ -123,132 +91,83 @@ export async function checkQuota(): Promise<QuotaReport> {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Sending                                                                    */
+/*  Writing down what the website sent                                         */
 /* -------------------------------------------------------------------------- */
 
+/** The statuses a website may report. Everything past SENT is the webhook's. */
+const REPORTED: Record<ApiEmailRecord['status'], EmailStatus> = {
+  QUEUED: 'QUEUED',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED',
+};
+
 /**
- * Records one message and, if it may be, sends it.
+ * Records messages the website has already dealt with.
  *
- * Never throws for a delivery failure. The caller is an enquiry that has
- * already been written down, and a provider having a bad afternoon must not
- * turn into an error on a form somebody filled in — the failure belongs in the
- * row, where the Email screen shows it, not in the traveller's face.
+ * Keyed on the provider's id where there is one, so a report that arrives
+ * twice — the website retried, a proxy replayed it — writes one row rather
+ * than two. A message the provider never accepted has no id to key on and is
+ * written afresh; a duplicate of one of those is a failure recorded twice,
+ * which is untidy and harmless, where a lost success would not be.
+ *
+ * Nothing here throws for a bad row. The messages have *already been sent*,
+ * and refusing the whole report because one of two had a field the schema
+ * disliked would lose the record of the one that was fine.
  */
-export async function sendEmail(message: OutgoingEmail): Promise<SendResult> {
-  const quota = await checkQuota();
+export async function recordDelivery(messages: ApiEmailRecord[]): Promise<number> {
+  let recorded = 0;
 
-  /* Over the cap it is not QUEUED, because nothing is going to happen to it.
-     Saying QUEUED would leave the office waiting for a send that was never
-     going to be attempted. */
-  const allowed = quota.remaining > 0;
-
-  /**
-   * Stored before it is sent, and stored verbatim.
-   *
-   * A template edited next week must not change the record of what somebody
-   * received — which is why `html` and `text` are columns rather than a
-   * template id plus the inputs.
-   */
-  const row = await db.emailMessage.create({
-    data: {
+  for (const message of messages) {
+    const data = {
       kind: message.kind,
-      templateId: message.templateId ?? null,
+      /* Coerced, not trusted: the column is a foreign key, and an empty string
+         refers to no template at all. A row refused for that reason is a
+         message that went out with nothing on the Email screen to say so. */
+      templateId: message.templateId || null,
       toEmail: message.toEmail,
-      toName: message.toName ?? null,
-      fromEmail: env.mail.from,
-      replyTo: message.replyTo ?? null,
+      toName: message.toName,
+      fromEmail: message.fromEmail,
+      replyTo: message.replyTo,
       subject: message.subject,
       html: message.html,
       text: message.text,
-      enquiryId: message.enquiryId ?? null,
-      status: allowed ? 'QUEUED' : 'SKIPPED',
-      ...(allowed
-        ? {}
-        : {
-            error: `The daily sending allowance of ${quota.cap} was already spent.`,
-            failedAt: new Date(),
-          }),
-    },
-    select: { id: true },
-  });
+      enquiryId: message.enquiryId,
+      status: REPORTED[message.status] ?? 'QUEUED',
+      providerId: message.providerId,
+      error: message.error?.slice(0, ERROR_MAX) ?? null,
+      /* One attempt is one handover, and the website only reports a message it
+         has finished with. A QUEUED row was never handed over — no key on the
+         website, nothing to count. */
+      attempts: message.status === 'SENT' || message.status === 'FAILED' ? 1 : 0,
+      sentAt: message.sentAt ? new Date(message.sentAt) : null,
+      failedAt: message.status === 'FAILED' || message.status === 'SKIPPED' ? new Date() : null,
+    };
 
-  if (!allowed) {
-    console.warn(
-      `[mail] not sent (daily cap of ${quota.cap} reached): "${message.subject}" → ${message.toEmail}`,
-    );
-    return { id: row.id, status: 'SKIPPED', sent: false, error: 'Daily cap reached.' };
+    try {
+      if (message.providerId) {
+        /* `update` rather than `create` on the second arrival, and the update
+           is deliberately narrow: a delivery notice may already have moved
+           this row to DELIVERED, and a replayed report must not walk it back
+           to SENT. */
+        await db.emailMessage.upsert({
+          where: { providerId: message.providerId },
+          create: data,
+          update: {},
+        });
+      } else {
+        await db.emailMessage.create({ data });
+      }
+      recorded += 1;
+    } catch (error) {
+      console.error(
+        `[mail] could not record the ${message.kind} to ${message.toEmail}:`,
+        error instanceof Error ? error.message : error,
+      );
+    }
   }
 
-  if (!mailConfigured()) {
-    console.info(
-      `[mail] not sent (RESEND_API_KEY is unset): "${message.subject}" → ${message.toEmail}`,
-    );
-    return { id: row.id, status: 'QUEUED', sent: false };
-  }
-
-  /* Counted on the handover rather than on the answer, so a send that hangs
-     and is tried again still reads as two attempts. */
-  await db.emailMessage.update({
-    where: { id: row.id },
-    data: { status: 'PROCESSING', attempts: { increment: 1 } },
-  });
-
-  try {
-    const providerId = await handOver(message);
-    await db.emailMessage.update({
-      where: { id: row.id },
-      data: { status: 'SENT', sentAt: new Date(), providerId, error: null, failedAt: null },
-    });
-    return { id: row.id, status: 'SENT', sent: true };
-  } catch (error) {
-    const detail = (error instanceof Error ? error.message : String(error)).slice(0, ERROR_MAX);
-    await db.emailMessage.update({
-      where: { id: row.id },
-      data: { status: 'FAILED', error: detail, failedAt: new Date() },
-    });
-    console.error(`[mail] ${message.kind} to ${message.toEmail} failed:`, detail);
-    return { id: row.id, status: 'FAILED', sent: false, error: detail };
-  }
-}
-
-/**
- * The one POST. Returns Resend's id for the message.
- *
- * That id is what a delivery or bounce notice arrives quoting, so losing it
- * costs the message its later history — but the mail did go, so a body that
- * does not parse is swallowed rather than thrown.
- */
-async function handOver(message: OutgoingEmail): Promise<string | null> {
-  const response = await fetch(ENDPOINT, {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${env.mail.resendApiKey}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: env.mail.from,
-      to: [message.toEmail],
-      reply_to: message.replyTo || env.mail.replyTo,
-      subject: message.subject,
-      html: message.html,
-      text: message.text,
-    }),
-    /* Never let a hanging provider hold a request open. Without this the
-       fetch has no deadline at all and an enquiry submission waits on it. */
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`Resend ${response.status}: ${detail.slice(0, 400)}`);
-  }
-
-  try {
-    const body = (await response.json()) as { id?: unknown };
-    return typeof body.id === 'string' ? body.id : null;
-  } catch {
-    return null;
-  }
+  return recorded;
 }
 
 /* -------------------------------------------------------------------------- */

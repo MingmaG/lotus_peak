@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
-import { env, mailConfigured, mailWebhookConfigured, revalidationConfigured } from '@/lib/env';
+import { env, mailReportConfigured, mailWebhookConfigured, revalidationConfigured } from '@/lib/env';
 import { storage } from '@/lib/storage';
 import { checkQuota } from '@/server/services/mailer';
 
@@ -38,10 +38,14 @@ export async function GET() {
           'SITE_REVALIDATE_SECRET is not set. Publishing will not reach the website until the hourly refresh.',
       };
 
-  if (!mailConfigured()) {
+  if (!mailReportConfigured()) {
+    /* The website sends the mail. What this panel can be wrong about is
+       whether it will be told — and an empty Email screen looks exactly like
+       an office nobody has written to. */
     checks.mail = {
       ok: false,
-      detail: 'RESEND_API_KEY is not set. Enquiries are recorded and logged, not sent.',
+      detail:
+        'MAIL_REPORT_SECRET is not set. The website still sends an enquiry’s mail; this panel will refuse its account of it, so the Email screen stays empty.',
     };
   } else {
     /* The allowance is worth reporting even when it is not yet spent: a deploy
