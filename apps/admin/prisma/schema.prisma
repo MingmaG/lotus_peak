@@ -300,14 +300,25 @@ enum EmailKind {
 }
 
 enum EmailStatus {
+  /// Recorded, nothing attempted yet.
   QUEUED
+  /// Handed to the provider, no answer yet. A row that stays here is a real
+  /// signal — the process died mid-send, or the provider hung — and it is
+  /// exactly what a log written only after the fact cannot show.
+  PROCESSING
+  /// The provider accepted it. Acceptance is not arrival.
   SENT
+  /// The provider says it reached the mailbox. Only the webhook knows this.
   DELIVERED
   OPENED
   CLICKED
   BOUNCED
   COMPLAINED
   FAILED
+  /// Never attempted: the day's sending allowance was already spent. Not the
+  /// same as a provider refusal — the row names the enquiry it belongs to, so
+  /// the office can see who went unanswered and write to them by hand.
+  SKIPPED
 }
 
 enum SubscriberStatus {
@@ -2466,6 +2477,10 @@ model EmailMessage {
   toEmail   String
   toName    String?
   fromEmail String
+  /// Where the recipient's "Reply" goes. On the office's notification this is
+  /// the traveller, which is what makes replying to an enquiry one keystroke
+  /// rather than a copy-paste out of the body.
+  replyTo   String?
   subject   String
   /// What was actually sent, kept verbatim. A template edited afterwards must
   /// not change the record of what somebody received.
@@ -2476,11 +2491,18 @@ model EmailMessage {
   enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
 
   status      EmailStatus @default(QUEUED)
-  providerId  String?
+  /// The provider's own id, and the only thing a webhook carries that means
+  /// anything here. Unique because that is how an event is matched to a row.
+  providerId  String?     @unique
+  /// The last failure, in the provider's words. Cleared on a later success.
   error       String?
+  /// Counted on the handover, not the answer, so a send that hangs and is
+  /// tried again still reads as two attempts.
+  attempts    Int         @default(0)
   sentAt      DateTime?
   deliveredAt DateTime?
   openedAt    DateTime?
+  failedAt    DateTime?
 
   events EmailEvent[]
 
@@ -2496,11 +2518,23 @@ model EmailEvent {
   id        String       @id @default(cuid())
   messageId String
   message   EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  status    EmailStatus
-  payload   Json?
+
+  /// The provider's own event name, e.g. `email.delivered`. Stored as written
+  /// rather than mapped to an enum: a provider adding an event type should
+  /// show up in the log, not fail the webhook.
+  type       String
+  /// The status this event moved the message to, or null when it moved
+  /// nothing. `email.sent` is the common null: the send call already recorded
+  /// that, and an event arriving late must not walk DELIVERED backwards.
+  status     EmailStatus?
+  /// When it happened at the provider, which is not when we heard about it.
+  occurredAt DateTime     @default(now())
+  /// The event as it arrived, for the questions nobody has asked yet.
+  payload    Json?
 
   createdAt DateTime @default(now())
 
   @@index([messageId])
+  @@index([type])
   @@map("email_events")
 }

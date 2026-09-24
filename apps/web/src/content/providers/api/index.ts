@@ -2,6 +2,8 @@ import 'server-only'
 
 import type {
   ApiActivity,
+  ApiEmailRecord,
+  ApiEnquiryMail,
   ApiCultureArticle,
   ApiCultureSummary,
   ApiDestination,
@@ -18,6 +20,8 @@ import type {
   ApiTrip,
   ApiTripSummary,
 } from '@lotuspeak/api-contracts'
+
+import { contentApiUrl } from '@/lib/env'
 
 import { REVALIDATE_TAGS, fetchContent, fetchContentOrNull } from '../../api/client'
 import { EnquiryRefused } from '../../repository'
@@ -64,6 +68,9 @@ import {
  * The journeys and the journal are *not* in it, because those two grow without
  * bound and are the two that are filtered and limited.
  */
+/** Long enough for a panel under load, short enough not to hold a form open. */
+const RECORD_TIMEOUT_MS = 10_000
+
 export function createApiProvider(): ContentRepository {
   /**
    * Nothing is memoised on the provider, deliberately.
@@ -308,16 +315,20 @@ export function createApiProvider(): ContentRepository {
          *
          * `fetchContent` is not used: it tags and caches, and a POST that
          * landed in a cache entry would be a silently swallowed enquiry.
+         *
+         * The deadline matters more than it used to. This site sends the
+         * enquiry's mail itself now, *after* this call answers — so a panel
+         * that accepts the connection and then hangs would hold the office's
+         * notification behind it for as long as the socket stayed open. It
+         * fails in ten seconds instead, and the mail goes without a reference.
          */
-        const response = await fetch(
-          `${(process.env.CONTENT_API_URL ?? '').replace(/\/$/, '')}/api/public/enquiries`,
-          {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify(input),
-            cache: 'no-store',
-          },
-        )
+        const response = await fetch(`${contentApiUrl()}/api/public/enquiries`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(input),
+          cache: 'no-store',
+          signal: AbortSignal.timeout(RECORD_TIMEOUT_MS),
+        })
 
         if (!response.ok) {
           const body = (await response.json().catch(() => null)) as
@@ -330,7 +341,48 @@ export function createApiProvider(): ContentRepository {
         }
 
         const body = (await response.json()) as { data: ApiEnquiryResult }
-        return { id: body.data.id }
+        return {
+          id: body.data.id,
+          reference: body.data.reference,
+          mailRemaining: body.data.mail.remaining,
+        }
+      },
+
+      mail: () =>
+        fetchContent<ApiEnquiryMail>('/api/public/site/enquiry-mail', {
+          /* The same tag the Email wording screen pushes, so an edited
+             template reaches the next enquiry rather than the next hour. */
+          tags: [REVALIDATE_TAGS.emails, REVALIDATE_TAGS.site],
+        }),
+
+      async report(messages: ApiEmailRecord[]) {
+        if (messages.length === 0) return
+
+        const secret = process.env.MAIL_REPORT_SECRET
+        if (!secret) {
+          /* Not a failure of this request — the mail has already gone — but it
+             is the panel's Email screen silently staying empty, which nothing
+             else would say. */
+          console.warn(
+            `[mail] ${messages.length} message(s) went unrecorded: MAIL_REPORT_SECRET is not set here.`,
+          )
+          return
+        }
+
+        const response = await fetch(`${contentApiUrl()}/api/public/emails`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            authorization: `Bearer ${secret}`,
+          },
+          body: JSON.stringify({ messages }),
+          cache: 'no-store',
+          signal: AbortSignal.timeout(RECORD_TIMEOUT_MS),
+        })
+
+        if (!response.ok) {
+          throw new Error(`The panel answered ${response.status} to the delivery report.`)
+        }
       },
     },
 

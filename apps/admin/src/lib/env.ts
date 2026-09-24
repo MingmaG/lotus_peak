@@ -119,21 +119,56 @@ export const env = {
     adminPublicUrl: optional('ADMIN_PUBLIC_URL', 'http://localhost:6011').replace(/\/$/, ''),
   },
 
+  /**
+   * What is left of the mail here now that the website sends it.
+   *
+   * The API key is not here, and that is the change: the website renders and
+   * hands over both of an enquiry's messages, so that a panel which is down,
+   * restarting or behind a broken deploy still cannot stop an enquiry reaching
+   * the office. What stays on this side is what only this side can do — count
+   * a day's sends out of the table, take the provider's delivery notices, and
+   * keep the record the Email screen reads.
+   */
   mail: {
     /**
-     * Unset means record and log rather than send.
+     * Shared with the website, which uses it to report what it sent.
      *
-     * The correct development default: a seeded database full of test
-     * addresses should not be able to email anybody, and an adapter that
-     * throws when unconfigured would make every seeded enquiry a failure.
+     * Unset means the endpoint is **off**, not open: it writes rows that the
+     * office reads as the record of what a traveller received, and an
+     * unauthenticated version of it would let anyone on the internet write
+     * that record. The cost of leaving it unset is an empty Email screen,
+     * which /api/health says out loud.
      */
-    resendApiKey: optional('RESEND_API_KEY'),
-    from: optional('MAIL_FROM', 'Lotus Peak <info@lotuspeak.org>'),
-    replyTo: optional('MAIL_REPLY_TO', 'info@lotuspeak.org'),
-    officeTo: optional('MAIL_OFFICE_TO', 'info@lotuspeak.org')
-      .split(',')
-      .map((address) => address.trim())
-      .filter(Boolean),
+    reportSecret: optional('MAIL_REPORT_SECRET'),
+    /**
+     * Signs Resend's delivery notices.
+     *
+     * Unset means the webhook is **off**, not open. A deployment that has not
+     * configured it should refuse delivery notices rather than accept unsigned
+     * ones from anybody who finds the URL — the endpoint writes to the record
+     * of what reached a traveller.
+     */
+    webhookSecret: optional('RESEND_WEBHOOK_SECRET'),
+    /**
+     * How many messages a day may be handed to the provider.
+     *
+     * Resend's free plan allows a hundred. Enforced here rather than by
+     * reading a rejection afterwards: a message over the line is recorded as
+     * SKIPPED against the enquiry it belongs to, so the office can see who
+     * went unanswered and write to them by hand. A provider refusal names
+     * nobody.
+     *
+     * The count lives in this database, so the website asks for what is left
+     * when it records an enquiry and obeys the answer. A website that cannot
+     * reach the panel sends anyway — at that moment the mail is the only thing
+     * carrying the enquiry, and a cap is the wrong thing to die on.
+     *
+     * `number()` takes only a positive value, so `0` falls through to the
+     * default rather than stopping every send — pausing is switching the
+     * template off on the Email wording screen, which is the office's to do
+     * and does not need a deploy.
+     */
+    dailyCap: number('MAIL_DAILY_CAP', 100),
   },
 } as const;
 
@@ -142,7 +177,24 @@ export function revalidationConfigured(): boolean {
   return env.site.revalidateSecret.length > 0;
 }
 
-/** True when an enquiry will actually be delivered rather than logged. */
-export function mailConfigured(): boolean {
-  return env.mail.resendApiKey.length > 0;
+/**
+ * True when the website's account of what it sent will be accepted.
+ *
+ * Not "true when mail works" — mail working is the website's business now, and
+ * this panel cannot see its API key. It is "true when the Email screen will
+ * have anything on it", which is a different failure and needs saying
+ * differently: without it, enquiries arrive, messages go out, and the record
+ * of them is refused at the door.
+ */
+export function mailReportConfigured(): boolean {
+  return env.mail.reportSecret.length > 0;
+}
+
+/**
+ * True when the log can learn what became of a message it sent.
+ *
+ * Without it every row stops at SENT, which only means the provider took it.
+ */
+export function mailWebhookConfigured(): boolean {
+  return env.mail.webhookSecret.length > 0;
 }

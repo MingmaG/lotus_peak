@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
-import { env, mailConfigured, revalidationConfigured } from '@/lib/env';
+import { env, mailReportConfigured, mailWebhookConfigured, revalidationConfigured } from '@/lib/env';
 import { storage } from '@/lib/storage';
+import { checkQuota } from '@/server/services/mailer';
 
 /**
  * Is this install actually working?
@@ -37,9 +38,40 @@ export async function GET() {
           'SITE_REVALIDATE_SECRET is not set. Publishing will not reach the website until the hourly refresh.',
       };
 
-  checks.mail = mailConfigured()
-    ? { ok: true }
-    : { ok: false, detail: 'RESEND_API_KEY is not set. Enquiries are recorded and logged, not sent.' };
+  if (!mailReportConfigured()) {
+    /* The website sends the mail. What this panel can be wrong about is
+       whether it will be told — and an empty Email screen looks exactly like
+       an office nobody has written to. */
+    checks.mail = {
+      ok: false,
+      detail:
+        'MAIL_REPORT_SECRET is not set. The website still sends an enquiry’s mail; this panel will refuse its account of it, so the Email screen stays empty.',
+    };
+  } else {
+    /* The allowance is worth reporting even when it is not yet spent: a deploy
+       whose cap is nearly gone will start recording enquiries as SKIPPED, and
+       finding that out from a silent traveller is finding out too late. */
+    const quota = await checkQuota().catch(() => null);
+    checks.mail = quota
+      ? {
+          ok: quota.remaining > 0,
+          detail:
+            quota.remaining > 0
+              ? `${quota.usedToday} of ${quota.cap} sent today.`
+              : `The daily allowance of ${quota.cap} is spent. Messages are being recorded as skipped until ${quota.resetsAt}.`,
+        }
+      : { ok: true };
+  }
+
+  /* Not fatal, and not cosmetic: without it every message stops at SENT, which
+     only means the provider took it. A bounce is then invisible. */
+  checks.mailWebhook = mailWebhookConfigured()
+    ? { ok: true, detail: `${env.storage.adminPublicUrl}/api/webhooks/resend` }
+    : {
+        ok: false,
+        detail:
+          'RESEND_WEBHOOK_SECRET is not set. Messages will stop at "sent" — a bounce or a complaint will never be recorded.',
+      };
 
   /* The database is the only fatal one. A missing mail key is a warning: the
      panel works, and an enquiry is still recorded. */

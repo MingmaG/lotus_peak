@@ -1,216 +1,93 @@
 import 'server-only';
 
-import {
-  renderEnquiryEmail,
-  type EmailEnquiry,
-  type EmailIdentity,
-  type EmailTemplate,
-} from '@lotuspeak/email';
-import type { EmailKind } from '@prisma/client';
+import type { ApiEmailTemplate, ApiEnquiryMail } from '@lotuspeak/api-contracts';
 
 import { db } from '@/lib/db';
-import { env, mailConfigured } from '@/lib/env';
 
 /**
- * Turning an enquiry into two messages.
+ * What the website needs in order to write an enquiry's two messages itself.
  *
- * One to the traveller, saying somebody has it; one to the office, saying who
- * wrote and what about. Both are built from editable templates — the words are
- * the office's, not the developer's — and both are recorded in
- * `email_messages` whether or not they are actually sent.
+ * This file used to send them. It publishes them instead, and the difference
+ * is the point of the change: the words, the sender's identity and the two
+ * switches go out over the public API like every other piece of content, the
+ * website caches them for the hour, and it can therefore still write and send
+ * both messages when this panel is not answering at all.
  *
- * ## Recording is not optional; sending is
+ * ## Why the copy travels rather than being read from a file
  *
- * With no `RESEND_API_KEY` the message is rendered, stored with status
- * `QUEUED` and logged. That is the correct development default: a seeded
- * database full of test addresses must not be able to email anybody, and an
- * adapter that threw when unconfigured would make every seeded enquiry a
- * failure. It is also what makes the Email screen useful on day one — the
- * office can read exactly what *would* go out before a key is ever set.
+ * "Thank you for writing to us" is the office's sentence, edited on the Email
+ * wording screen, and a website that fell back to a constant would go on
+ * sending last year's wording with nothing to say it had. The last published
+ * copy is the right answer to an unreachable panel; a developer's copy is not.
+ *
+ * ## Inactive templates are left out, not sent as inactive
+ *
+ * The switch means "do not send this", and the safest way to honour it from a
+ * cached payload is for the message to be absent from the payload entirely —
+ * a flag would need the website to check it, and the failure mode of a missed
+ * check is the message the office switched off.
  */
 
-export async function deliverEnquiry(enquiryId: string): Promise<void> {
-  const enquiry = await db.enquiry.findUnique({
-    where: { id: enquiryId },
-    include: { trip: { select: { title: true } } },
-  });
-  if (!enquiry) return;
+/** The two an enquiry produces. Nothing else is rendered by the website. */
+const ENQUIRY_KINDS = ['ENQUIRY_ACKNOWLEDGEMENT', 'ENQUIRY_NOTIFICATION'] as const;
 
-  const [company, address, contacts, settings] = await Promise.all([
+export async function getEnquiryMail(): Promise<ApiEnquiryMail> {
+  const [company, address, contacts, settings, templates] = await Promise.all([
     db.companyProfile.findFirst({ where: { isSingleton: true } }),
     db.address.findFirst({ where: { isPrimary: true } }),
     db.contactChannel.findMany({ where: { isPublic: true }, orderBy: { sortOrder: 'asc' } }),
     db.setting.findMany({ where: { group: 'enquiries' } }),
+    db.emailTemplate.findMany({ where: { kind: { in: [...ENQUIRY_KINDS] }, isActive: true } }),
   ]);
-  if (!company) return;
 
-  const on = (key: string): boolean => {
-    const value = settings.find((row) => row.key === key)?.value;
-    return value !== false;
-  };
+  if (!company) {
+    /* The same hard failure `getSite` makes, for the same reason: a fabricated
+       company would sign somebody else's name at the foot of an email. */
+    throw new Error(
+      'There is no company profile. Run `npm run db:seed` in apps/admin, or fill in Settings → Company.',
+    );
+  }
 
-  const identity: EmailIdentity = {
-    name: company.name,
-    email: contacts.find((c) => c.kind === 'EMAIL')?.value ?? env.mail.replyTo,
-    phone: contacts.find((c) => c.kind === 'PHONE' || c.kind === 'MOBILE')?.display ?? '',
-    siteUrl: company.siteUrl.replace(/\/$/, ''),
-    addressLine: [address?.line1, address?.locality, address?.country]
-      .filter(Boolean)
-      .join(', '),
-    logoUrl: '',
-  };
+  /** An enquiries setting is on unless the office turned it off. */
+  const on = (key: string): boolean =>
+    settings.find((row) => row.key === key)?.value !== false;
 
-  const payload: EmailEnquiry = {
-    reference: enquiry.reference,
-    name: enquiry.name,
-    email: enquiry.email,
-    phone: enquiry.phone ?? undefined,
-    country: enquiry.country ?? undefined,
-    tripTitle: enquiry.trip?.title ?? undefined,
-    preferredDates: enquiry.preferredDates ?? undefined,
-    travellers: enquiry.travellers ?? undefined,
-    message: enquiry.message ?? undefined,
-    restDays: enquiry.restDays,
-    source: enquiry.source.toLowerCase().replace(/_/g, ' '),
-    origin: {
-      pagePath: enquiry.pagePath ?? undefined,
-      utmSource: enquiry.utmSource ?? undefined,
-      utmMedium: enquiry.utmMedium ?? undefined,
-      utmCampaign: enquiry.utmCampaign ?? undefined,
+  return {
+    identity: {
+      name: company.name,
+      /* The address the office actually reads, which is the one on the company
+         record — not the From address, which may be a no-reply sender the
+         provider verified. */
+      email: contacts.find((c) => c.kind === 'EMAIL')?.value ?? '',
+      phone: contacts.find((c) => c.kind === 'PHONE' || c.kind === 'MOBILE')?.display ?? '',
+      siteUrl: company.siteUrl.replace(/\/$/, ''),
+      addressLine: [address?.line1, address?.locality, address?.country]
+        .filter(Boolean)
+        .join(', '),
+      logoUrl: '',
     },
+    replyPromise: company.replyPromise,
+    notifyOffice: on('notifyOffice'),
+    acknowledgeTraveller: on('acknowledgeTraveller'),
+    templates: templates.map(
+      (row): ApiEmailTemplate => ({
+        id: row.id,
+        kind: row.kind,
+        name: row.name,
+        isActive: row.isActive,
+        subject: row.subject,
+        preheader: row.preheader,
+        eyebrow: row.eyebrow,
+        heading: row.heading,
+        intro: row.intro,
+        closing: row.closing,
+        summaryLabel: row.summaryLabel,
+        notesLabel: row.notesLabel,
+        buttonLabel: row.buttonLabel,
+        buttonUrl: row.buttonUrl,
+        signOff: row.signOff,
+        footNote: row.footNote,
+      }),
+    ),
   };
-
-  if (on('acknowledgeTraveller')) {
-    await send({
-      kind: 'ENQUIRY_ACKNOWLEDGEMENT',
-      to: [{ email: enquiry.email, name: enquiry.name }],
-      identity,
-      payload,
-      audience: 'traveller',
-      replyPromise: company.replyPromise,
-      enquiryId: enquiry.id,
-    });
-  }
-
-  if (on('notifyOffice')) {
-    await send({
-      kind: 'ENQUIRY_NOTIFICATION',
-      to: env.mail.officeTo.map((email) => ({ email, name: null })),
-      identity,
-      payload,
-      audience: 'office',
-      replyPromise: company.replyPromise,
-      enquiryId: enquiry.id,
-    });
-  }
-}
-
-interface SendArgs {
-  kind: EmailKind;
-  to: { email: string; name: string | null }[];
-  identity: EmailIdentity;
-  payload: EmailEnquiry;
-  audience: 'traveller' | 'office';
-  replyPromise: string;
-  enquiryId: string;
-}
-
-async function send(args: SendArgs): Promise<void> {
-  const row = await db.emailTemplate.findUnique({ where: { kind: args.kind } });
-  if (!row || !row.isActive) return;
-
-  const template: EmailTemplate = {
-    kind: row.kind,
-    name: row.name,
-    isActive: row.isActive,
-    subject: row.subject,
-    preheader: row.preheader,
-    eyebrow: row.eyebrow,
-    heading: row.heading,
-    intro: row.intro,
-    closing: row.closing,
-    summaryLabel: row.summaryLabel,
-    notesLabel: row.notesLabel,
-    buttonLabel: row.buttonLabel,
-    buttonUrl: row.buttonUrl,
-    signOff: row.signOff,
-    footNote: row.footNote,
-  };
-
-  const rendered = renderEnquiryEmail({
-    template,
-    identity: args.identity,
-    enquiry: args.payload,
-    audience: args.audience,
-    replyPromise: args.replyPromise,
-  });
-
-  for (const recipient of args.to) {
-    /**
-     * Stored before it is sent, and stored verbatim.
-     *
-     * A template edited next week must not change the record of what somebody
-     * received — which is why `html` and `text` are columns rather than a
-     * template id plus the inputs.
-     */
-    const message = await db.emailMessage.create({
-      data: {
-        kind: args.kind,
-        templateId: row.id,
-        toEmail: recipient.email,
-        toName: recipient.name,
-        fromEmail: env.mail.from,
-        subject: rendered.subject,
-        html: rendered.html,
-        text: rendered.text,
-        enquiryId: args.enquiryId,
-        status: 'QUEUED',
-      },
-    });
-
-    if (!mailConfigured()) {
-      console.info(
-        `[mail] not sent (RESEND_API_KEY is unset): "${rendered.subject}" → ${recipient.email}`,
-      );
-      continue;
-    }
-
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          authorization: `Bearer ${env.mail.resendApiKey}`,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: env.mail.from,
-          to: [recipient.email],
-          reply_to: env.mail.replyTo,
-          subject: rendered.subject,
-          html: rendered.html,
-          text: rendered.text,
-        }),
-      });
-
-      if (!response.ok) {
-        const detail = await response.text();
-        await db.emailMessage.update({
-          where: { id: message.id },
-          data: { status: 'FAILED', error: detail.slice(0, 1_000) },
-        });
-        continue;
-      }
-
-      const body = (await response.json()) as { id?: string };
-      await db.emailMessage.update({
-        where: { id: message.id },
-        data: { status: 'SENT', sentAt: new Date(), providerId: body.id ?? null },
-      });
-    } catch (error) {
-      await db.emailMessage.update({
-        where: { id: message.id },
-        data: { status: 'FAILED', error: (error as Error).message.slice(0, 1_000) },
-      });
-    }
-  }
 }

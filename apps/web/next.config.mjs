@@ -39,7 +39,12 @@ const nextConfig = {
    * a change to the wire format is a compile error in both apps at once with
    * no build step in between to forget to run.
    */
-  transpilePackages: ['@lotuspeak/api-contracts', '@lotuspeak/media', '@lotuspeak/seo'],
+  transpilePackages: [
+    '@lotuspeak/api-contracts',
+    '@lotuspeak/email',
+    '@lotuspeak/media',
+    '@lotuspeak/seo',
+  ],
 
   images: {
     formats: ['image/avif', 'image/webp'],

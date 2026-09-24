@@ -10,7 +10,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { can } from '@/lib/auth/permissions';
 import { requirePermission } from '@/lib/auth/session';
 import { db } from '@/lib/db';
-import { mailConfigured, revalidationConfigured } from '@/lib/env';
+import { mailReportConfigured, mailWebhookConfigured, revalidationConfigured } from '@/lib/env';
 
 export const metadata = { title: 'Settings' };
 export const dynamic = 'force-dynamic';
@@ -18,10 +18,11 @@ export const dynamic = 'force-dynamic';
 /**
  * Settings, and whether this install is actually wired up.
  *
- * The three checks at the bottom are the ones whose failure is silent:
- * publishing that never reaches the site, email that is written and not sent,
- * a media store nothing can read. Each of them looks like everything is
- * working right up until somebody asks why the site is out of date.
+ * The checks at the bottom are the ones whose failure is silent: publishing
+ * that never reaches the site, email that is written and not sent, delivery
+ * nobody hears back about. Each of them looks like everything is working right
+ * up until somebody asks why the site is out of date — or why a traveller
+ * never replied, when in fact the message bounced and nothing said so.
  */
 export default async function SettingsPage() {
   const user = await requirePermission('settings.read');
@@ -72,11 +73,18 @@ export default async function SettingsPage() {
         : 'SITE_REVALIDATE_SECRET is not set. A save is recorded, and the site picks it up on its hourly refresh rather than at once.',
     },
     {
-      ok: mailConfigured(),
-      label: 'Email is sent',
-      detail: mailConfigured()
-        ? 'Enquiries are acknowledged and the office is notified.'
-        : 'RESEND_API_KEY is not set. Messages are written and recorded — you can read them on the Email screen — but nothing leaves this server.',
+      ok: mailReportConfigured(),
+      label: 'Sent email is recorded here',
+      detail: mailReportConfigured()
+        ? 'The website sends an enquiry’s email — so that it still reaches you when this panel does not — and writes each one to the Email screen.'
+        : 'MAIL_REPORT_SECRET is not set. Enquiries are still acknowledged and you are still notified, because the website does that; but it cannot write those messages to the Email screen, which will stay empty.',
+    },
+    {
+      ok: mailWebhookConfigured(),
+      label: 'We hear what became of a message',
+      detail: mailWebhookConfigured()
+        ? 'A bounce, a delivery or a spam complaint is recorded against the message on the Email screen.'
+        : 'RESEND_WEBHOOK_SECRET is not set. Messages stop at “Sent”, which only means Resend accepted them — a wrong address will look exactly like a traveller who did not reply.',
     },
   ];
 

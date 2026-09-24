@@ -2,6 +2,7 @@ import { renderStoredRichText } from '@/lib/rich-text'
 import { siteUrl } from '@/lib/env'
 import 'server-only'
 
+import { DEFAULT_TEMPLATES } from '@lotuspeak/email'
 import { buildLlmsFullTxt, buildLlmsTxt } from '@lotuspeak/seo'
 import type { ApiImage, ApiSite } from '@lotuspeak/api-contracts'
 
@@ -706,12 +707,47 @@ export function createFileProvider(): ContentRepository {
 
     enquiries: {
       async create(input: EnquiryInput) {
-        // No backend yet. The enquiry is logged server-side so nothing is lost
-        // in development, and the mail adapter takes over in phase 5
-        // (docs/specs/08-forms-and-enquiries.md).
+        // Nothing is written anywhere under this provider. The enquiry is
+        // logged server-side so nothing is lost while it is in use, and the
+        // allowance is nought — this fixture must not be able to email
+        // anybody, least of all from a developer's machine.
         const id = `enq_${Date.now().toString(36)}`
         console.info('[enquiry]', id, JSON.stringify(input))
-        return { id }
+        return { id, reference: `LP-${id.slice(-4).toUpperCase()}`, mailRemaining: 0 }
+      },
+
+      /**
+       * The templates a fresh install is seeded with, and the fixture's own
+       * company details.
+       *
+       * Not the office's words — under this provider there is no office to ask
+       * — but the same words it starts with, so the wording can be read and
+       * the renderer exercised with nothing running. Sending is what
+       * `mailRemaining: 0` above stops; rendering is worth having.
+       */
+      async mail() {
+        const contact = SETTINGS.contacts.find((c) => c.kind === 'email')
+        return {
+          identity: {
+            name: SETTINGS.brand,
+            email: contact?.display ?? '',
+            phone: SETTINGS.contact.phone,
+            siteUrl: siteUrl(),
+            addressLine: SETTINGS.address.lines.join(', '),
+            logoUrl: '',
+          },
+          replyPromise: SETTINGS.contact.replyPromise,
+          notifyOffice: true,
+          acknowledgeTraveller: true,
+          templates: DEFAULT_TEMPLATES.filter((template) =>
+            template.kind === 'ENQUIRY_ACKNOWLEDGEMENT' ||
+            template.kind === 'ENQUIRY_NOTIFICATION',
+          ).map((template) => ({ ...template, id: `seed_${template.kind}` })),
+        }
+      },
+
+      async report(messages) {
+        console.info(`[mail] ${messages.length} message(s), not recorded: no panel to record to.`)
       },
     },
 

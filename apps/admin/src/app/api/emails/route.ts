@@ -7,8 +7,9 @@ import { listQuery, paginated, route } from '@/lib/api/handler';
  * What was sent.
  *
  * The HTML is not in the list payload — it is several kilobytes per row, and a
- * page of twenty-five would be a megabyte to render a table of subjects. The
- * detail view asks for one.
+ * page of twenty-five would be a megabyte to render a table of subjects. One
+ * message's own page reads it from the database directly, along with every
+ * delivery notice that has arrived for it.
  */
 export const GET = route({
   permission: 'emails.read',

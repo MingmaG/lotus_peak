@@ -923,4 +923,118 @@ export interface ApiEnquiryInput {
 export interface ApiEnquiryResult {
   id: string;
   reference: string;
+  /**
+   * What is left of today's provider allowance, answered by the panel because
+   * the panel is the only side that can count it — the messages are rows in
+   * its table. The website reads it to decide whether to hand anything over,
+   * and when the panel could not be reached there is no allowance to consult
+   * and the message goes: an unreachable panel is the one moment mail is the
+   * *only* way an enquiry reaches anybody.
+   */
+  mail: { cap: number; remaining: number };
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Email — rendered and sent by the website, recorded by the panel            */
+/* -------------------------------------------------------------------------- */
+
+export type ApiEmailKind =
+  | 'ENQUIRY_ACKNOWLEDGEMENT'
+  | 'ENQUIRY_NOTIFICATION'
+  | 'NEWSLETTER_WELCOME'
+  | 'NEWSLETTER_CONFIRM'
+  | 'PASSWORD_RESET';
+
+/**
+ * How a send ended, as the website reports it.
+ *
+ * Four of the panel's ten, and deliberately: everything after `SENT` —
+ * delivered, opened, bounced — is something only a provider webhook knows, and
+ * that webhook arrives at the panel. A website that could report `DELIVERED`
+ * would be a website claiming to know something it cannot.
+ */
+export type ApiEmailStatus = 'QUEUED' | 'SENT' | 'FAILED' | 'SKIPPED';
+
+/** The words one kind of message is made of, exactly as the office wrote them. */
+export interface ApiEmailTemplate {
+  kind: ApiEmailKind;
+  name: string;
+  isActive: boolean;
+  subject: string;
+  preheader: string;
+  eyebrow: string;
+  heading: string;
+  intro: string;
+  closing: string;
+  summaryLabel: string;
+  notesLabel: string;
+  buttonLabel: string;
+  buttonUrl: string;
+  signOff: string;
+  footNote: string;
+  /** The panel's row id, carried back on the report so the log can link them. */
+  id: string;
+}
+
+/** Who is sending, resolved from the one company record. */
+export interface ApiEmailIdentity {
+  name: string;
+  email: string;
+  phone: string;
+  siteUrl: string;
+  addressLine: string;
+  /** Absolute URL to a small logo, or blank. */
+  logoUrl: string;
+}
+
+/**
+ * Everything the website needs to write an enquiry's two messages itself.
+ *
+ * Read like any other content — tagged, cached for the hour, dropped when the
+ * office edits the wording — which is the whole point: the copy in this
+ * payload is the last copy the panel published, and it is still on the website
+ * when the panel is not there to be asked.
+ */
+export interface ApiEnquiryMail {
+  identity: ApiEmailIdentity;
+  /** "Personally, within two days." A token the templates may reference. */
+  replyPromise: string;
+  /** The office's two switches. Off means that message is not written at all. */
+  notifyOffice: boolean;
+  acknowledgeTraveller: boolean;
+  /** Active templates only, so an inactive one cannot be sent by accident. */
+  templates: ApiEmailTemplate[];
+}
+
+/**
+ * One message the website has already dealt with, on its way to the log.
+ *
+ * `html` and `text` are the rendered bodies verbatim rather than a template id
+ * and its inputs, because the record has to survive the template being edited
+ * next week — it is the answer to "what did this person actually receive".
+ */
+export interface ApiEmailRecord {
+  kind: ApiEmailKind;
+  templateId: string | null;
+  toEmail: string;
+  toName: string | null;
+  fromEmail: string;
+  replyTo: string | null;
+  subject: string;
+  html: string;
+  text: string;
+  enquiryId: string | null;
+  status: ApiEmailStatus;
+  /** The provider's own id. Null unless it accepted the message. */
+  providerId: string | null;
+  error: string | null;
+  sentAt: string | null;
+}
+
+export interface ApiEmailReport {
+  messages: ApiEmailRecord[];
+}
+
+export interface ApiEmailReportResult {
+  recorded: number;
 }
