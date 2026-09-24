@@ -39,6 +39,12 @@ import { applyProviderEvent } from '@/server/services/mailer';
  * has not configured it should refuse delivery notices, not accept unsigned
  * ones from anybody who finds the URL.
  *
+ * ## Events that arrive too early
+ *
+ * The website sends the mail and reports it here afterwards, so a delivery
+ * notice can beat the record it belongs to. A recent unknown id is answered
+ * 409 and retried; an old one is dropped. See the handler.
+ *
  * ## Why it is not wrapped in `publicRoute`
  *
  * That helper answers in this application's envelope and turns a throw into a
@@ -54,6 +60,17 @@ export const dynamic = 'force-dynamic';
 
 /** Svix rejects anything older than this, and so do we. */
 const TOLERANCE_SECONDS = 5 * 60;
+
+/**
+ * How long an event may name a message we have not recorded and still be
+ * worth retrying rather than dropping.
+ *
+ * Fifteen minutes: long enough to cover a website that sent, was slow, and
+ * reported late, and Svix's first two retries both land inside it. Short
+ * enough that a webhook aimed at the wrong environment stops being retried
+ * the same afternoon.
+ */
+const UNRECORDED_GRACE_MS = 15 * 60 * 1000;
 
 function verify(params: {
   secret: string;
@@ -137,9 +154,33 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const result = await applyProviderEvent({ providerId: emailId, type, occurredAt, payload });
 
-    /* An event for a message this database has never seen is almost always a
-       webhook pointed at the wrong environment. Answer 200 so Resend stops
-       retrying it, and say so in the reply rather than pretending it applied. */
+    if (!result.applied) {
+      /**
+       * An event can arrive before the message it belongs to.
+       *
+       * The website sends and reports afterwards, so there is a window — two
+       * provider calls and one HTTP round trip wide — in which Resend knows
+       * about a message this database does not. Answering 200 there would
+       * throw away the delivery notice and leave the row reading "Sent" for
+       * ever, which is precisely the thing the webhook exists to prevent.
+       *
+       * So a *recent* unknown id is refused, and Svix retries it — five
+       * seconds later, then five minutes later, which is far longer than the
+       * window. An old one is a webhook pointed at the wrong environment, and
+       * retrying that for ever is noise: it is answered 200 and told plainly
+       * that it applied to nothing.
+       */
+      if (Date.now() - occurredAt.getTime() < UNRECORDED_GRACE_MS) {
+        console.info(`[resend-webhook] ${type} for ${emailId} arrived before its record; asking for a retry`);
+        return NextResponse.json(
+          { error: 'That message has not been recorded here yet.' },
+          { status: 409 },
+        );
+      }
+
+      console.warn(`[resend-webhook] ${type} names ${emailId}, which this database has never seen`);
+    }
+
     return NextResponse.json({ ok: true, applied: result.applied });
   } catch (error) {
     /* Our failure, not theirs: let Resend try again. */

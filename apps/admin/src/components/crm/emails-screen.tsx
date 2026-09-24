@@ -2,12 +2,14 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Mail } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 
 import { DataTable, type Column } from '@/components/shared/data-table';
 import { EmptyState } from '@/components/shared/empty-state';
 import { apiGet, query } from '@/lib/api-client';
+import { STATUS_MEANING, STATUS_TONE } from '@/lib/email-status';
 import { humanise, relativeTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -23,40 +25,6 @@ interface Row {
   createdAt: string;
   enquiry: { id: string; reference: string } | null;
 }
-
-const TONE: Record<string, string> = {
-  FAILED: 'text-destructive',
-  BOUNCED: 'text-destructive',
-  COMPLAINED: 'text-destructive',
-  /* Amber, not grey: nothing was attempted and nobody was told. */
-  SKIPPED: 'text-status-attention',
-  QUEUED: 'text-muted-foreground',
-  PROCESSING: 'text-muted-foreground',
-  SENT: 'text-status-published',
-  DELIVERED: 'text-status-published',
-  OPENED: 'text-status-published',
-  CLICKED: 'text-status-published',
-};
-
-/**
- * What a status means, where the word alone does not carry it.
- *
- * "Sent" and "Delivered" look like synonyms and are not: the first is the
- * provider accepting the message, the second is it reaching a mailbox. The
- * distinction is the reason the webhook exists, so it is worth a tooltip.
- */
-const MEANING: Record<string, string> = {
-  QUEUED: 'Written down. Nothing has been attempted — usually because no sending key is set.',
-  PROCESSING: 'Handed to Resend, no answer yet. A message that stays here means the send did not finish.',
-  SENT: 'Resend accepted it. That is not the same as it having arrived.',
-  DELIVERED: 'Resend says it reached the mailbox.',
-  OPENED: 'Opened by the recipient.',
-  CLICKED: 'A link in it was followed.',
-  BOUNCED: 'The mailbox refused it. The address is probably wrong.',
-  COMPLAINED: 'Marked as spam by the recipient.',
-  FAILED: 'The send itself failed. The reason is below.',
-  SKIPPED: 'Never attempted — the day’s sending allowance was already spent. Write to this person by hand.',
-};
 
 export function EmailsScreen({ recordingConfigured }: { recordingConfigured: boolean }) {
   const router = useRouter();
@@ -95,12 +63,12 @@ export function EmailsScreen({ recordingConfigured }: { recordingConfigured: boo
       label: 'Message',
       primary: true,
       render: (row) => (
-        <span className="flex flex-col gap-0.5">
+        <Link href={`/emails/${row.id}`} className="flex flex-col gap-0.5 hover:underline">
           <span>{row.subject}</span>
           <span className="text-xs font-normal text-muted-foreground">
             to {row.toName ? `${row.toName} <${row.toEmail}>` : row.toEmail}
           </span>
-        </span>
+        </Link>
       ),
     },
     {
@@ -127,8 +95,8 @@ export function EmailsScreen({ recordingConfigured }: { recordingConfigured: boo
       label: 'Status',
       render: (row) => (
         <span
-          className={cn('text-xs', TONE[row.status] ?? 'text-muted-foreground')}
-          title={MEANING[row.status]}
+          className={cn('text-xs', STATUS_TONE[row.status] ?? 'text-muted-foreground')}
+          title={STATUS_MEANING[row.status]}
         >
           {humanise(row.status)}
           {row.error && (

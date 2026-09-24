@@ -298,19 +298,28 @@ export function EnquiryDetail({
             ) : (
               <ul className="divide-y text-sm">
                 {enquiry.messages.map((message) => (
-                  <li key={message.id} className="flex items-baseline justify-between gap-3 py-2">
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate">{message.subject}</span>
-                      <span className="text-xs text-muted-foreground">
-                        to {message.toEmail}
-                        {message.error && (
-                          <span className="text-destructive"> — {message.error}</span>
-                        )}
+                  <li key={message.id}>
+                    {/* Through to the message itself, where the delivery notices
+                        are: "Sent" and "Bounced" are the same line here, and
+                        which one it was is the whole question. */}
+                    <Link
+                      href={`/emails/${message.id}`}
+                      className="flex items-baseline justify-between gap-3 py-2 hover:underline"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate">{message.subject}</span>
+                        <span className="text-xs text-muted-foreground">
+                          to {message.toEmail}
+                          {message.error && (
+                            <span className="text-destructive"> — {message.error}</span>
+                          )}
+                        </span>
                       </span>
-                    </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {humanise(message.status)} · {relativeTime(message.sentAt ?? message.createdAt)}
-                    </span>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {humanise(message.status)} ·{' '}
+                        {relativeTime(message.sentAt ?? message.createdAt)}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
