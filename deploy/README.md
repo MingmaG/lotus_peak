@@ -62,7 +62,23 @@ Set for real, per environment:
 - `DATABASE_URL` (admin only, and never on the website).
 - `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_REPLY_TO`, `MAIL_OFFICE_TO` — unset means
   enquiries are recorded and the message logged rather than sent, which is the
-  right default everywhere except production.
+  right default everywhere except production. The domain in `MAIL_FROM` must be
+  verified in Resend; that DKIM signature is the whole reason mail goes through
+  a provider rather than SMTP from the box, whose IP has no sending reputation.
+- `RESEND_WEBHOOK_SECRET` — from the webhook's page in the Resend dashboard,
+  beginning `whsec_`. Add a webhook pointing at
+  `https://<the panel>/api/webhooks/resend`, subscribed to `email.delivered`,
+  `email.bounced`, `email.complained`, `email.opened` and
+  `email.delivery_delayed`. Without it every message in the Email screen stops
+  at "Sent", which only means Resend accepted it — a bounce is never recorded,
+  and a wrong address looks exactly like a traveller who did not reply. Unset
+  means the endpoint refuses delivery notices rather than accepting unsigned
+  ones from anybody who finds the URL.
+- `MAIL_DAILY_CAP` — how many messages a day may be handed to the provider,
+  100 by default, which is Resend's free plan. Over the line a message is
+  recorded as *Skipped* against the enquiry it belongs to, so the office can
+  see who went unanswered; a provider refusal names nobody. `/api/health` says
+  how much of the day's allowance is spent.
 
 ## Storage
 
@@ -103,6 +119,9 @@ Then sign in as the seeded owner and change the password — it is
 - `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml` all answer.
 - Publish a change in the panel and reload the page it affects.
 - Send an enquiry through the real form and confirm the row, the office email
-  and the acknowledgement.
+  and the acknowledgement. Reply to the office copy: it must go to the
+  traveller, not back to the company's own address.
+- `/api/health` — `mail` and `mailWebhook` both `ok`. The second is the one a
+  deploy forgets, and nothing else reports it.
 - A preview link from the panel, and the same URL in a private window — the
   second must be refused.

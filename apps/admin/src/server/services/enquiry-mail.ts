@@ -9,7 +9,8 @@ import {
 import type { EmailKind } from '@prisma/client';
 
 import { db } from '@/lib/db';
-import { env, mailConfigured } from '@/lib/env';
+import { env } from '@/lib/env';
+import { sendEmail } from '@/server/services/mailer';
 
 /**
  * Turning an enquiry into two messages.
@@ -19,14 +20,20 @@ import { env, mailConfigured } from '@/lib/env';
  * the office's, not the developer's — and both are recorded in
  * `email_messages` whether or not they are actually sent.
  *
- * ## Recording is not optional; sending is
+ * ## What this file decides, and what it does not
  *
- * With no `RESEND_API_KEY` the message is rendered, stored with status
- * `QUEUED` and logged. That is the correct development default: a seeded
- * database full of test addresses must not be able to email anybody, and an
- * adapter that threw when unconfigured would make every seeded enquiry a
- * failure. It is also what makes the Email screen useful on day one — the
- * office can read exactly what *would* go out before a key is ever set.
+ * It decides who is written to and which words they get. How a message is
+ * handed to the provider, recorded, capped and followed to its delivery is
+ * `services/mailer`, which knows nothing about enquiries — so a second thing
+ * worth emailing (a newsletter confirmation, a password reset) reaches the
+ * same log without touching any of this.
+ *
+ * ## Neither message can fail the enquiry
+ *
+ * `sendEmail` does not throw for a delivery failure, and the two sends are
+ * separate awaits rather than one `Promise.all`. A bounced acknowledgement — a
+ * typo'd address, a full mailbox — must not stop the office being told that
+ * somebody wrote in.
  */
 
 export async function deliverEnquiry(enquiryId: string): Promise<void> {
@@ -80,18 +87,11 @@ export async function deliverEnquiry(enquiryId: string): Promise<void> {
     },
   };
 
-  if (on('acknowledgeTraveller')) {
-    await send({
-      kind: 'ENQUIRY_ACKNOWLEDGEMENT',
-      to: [{ email: enquiry.email, name: enquiry.name }],
-      identity,
-      payload,
-      audience: 'traveller',
-      replyPromise: company.replyPromise,
-      enquiryId: enquiry.id,
-    });
-  }
-
+  /* The office first. It is the message that must not be lost — an
+     acknowledgement nobody receives is a discourtesy, an enquiry nobody in the
+     office ever sees is the business failing at the one thing this site is
+     for. Sending it before the traveller's copy means a cap, an outage or a
+     crash between the two costs the courtesy rather than the lead. */
   if (on('notifyOffice')) {
     await send({
       kind: 'ENQUIRY_NOTIFICATION',
@@ -101,6 +101,23 @@ export async function deliverEnquiry(enquiryId: string): Promise<void> {
       audience: 'office',
       replyPromise: company.replyPromise,
       enquiryId: enquiry.id,
+      replyTo: enquiry.email,
+    });
+  }
+
+  if (on('acknowledgeTraveller')) {
+    await send({
+      kind: 'ENQUIRY_ACKNOWLEDGEMENT',
+      to: [{ email: enquiry.email, name: enquiry.name }],
+      identity,
+      payload,
+      audience: 'traveller',
+      replyPromise: company.replyPromise,
+      enquiryId: enquiry.id,
+      /* Replies come back to the address the office actually reads, which is
+         the one on the company record — not the From address, which may be a
+         no-reply sender the provider verified. */
+      replyTo: identity.email || env.mail.replyTo,
     });
   }
 }
@@ -113,6 +130,15 @@ interface SendArgs {
   audience: 'traveller' | 'office';
   replyPromise: string;
   enquiryId: string;
+  /**
+   * Where the recipient's "Reply" goes.
+   *
+   * On the office's copy this is the traveller, and it is the whole mechanism:
+   * somebody reads the notification, presses Reply, and the thread continues
+   * with the person who wrote in. Without it every reply goes to the company's
+   * own address and has to be re-addressed by hand.
+   */
+  replyTo: string;
 }
 
 async function send(args: SendArgs): Promise<void> {
@@ -146,71 +172,16 @@ async function send(args: SendArgs): Promise<void> {
   });
 
   for (const recipient of args.to) {
-    /**
-     * Stored before it is sent, and stored verbatim.
-     *
-     * A template edited next week must not change the record of what somebody
-     * received — which is why `html` and `text` are columns rather than a
-     * template id plus the inputs.
-     */
-    const message = await db.emailMessage.create({
-      data: {
-        kind: args.kind,
-        templateId: row.id,
-        toEmail: recipient.email,
-        toName: recipient.name,
-        fromEmail: env.mail.from,
-        subject: rendered.subject,
-        html: rendered.html,
-        text: rendered.text,
-        enquiryId: args.enquiryId,
-        status: 'QUEUED',
-      },
+    await sendEmail({
+      kind: args.kind,
+      toEmail: recipient.email,
+      toName: recipient.name,
+      replyTo: args.replyTo,
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
+      templateId: row.id,
+      enquiryId: args.enquiryId,
     });
-
-    if (!mailConfigured()) {
-      console.info(
-        `[mail] not sent (RESEND_API_KEY is unset): "${rendered.subject}" → ${recipient.email}`,
-      );
-      continue;
-    }
-
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          authorization: `Bearer ${env.mail.resendApiKey}`,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: env.mail.from,
-          to: [recipient.email],
-          reply_to: env.mail.replyTo,
-          subject: rendered.subject,
-          html: rendered.html,
-          text: rendered.text,
-        }),
-      });
-
-      if (!response.ok) {
-        const detail = await response.text();
-        await db.emailMessage.update({
-          where: { id: message.id },
-          data: { status: 'FAILED', error: detail.slice(0, 1_000) },
-        });
-        continue;
-      }
-
-      const body = (await response.json()) as { id?: string };
-      await db.emailMessage.update({
-        where: { id: message.id },
-        data: { status: 'SENT', sentAt: new Date(), providerId: body.id ?? null },
-      });
-    } catch (error) {
-      await db.emailMessage.update({
-        where: { id: message.id },
-        data: { status: 'FAILED', error: (error as Error).message.slice(0, 1_000) },
-      });
-    }
   }
 }

@@ -79,6 +79,13 @@ appears in the logs.
 
 ## 4. Mail
 
+> **Superseded.** This section describes mail sent from the website, which is not what was
+> built. The website holds no mail credential: it posts the enquiry to the panel, and the
+> panel sends both messages and records them. The behaviour below is still the contract —
+> it is implemented in `apps/admin/src/server/services/enquiry-mail.ts` (who is written to,
+> in which words) and `mailer.ts` (the Resend call, the log, the daily cap, the delivery
+> webhook). `src/lib/mail/` does not exist here and must not be created.
+
 `src/lib/mail/` — an interface with a Resend adapter, a console adapter for dev, and an SMTP
 adapter for self-hosting. No provider SDK outside that directory.
 
@@ -90,8 +97,10 @@ Two messages per enquiry:
   HTML part. It confirms the two-day promise, repeats what they asked for, and gives the
   phone number. It does not upsell.
 
-If `RESEND_API_KEY` is absent, the console adapter is used and a warning is logged at startup
-— so a misconfigured deploy is loud, but never loses a record.
+If `RESEND_API_KEY` is absent, the message is rendered, recorded against the enquiry and
+logged rather than sent — so a misconfigured deploy never loses a record, and the office can
+read what *would* have gone out on the panel's Email screen. `/api/health` on the panel says
+so, and so does its Settings page.
 
 ## 5. Privacy
 

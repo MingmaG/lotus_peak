@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
-import { env, mailConfigured, revalidationConfigured } from '@/lib/env';
+import { env, mailConfigured, mailWebhookConfigured, revalidationConfigured } from '@/lib/env';
 import { storage } from '@/lib/storage';
+import { checkQuota } from '@/server/services/mailer';
 
 /**
  * Is this install actually working?
@@ -37,9 +38,36 @@ export async function GET() {
           'SITE_REVALIDATE_SECRET is not set. Publishing will not reach the website until the hourly refresh.',
       };
 
-  checks.mail = mailConfigured()
-    ? { ok: true }
-    : { ok: false, detail: 'RESEND_API_KEY is not set. Enquiries are recorded and logged, not sent.' };
+  if (!mailConfigured()) {
+    checks.mail = {
+      ok: false,
+      detail: 'RESEND_API_KEY is not set. Enquiries are recorded and logged, not sent.',
+    };
+  } else {
+    /* The allowance is worth reporting even when it is not yet spent: a deploy
+       whose cap is nearly gone will start recording enquiries as SKIPPED, and
+       finding that out from a silent traveller is finding out too late. */
+    const quota = await checkQuota().catch(() => null);
+    checks.mail = quota
+      ? {
+          ok: quota.remaining > 0,
+          detail:
+            quota.remaining > 0
+              ? `${quota.usedToday} of ${quota.cap} sent today.`
+              : `The daily allowance of ${quota.cap} is spent. Messages are being recorded as skipped until ${quota.resetsAt}.`,
+        }
+      : { ok: true };
+  }
+
+  /* Not fatal, and not cosmetic: without it every message stops at SENT, which
+     only means the provider took it. A bounce is then invisible. */
+  checks.mailWebhook = mailWebhookConfigured()
+    ? { ok: true, detail: `${env.storage.adminPublicUrl}/api/webhooks/resend` }
+    : {
+        ok: false,
+        detail:
+          'RESEND_WEBHOOK_SECRET is not set. Messages will stop at "sent" — a bounce or a complaint will never be recorded.',
+      };
 
   /* The database is the only fatal one. A missing mail key is a warning: the
      panel works, and an enquiry is still recorded. */

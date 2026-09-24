@@ -134,6 +134,30 @@ export const env = {
       .split(',')
       .map((address) => address.trim())
       .filter(Boolean),
+    /**
+     * Signs Resend's delivery notices.
+     *
+     * Unset means the webhook is **off**, not open. A deployment that has not
+     * configured it should refuse delivery notices rather than accept unsigned
+     * ones from anybody who finds the URL — the endpoint writes to the record
+     * of what reached a traveller.
+     */
+    webhookSecret: optional('RESEND_WEBHOOK_SECRET'),
+    /**
+     * How many messages a day may be handed to the provider.
+     *
+     * Resend's free plan allows a hundred. The cap is enforced here, before
+     * the provider is called, rather than by reading a rejection afterwards:
+     * a message over the line is recorded as SKIPPED against the enquiry it
+     * belongs to, so the office can see who went unanswered and write to them
+     * by hand. A provider refusal names nobody.
+     *
+     * `number()` takes only a positive value, so `0` falls through to the
+     * default rather than stopping every send — pausing is switching the
+     * template off on the Email wording screen, which is the office's to do
+     * and does not need a deploy.
+     */
+    dailyCap: number('MAIL_DAILY_CAP', 100),
   },
 } as const;
 
@@ -145,4 +169,13 @@ export function revalidationConfigured(): boolean {
 /** True when an enquiry will actually be delivered rather than logged. */
 export function mailConfigured(): boolean {
   return env.mail.resendApiKey.length > 0;
+}
+
+/**
+ * True when the log can learn what became of a message it sent.
+ *
+ * Without it every row stops at SENT, which only means the provider took it.
+ */
+export function mailWebhookConfigured(): boolean {
+  return env.mail.webhookSecret.length > 0;
 }

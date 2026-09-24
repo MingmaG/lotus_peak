@@ -28,10 +28,34 @@ const TONE: Record<string, string> = {
   FAILED: 'text-destructive',
   BOUNCED: 'text-destructive',
   COMPLAINED: 'text-destructive',
+  /* Amber, not grey: nothing was attempted and nobody was told. */
+  SKIPPED: 'text-status-attention',
   QUEUED: 'text-muted-foreground',
+  PROCESSING: 'text-muted-foreground',
   SENT: 'text-status-published',
   DELIVERED: 'text-status-published',
   OPENED: 'text-status-published',
+  CLICKED: 'text-status-published',
+};
+
+/**
+ * What a status means, where the word alone does not carry it.
+ *
+ * "Sent" and "Delivered" look like synonyms and are not: the first is the
+ * provider accepting the message, the second is it reaching a mailbox. The
+ * distinction is the reason the webhook exists, so it is worth a tooltip.
+ */
+const MEANING: Record<string, string> = {
+  QUEUED: 'Written down. Nothing has been attempted — usually because no sending key is set.',
+  PROCESSING: 'Handed to Resend, no answer yet. A message that stays here means the send did not finish.',
+  SENT: 'Resend accepted it. That is not the same as it having arrived.',
+  DELIVERED: 'Resend says it reached the mailbox.',
+  OPENED: 'Opened by the recipient.',
+  CLICKED: 'A link in it was followed.',
+  BOUNCED: 'The mailbox refused it. The address is probably wrong.',
+  COMPLAINED: 'Marked as spam by the recipient.',
+  FAILED: 'The send itself failed. The reason is below.',
+  SKIPPED: 'Never attempted — the day’s sending allowance was already spent. Write to this person by hand.',
 };
 
 export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
@@ -102,7 +126,10 @@ export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
       key: 'status',
       label: 'Status',
       render: (row) => (
-        <span className={cn('text-xs', TONE[row.status] ?? 'text-muted-foreground')}>
+        <span
+          className={cn('text-xs', TONE[row.status] ?? 'text-muted-foreground')}
+          title={MEANING[row.status]}
+        >
           {humanise(row.status)}
           {row.error && (
             <span className="mt-0.5 block max-w-60 truncate" title={row.error}>
@@ -157,9 +184,17 @@ export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
           {
             key: 'status',
             label: 'Status',
-            options: ['QUEUED', 'SENT', 'DELIVERED', 'OPENED', 'BOUNCED', 'FAILED'].map(
-              (value) => ({ value, label: humanise(value) }),
-            ),
+            options: [
+              'QUEUED',
+              'PROCESSING',
+              'SENT',
+              'DELIVERED',
+              'OPENED',
+              'BOUNCED',
+              'COMPLAINED',
+              'FAILED',
+              'SKIPPED',
+            ].map((value) => ({ value, label: humanise(value) })),
           },
         ]}
         filterValues={{ status }}
