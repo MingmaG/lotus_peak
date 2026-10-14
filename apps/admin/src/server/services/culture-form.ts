@@ -2,21 +2,11 @@ import 'server-only';
 
 import { db } from '@/lib/db';
 import { resolveRichTextMedia } from '@/server/schema/rich-text';
-import { culturePath, destinationPath, postPath } from './content-paths';
+import { culturePath, destinationPath, postPath, ICON_TO_WIRE } from './content-paths';
 import { EDITOR_MEDIA, editorFigureMedia, previewImage, seoFormValue } from './content-editor';
 import { emptySeo, toPicked } from './trip-form';
 import type { CultureFormData } from '@/components/content/culture-editor';
 import type { ContentPreviewData } from '@/components/content/content-preview';
-
-const ICON_LABEL: Record<string, string> = {
-  DZONG: 'dzong',
-  CHORTEN: 'chorten',
-  STUPA: 'stupa',
-  MONASTERY: 'monastery',
-  PAVILION: 'pavilion',
-  DZONG_LONG: 'dzong-long',
-  BUDDHA: 'buddha',
-};
 
 export async function cultureFormData(id: string): Promise<CultureFormData | null> {
   const row = await db.cultureArticle.findFirst({
@@ -99,7 +89,7 @@ export async function culturePreviewData(id: string): Promise<ContentPreviewData
     blurb: null,
     body: resolveRichTextMedia(row.body, await editorFigureMedia(row.body)),
     image: previewImage(row.image),
-    icon: ICON_LABEL[row.icon] ?? null,
+    icon: ICON_TO_WIRE[row.icon],
     facts: [],
     seo: {
       title: row.metaTitle || row.title,

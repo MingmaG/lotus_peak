@@ -36,8 +36,31 @@ import { richTextSchema } from './rich-text';
 /*  Pages                                                                      */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * The silhouette a point may carry, as the design system names it.
+ *
+ * Lowercase and hyphenated, not the Prisma enum: a stored page section is JSON
+ * that goes out on the wire more or less as written, and `SiteIcon` on the
+ * website takes this spelling. The editor converts — see `ICON_TO_WIRE`.
+ */
 const siteIcon = z
-  .enum(['dzong', 'chorten', 'stupa', 'monastery', 'pavilion', 'dzong-long', 'buddha'])
+  .enum([
+    'dzong',
+    'chorten',
+    'stupa',
+    'monastery',
+    'pavilion',
+    'dzong-long',
+    'buddha',
+    'taktsang',
+    'punakha',
+    'jakar',
+    'trongsa',
+    'mongar',
+    'pemagatshel',
+    'trashigang',
+    'gasa',
+  ])
   .nullable()
   .default(null);
 

@@ -23,7 +23,6 @@ import type {
   ApiTrip,
   ApiTripSummary,
   JournalCategory,
-  SiteIconName,
 } from '@lotuspeak/api-contracts';
 import type {
   Difficulty,
@@ -54,6 +53,7 @@ import {
   CATEGORY_TO_WIRE,
   culturePath,
   destinationPath,
+  ICON_TO_WIRE,
   postPath,
 } from './content-paths';
 
@@ -109,24 +109,6 @@ const SEASON_KEY: Record<SeasonKey, ApiSeason['key']> = {
   SUMMER: 'summer',
   AUTUMN: 'autumn',
   WINTER: 'winter',
-};
-
-/**
- * The enum, as the design system's icon component names them.
- *
- * `Record<SiteIcon, SiteIconName>` on both sides, so adding a silhouette to
- * either end without the other is a compile error. A wrong name here renders
- * nothing at all — the component switches on it — and nothing is the one
- * failure that looks like a styling problem rather than a data one.
- */
-const ICON: Record<SiteIcon, SiteIconName> = {
-  DZONG: 'dzong',
-  CHORTEN: 'chorten',
-  STUPA: 'stupa',
-  MONASTERY: 'monastery',
-  PAVILION: 'pavilion',
-  DZONG_LONG: 'dzong-long',
-  BUDDHA: 'buddha',
 };
 
 /* -------------------------------------------------------------------------- */
@@ -997,7 +979,7 @@ function serialiseDestinationSummary(row: DestinationSummaryRow): ApiDestination
     name: row.name,
     path: destinationPath(row.slug, row.parent?.slug),
     parentSlug: row.parent?.slug ?? null,
-    icon: ICON[row.icon],
+    icon: ICON_TO_WIRE[row.icon],
     blurb: row.blurb,
     standfirst: row.standfirst,
     image: img(row.image),
@@ -1122,7 +1104,7 @@ export async function listActivities(): Promise<ApiActivity[]> {
       slug: row.slug,
       name: row.name,
       blurb: row.blurb,
-      icon: ICON[row.icon],
+      icon: ICON_TO_WIRE[row.icon],
       image: img(row.image),
       examples: row.examples,
       tripSlugs: row.trips
@@ -1162,7 +1144,7 @@ function serialiseCultureSummary(row: {
     title: row.title,
     path: culturePath(row.slug),
     standfirst: row.standfirst,
-    icon: ICON[row.icon],
+    icon: ICON_TO_WIRE[row.icon],
     image: img(row.image),
   };
 }
@@ -1352,7 +1334,7 @@ function serialiseSections(
         points: section.points.map((point) => ({
           title: point.title,
           body: point.body,
-          icon: point.icon as SiteIconName | null,
+          icon: point.icon,
         })),
       });
       continue;
