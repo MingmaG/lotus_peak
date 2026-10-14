@@ -110,7 +110,7 @@ the field in `--maroon`, and `aria-describedby` wiring for hint and error.
 
 | Component | API | Notes |
 | --- | --- | --- |
-| `NavBar` | `items`, `active`, `cta`, `onCta`, `onNavigate`, `inverse`, `scrolled`, `logoSrc`, `brand`, `menu`, `search`, `searchPlaceholder` | Transparent over a hero, frosted paper (`--blur-nav`) when scrolled or open. Default: wordmark + outlined search + a "Menu" toggle opening a paper panel in large display type. `menu={false}` puts items inline |
+| `NavBar` | `items`, `active`, `cta`, `onCta`, `onNavigate`, `inverse`, `scrolled`, `logoSrc`, `brand`, `menu`, `search`, `searchPlaceholder` | Transparent over a hero, frosted paper (`--blur-nav`) when scrolled or open. Default: wordmark + outlined search + a "Menu" toggle opening a paper panel in large display type. `menu={false}` puts items inline. Both search boxes are `SearchSuggest`: a real GET form to `/search` that answers as it is typed, ranking `/search-index.json` in the browser — see `src/components/site/SearchSuggest.tsx` |
 | `Footer` | `brand`, `logoSrc`, `onHome`, `line`, `columns`, `note` | Deep pine, three link columns, hairline legal row, short prayer-flag rule |
 | `Tabs` | `tabs`, `value`, `onChange` | Underline tabs |
 

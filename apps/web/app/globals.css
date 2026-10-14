@@ -767,6 +767,108 @@
   text-decoration-color: var(--gold);
   text-underline-offset: 4px;
 }
+
+/* ---------------------------------------------------------------------------
+   The navigation's box, answering as it is typed
+   (src/components/site/SearchSuggest.tsx).
+
+   Paper, a hairline and one soft shadow: the panel is the same material as the
+   menu it hangs under, not a new surface. The rows are the search page's rows
+   at a smaller size — a thumbnail, what kind of thing it is, the title — so
+   recognising a result in the suggestions and recognising it on /search is the
+   same act of recognition.
+
+   It hangs from the form, which is `position: relative` for exactly this.
+   --------------------------------------------------------------------------- */
+.lp-suggest {
+  position: absolute;
+  top: calc(100% + 10px);
+  z-index: 60;
+  width: max(100%, 340px);
+  max-height: min(62vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface-page);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lift);
+  color: var(--ink);
+  text-align: left;
+}
+
+.lp-suggest[data-align='right'] { right: 0 }
+.lp-suggest[data-align='left'] { left: 0 }
+
+.lp-suggest ul { list-style: none; margin: 0; padding: var(--space-2) }
+
+.lp-suggest li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--dur-quick) var(--ease-breath);
+}
+
+/* The pointer and the arrow keys light the same row — `data-active` is set by
+   both, so there is never a hover highlight and a keyboard highlight at once. */
+.lp-suggest li[data-active='true'] { background: var(--surface-sunken) }
+
+.lp-suggest-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: var(--surface-sunken);
+}
+
+.lp-suggest-text { display: grid; gap: 2px; min-width: 0 }
+
+.lp-suggest-kind {
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.lp-suggest-title {
+  font-size: var(--text-small);
+  line-height: var(--leading-heading);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-suggest-title mark {
+  background: var(--sky-wash);
+  color: inherit;
+  padding: 0 .08em;
+}
+
+/* The last row is the way out of a short list: everything, on the search page,
+   where the results can be filtered and read properly. */
+.lp-suggest li.lp-suggest-all {
+  grid-template-columns: 1fr;
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--border-hairline);
+  border-radius: 0;
+  padding-top: var(--space-4);
+  font-size: var(--text-small);
+  color: var(--text-accent);
+}
+
+.lp-suggest-empty {
+  margin: 0;
+  padding: var(--space-5);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+  color: var(--text-muted);
+}
+
 /* On a phone the picture is a small square beside the words, not a column
    that squeezes them into a third of the screen. */
 @media (max-width: 620px) {
