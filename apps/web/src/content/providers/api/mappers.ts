@@ -44,6 +44,7 @@ import type {
   SeasonKey,
   SiteSettings,
   Trip,
+  TripPhoto,
   TripSections,
 } from '../../types'
 import { fillCopyright } from '../../types'
@@ -100,6 +101,25 @@ function imagePath(image: ApiImage | null | undefined): string {
   return image.url
 }
 
+/**
+ * A photograph as the journey page's viewer reads it.
+ *
+ * One helper for the gallery strip and for an itinerary day's photographs,
+ * because the two draw the same thing from the same wire shape and the copy
+ * that drifted would be the one that stopped describing its pictures.
+ */
+function toTripPhoto(image: ApiImage): TripPhoto {
+  return {
+    src: imagePath(image),
+    alt: image.alt,
+    caption: image.caption,
+    credit: image.credit,
+    width: image.width || null,
+    height: image.height || null,
+    focal: image.focal,
+  }
+}
+
 const ICON_FALLBACK: SiteIconName = 'dzong'
 
 /* -------------------------------------------------------------------------- */
@@ -147,7 +167,9 @@ export function toTripSummary(row: ApiTripSummary, index: number): Trip {
     journeyLabel: row.journeyLabel,
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    overview: [],
+    overview: '',
+    overviewImage: imagePath(row.heroImage),
+    overviewInset: null,
     highlights: [],
     itinerary: [],
     included: [],
@@ -206,7 +228,23 @@ export function toTrip(row: ApiTrip): Trip {
     journeyLabel: row.journeyLabel,
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    overview: row.overview,
+    /* The large one falls back to the hero, which is what the page drew when
+       this pair was two paths written into a component. */
+    overviewImage: imagePath(row.overviewImage ?? row.heroImage),
+    overviewImageAlt: (row.overviewImage ?? row.heroImage)?.alt,
+    /**
+     * The inset falls back to the first photograph in the strip.
+     *
+     * The design's overview is an overlapping pair, and the corner held one
+     * stock photograph of somebody walking — written into the component, on
+     * every journey, including the ones that do no walking. A photograph the
+     * office already chose for *this* journey is a better guess than that, and
+     * choosing the inset explicitly overrides it. Null only where a journey
+     * has no photographs at all, and then the page draws the single one.
+     */
+    overviewInset: imagePath(row.overviewInsetImage ?? row.gallery[0]?.image) || null,
+    overviewInsetAlt: (row.overviewInsetImage ?? row.gallery[0]?.image)?.alt,
+    overview: renderStoredRichText(row.overview),
     highlights: row.highlights,
     itinerary: row.itinerary.map((day) => ({
       /* `day` is null on a rest day, and the domain type spells that as an
@@ -217,6 +255,7 @@ export function toTrip(row: ApiTrip): Trip {
       title: day.title,
       ...(day.meta ? { meta: day.meta } : {}),
       ...(day.body ? { body: renderStoredRichText(day.body) } : {}),
+      ...(day.images.length ? { images: day.images.map(toTripPhoto) } : {}),
     })),
     included: row.included,
     excluded: row.excluded,
@@ -224,15 +263,7 @@ export function toTrip(row: ApiTrip): Trip {
       question: item.question,
       answer: renderStoredRichText(item.answer),
     })),
-    gallery: row.gallery.map((item) => ({
-      src: imagePath(item.image),
-      alt: item.image.alt,
-      caption: item.image.caption,
-      credit: item.image.credit,
-      width: item.image.width || null,
-      height: item.image.height || null,
-      focal: item.image.focal,
-    })),
+    gallery: row.gallery.map((item) => toTripPhoto(item.image)),
     sections: row.sections,
     destinations: row.destinations.map((d, i) => toDestination(d, i)),
     culture: row.culture.map((c, i) => toCultureArticle(c, i)),

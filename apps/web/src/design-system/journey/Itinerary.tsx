@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Prose } from '@/components/site/Prose'
 import { useId, useState, type CSSProperties } from 'react'
 import { PlusMinus } from '../primitives/Disclosure'
@@ -10,6 +11,55 @@ export type ItineraryDay = {
   title: string
   meta?: string
   body?: string
+  /**
+   * The day's own photographs, under its prose.
+   *
+   * Distinct from a photograph inside `body`, which arrives as a `<figure>` in
+   * the HTML and belongs to a sentence. These belong to the day, and the strip
+   * is deliberately small — three to a row, no captions, no viewer: an
+   * itinerary is read for what happens, and a gallery inside one is the
+   * journey's own band further down the page.
+   */
+  images?: { src: string; alt?: string }[]
+}
+
+/** How many of a day's photographs are drawn. The rest are in the strip. */
+const DAY_IMAGES = 6
+
+/**
+ * A day's photographs.
+ *
+ * `aspect-ratio` with `fill` rather than intrinsic dimensions, because the
+ * cells are a grid and a portrait among landscapes would otherwise set the
+ * row's height. Each is lazy: an eleven-day itinerary with four photographs a
+ * day is forty-four requests if they are all eager, and the visitor has read
+ * two days of it.
+ */
+function DayImages({ images }: { images: { src: string; alt?: string }[] }) {
+  return (
+    <div
+      style={{
+        marginTop: 16,
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+        gap: 8,
+        maxWidth: 'var(--measure)',
+      }}
+    >
+      {images.slice(0, DAY_IMAGES).map((image) => (
+        <div key={image.src} style={{ position: 'relative', aspectRatio: '4/3' }}>
+          <Image
+            src={image.src}
+            alt={image.alt ?? ''}
+            fill
+            loading="lazy"
+            sizes="(max-width: 900px) 33vw, 220px"
+            style={{ objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
+          />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export type ItineraryProps = {
@@ -126,6 +176,7 @@ export function Itinerary({ days = [], collapsible = false, expanded, onToggle, 
                   style={{ margin: '14px 0 0', color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}
                 />
               )}
+              {d.images && d.images.length > 0 && <DayImages images={d.images} />}
             </div>
           </li>
         ))}
@@ -255,7 +306,7 @@ export function Itinerary({ days = [], collapsible = false, expanded, onToggle, 
                 </span>
               </button>
 
-              {d.body && (
+              {(d.body || (d.images && d.images.length > 0)) && (
                 <div
                   id={panelId}
                   role="region"
@@ -280,6 +331,7 @@ export function Itinerary({ days = [], collapsible = false, expanded, onToggle, 
                           'opacity var(--dur-slow) var(--ease-breath),transform var(--dur-slow) var(--ease-breath)',
                       }}
                     />
+                    {d.images && d.images.length > 0 && <DayImages images={d.images} />}
                   </div>
                 </div>
               )}

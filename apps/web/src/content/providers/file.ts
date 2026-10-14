@@ -44,6 +44,14 @@ const withAlt = {
   trip: (trip: TripRecord): Trip => ({
     ...trip,
     heroAlt: altFor(trip.heroImage),
+    /* The fixture writes the overview as prose. See `TripRecord`. */
+    overview: renderStoredRichText(trip.overview),
+    overviewImage: trip.overviewImage ?? trip.heroImage,
+    overviewImageAlt: altFor(trip.overviewImage ?? trip.heroImage),
+    /* The same fallback the API provider makes: the first photograph in the
+       strip, where the fixture names none. */
+    overviewInset: trip.overviewInset ?? trip.gallery[0]?.[0] ?? null,
+    overviewInsetAlt: altFor(trip.overviewInset ?? trip.gallery[0]?.[0] ?? ''),
     gallery: trip.gallery.map(([src]) => ({
       src,
       alt: altFor(src),
@@ -331,7 +339,9 @@ function fileLlmsFullInput() {
       groupSizeMin: null,
       groupSizeMax: null,
       heroImage: fileImage(trip.heroImage),
-      overview: trip.overview,
+      overviewImage: fileImage(trip.overviewImage ?? trip.heroImage),
+      overviewInsetImage: trip.overviewInset ? fileImage(trip.overviewInset) : null,
+      overview: renderStoredRichText(trip.overview),
       highlights: trip.highlights,
       itinerary: trip.itinerary.map((day, index) => ({
         day: day.rest ? null : index + 1,

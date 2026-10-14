@@ -109,29 +109,29 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
             marginTop: 'var(--space-8)',
           }}
         >
-          <TripOverviewImages main={trip.heroImage} inset={IMG.hike} insetAlt={altFor(IMG.hike)} />
+          {/* The main photograph carries a description only when it is not
+              the hero, which is already described at the top of this page. */}
+          <TripOverviewImages
+            main={trip.overviewImage}
+            mainAlt={
+              trip.overviewImage === trip.heroImage ? undefined : trip.overviewImageAlt
+            }
+            inset={trip.overviewInset}
+            insetAlt={trip.overviewInsetAlt}
+          />
 
           <div>
             <Reveal>
               <h2 style={{ fontSize: 'var(--text-h2)', maxWidth: '18ch' }}>{trip.excerpt}</h2>
             </Reveal>
             <Reveal delay={240}>
-              <div>
-                {trip.overview.map((p, i) => (
-                  <p
-                    key={i}
-                    style={{
-                      marginTop: i === 0 ? 28 : 20,
-                      color: 'var(--text-muted)',
-                      ...(i === 0
-                        ? { fontSize: 'var(--text-lead)', lineHeight: 'var(--leading-lead)' }
-                        : null),
-                    }}
-                  >
-                    {p}
-                  </p>
-                ))}
-              </div>
+              {/* Rich text now, so the first paragraph's lead type is a CSS
+                  rule rather than an index — see `.lp-prose-lead`. */}
+              <Prose
+                html={trip.overview}
+                className="lp-prose-lead"
+                style={{ marginTop: 28 }}
+              />
             </Reveal>
             <Reveal delay={480}>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 32 }}>

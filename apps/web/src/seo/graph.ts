@@ -137,6 +137,11 @@ function widenTrip(trip: Trip): ApiTrip {
     groupSizeMin: null,
     groupSizeMax: null,
     heroImage: image(trip.heroImage, trip.heroAlt),
+    /* The structured data describes the journey, not the page's furniture: the
+       pair beside the overview is the hero again or a photograph from the
+       strip, both of which are already in the graph. */
+    overviewImage: null,
+    overviewInsetImage: null,
     overview: trip.overview,
     highlights: trip.highlights,
     itinerary: trip.itinerary.map((day, index) => ({

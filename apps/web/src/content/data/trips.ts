@@ -11,8 +11,36 @@ import type { Trip } from '../types'
  */
 export type TripRecord = Omit<
   Trip,
-  'gallery' | 'sections' | 'destinations' | 'culture' | 'posts' | 'related'
-> & { gallery: [src: string, ratio?: string, width?: string][] }
+  | 'gallery'
+  | 'sections'
+  | 'destinations'
+  | 'culture'
+  | 'posts'
+  | 'related'
+  | 'overviewImage'
+  | 'overviewInset'
+> & {
+  gallery: [src: string, ratio?: string, width?: string][]
+  /**
+   * The overview, as plain paragraphs separated by a blank line.
+   *
+   * `Trip.overview` is sanitised HTML; this is what somebody typed, and the
+   * provider runs it through `renderStoredRichText` — the same function that
+   * draws a journey whose overview was written before the editor existed. Two
+   * things follow, both wanted: the fixture stays legible as prose, and the
+   * plain-text path is exercised on every build rather than only by a row
+   * nobody has edited since.
+   */
+  overview: string
+  /**
+   * The pair beside the overview, where the fixture chooses them.
+   *
+   * Absent falls back the way the API provider's does — the hero for the large
+   * one, the first photograph in the strip for the inset.
+   */
+  overviewImage?: string
+  overviewInset?: string | null
+}
 
 /**
  * The five journeys.
@@ -108,11 +136,11 @@ export const TRIPS: TripRecord[] = [
     paceNote: 'One rest day',
     journeyLabel: 'Mindfulness journey',
     heroImage: IMG.dzong,
-    overview: [
-      'Cultural immersion and time in living monasteries, with mindfulness of feeling and sensation practised on every drive, so the journey itself becomes meditation in motion.',
-      'We move slowly. Two nights in most valleys, drives of no more than five hours, and a rest day written in at Phobjikha. Your guide is Bhutanese and licensed; at the monasteries, resident Lams lead the sitting.',
-      'Thirty percent of what you pay supports Osel Ling Perila Goenpa, a monastery in the hills above Paro.',
-    ],
+    overview: `Cultural immersion and time in living monasteries, with mindfulness of feeling and sensation practised on every drive, so the journey itself becomes meditation in motion.
+
+We move slowly. Two nights in most valleys, drives of no more than five hours, and a rest day written in at Phobjikha. Your guide is Bhutanese and licensed; at the monasteries, resident Lams lead the sitting.
+
+Thirty percent of what you pay supports Osel Ling Perila Goenpa, a monastery in the hills above Paro.`,
     highlights: [
       'Kichu and Dungtse Lhakhang in Paro, two of the oldest temples in the country',
       'Jakar Dzong and the sacred sites of Bumthang, with evening prayers at Kharchu',
@@ -220,11 +248,11 @@ export const TRIPS: TripRecord[] = [
     paceNote: 'Daily sitting practice',
     journeyLabel: 'Meditation journey',
     heroImage: IMG.taktshang,
-    overview: [
-      'A journey built around practice rather than sightseeing. Each day opens with sitting and closes with sitting, and the hours between are held the same way.',
-      'Resident Lams lead the sessions in the monasteries we stay near. Nothing is performed for visitors: you join the room as it already is, and the instruction is given plainly.',
-      'Thirty percent of what you pay supports Osel Ling Perila Goenpa, a monastery in the hills above Paro.',
-    ],
+    overview: `A journey built around practice rather than sightseeing. Each day opens with sitting and closes with sitting, and the hours between are held the same way.
+
+Resident Lams lead the sessions in the monasteries we stay near. Nothing is performed for visitors: you join the room as it already is, and the instruction is given plainly.
+
+Thirty percent of what you pay supports Osel Ling Perila Goenpa, a monastery in the hills above Paro.`,
     highlights: [
       'Morning and evening sitting with resident Lams, every day of the journey',
       'Instruction in mindfulness of breathing, feeling and sensation',
@@ -332,11 +360,11 @@ export const TRIPS: TripRecord[] = [
     paceNote: 'Gentle pace',
     journeyLabel: 'Festival journey',
     heroImage: IMG.tashichho,
-    overview: [
-      'Five days timed to a tshechu: masked cham dances in a dzong courtyard, the whole valley in its finest kira and gho, and a giant thongdrel unrolled before dawn.',
-      'Around the festival we keep the days quiet. A short journey, gently paced, with time to sit in the valleys between.',
-      'Departures follow the festival calendar, so dates are fixed by the lunar month rather than by us. Write and we will tell you what is coming.',
-    ],
+    overview: `Five days timed to a tshechu: masked cham dances in a dzong courtyard, the whole valley in its finest kira and gho, and a giant thongdrel unrolled before dawn.
+
+Around the festival we keep the days quiet. A short journey, gently paced, with time to sit in the valleys between.
+
+Departures follow the festival calendar, so dates are fixed by the lunar month rather than by us. Write and we will tell you what is coming.`,
     highlights: [
       'A full day of cham dances in the dzong courtyard',
       'The thongdrel unrolled at dawn, and folded away before the sun reaches it',
@@ -420,11 +448,11 @@ export const TRIPS: TripRecord[] = [
     paceNote: 'Two rest days',
     journeyLabel: 'Trek',
     heroImage: IMG.hike,
-    overview: [
-      'The classic high route beneath Jomolhari, 7,326 m, walked slowly enough to acclimatise properly and slowly enough to notice where you are.',
-      'Two rest days are written in, at Jangothang and at Lingshi, and the high point is the Nyile La at 4,930 m. Camp is carried and set by our crew; you carry a day pack.',
-      'Autumn is the season for it: the monsoon has cleared, the peaks stand sharp, and the nights are cold and dry.',
-    ],
+    overview: `The classic high route beneath Jomolhari, 7,326 m, walked slowly enough to acclimatise properly and slowly enough to notice where you are.
+
+Two rest days are written in, at Jangothang and at Lingshi, and the high point is the Nyile La at 4,930 m. Camp is carried and set by our crew; you carry a day pack.
+
+Autumn is the season for it: the monsoon has cleared, the peaks stand sharp, and the nights are cold and dry.`,
     highlights: [
       'Jomolhari, 7,326 m, seen from the camp at its foot',
       'Jangothang base camp, and a rest day to walk up to the lakes above it',
@@ -586,11 +614,11 @@ export const TRIPS: TripRecord[] = [
     paceNote: 'Balanced pace',
     journeyLabel: 'Festival journey',
     heroImage: IMG.chamMaskedDance,
-    overview: [
-      'A week built around the Paro Tshechu, with the festival in the middle of it rather than at the end, so there is time to sit with what you have seen.',
-      'Paro and Thimphu first, for the temples, the dzongs and the markets, with short mindfulness practice written into each day. Then the road east over the passes to Punakha and out to Phobjikha, where the valley is open and empty and the walking is level.',
-      'The last morning is the climb to Taktsang. It is the hardest thing in the week and it comes when you are ready for it.',
-    ],
+    overview: `A week built around the Paro Tshechu, with the festival in the middle of it rather than at the end, so there is time to sit with what you have seen.
+
+Paro and Thimphu first, for the temples, the dzongs and the markets, with short mindfulness practice written into each day. Then the road east over the passes to Punakha and out to Phobjikha, where the valley is open and empty and the walking is level.
+
+The last morning is the climb to Taktsang. It is the hardest thing in the week and it comes when you are ready for it.`,
     highlights: [
       'Paro Tshechu at Rinpung Dzong: cham dances, ritual, and the whole valley in its best kira and gho',
       'Kyichu Lhakhang, one of the oldest temples in the country, on the first afternoon',

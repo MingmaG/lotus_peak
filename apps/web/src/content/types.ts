@@ -13,7 +13,16 @@ export type ItineraryDayData = {
   rest?: boolean
   title: string
   meta?: string
+  /** Rich text, already sanitised. Drawn by `Prose`, never as text. */
   body?: string
+  /**
+   * The day's own photographs, as a strip under its prose.
+   *
+   * Separate from a photograph the office put *inside* `body`: that one
+   * belongs to a sentence and arrives as a `<figure>` in the HTML. These
+   * belong to the day.
+   */
+  images?: TripPhoto[]
 }
 
 /**
@@ -58,7 +67,21 @@ export type Trip = {
   journeyLabel: string
   heroImage: string
   heroAlt?: ImageAlt
-  overview: string[]
+  /**
+   * The large photograph beside the overview, and the small one inset into its
+   * corner.
+   *
+   * The large one falls back to the hero in the mapper, so it is always a
+   * path. The inset is null where the office chose none, and the page then
+   * draws the single photograph — the corner used to hold one stock picture of
+   * somebody walking, on every journey.
+   */
+  overviewImage: string
+  overviewImageAlt?: ImageAlt
+  overviewInset: string | null
+  overviewInsetAlt?: ImageAlt
+  /** The opening, as sanitised rich text. Drawn by `Prose`. */
+  overview: string
   highlights: string[]
   itinerary: ItineraryDayData[]
   included: string[]

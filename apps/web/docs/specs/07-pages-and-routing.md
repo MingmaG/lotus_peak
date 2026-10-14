@@ -59,7 +59,7 @@ The deepest page. `generateStaticParams` from `trips.slugs()`; unknown slug → 
 | --- | --- | --- |
 | 1 | Hero | `Parallax` speed .6, 92vh, centred, flat scrim + `--protection` gradient, staged 0/240/520/800 with `ScrollCue` |
 | 2 | Sticky section nav | `position: sticky; top: calc(var(--nav-h) - 1px)`, scroll-spy underline, smooth jump offset `--nav-h + 56` |
-| 3 | `#overview` | Two overlapping images — main at `aspect 4/5` with `Parallax` speed .5, second offset bottom-right at 52% width with a 6px paper border, revealed at delay 400, `y=60`. Copy + `Badge` row |
+| 3 | `#overview` | Two overlapping images, both chosen by the office (`overviewImage`, `overviewInset`; falling back to the hero and the first gallery photograph) — main at `aspect 4/5` with `Parallax` speed .5, second offset bottom-right at 52% width with a 6px paper border, revealed at delay 400, `y=60`. With no second photograph the pair is the single image. Copy (`Prose`, first paragraph in lead type) + `Badge` row |
 | 4 | `#highlights` | "At a glance" `Fact` grid (gold top rules) + price panel with an `SDF` `Tooltip`; highlights list staged i·140 |
 | 5 | `#enquiry` | `--surface-sunken`; contact column + the in-page form. See `08-forms-and-enquiries.md` |
 | 6 | Trail band | `Band` 80vh |

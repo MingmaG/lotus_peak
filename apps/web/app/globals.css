@@ -464,6 +464,25 @@
 .lp-prose-compact figure.lp-figure { margin: 16px 0 }
 .lp-prose-compact blockquote { font-size: inherit; line-height: inherit }
 
+/* --- an opening, where the first paragraph is the standfirst --------------- */
+
+/**
+ * `.lp-prose-lead` is a body whose first paragraph is set in lead type.
+ *
+ * A journey's overview, which the design draws that way: the opening sentence
+ * larger and looser, the rest quieter beneath it. It was three paragraphs
+ * styled by index in the page component until the office got the same editor
+ * here as everywhere else, and an index is not something a rich-text body has
+ * — the first thing in one may be a list or a photograph, and styling "the
+ * first paragraph" is the rule the design actually states.
+ */
+.lp-prose-lead { color: var(--text-muted) }
+
+.lp-prose-lead > p:first-child {
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+}
+
 /* The journeys index filters in the browser so the page can stay static.
    `TripFilter` writes the active type onto the grid and these hide the rest;
    with no JavaScript the attribute stays `all` and every journey is shown,
@@ -748,7 +767,6 @@
   text-decoration-color: var(--gold);
   text-underline-offset: 4px;
 }
-
 /* On a phone the picture is a small square beside the words, not a column
    that squeezes them into a third of the screen. */
 @media (max-width: 620px) {
