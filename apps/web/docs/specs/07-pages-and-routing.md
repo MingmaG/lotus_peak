@@ -63,9 +63,9 @@ The deepest page. `generateStaticParams` from `trips.slugs()`; unknown slug → 
 | 4 | `#highlights` | "At a glance" `Fact` grid (gold top rules) + price panel with an `SDF` `Tooltip`; highlights list staged i·140 |
 | 5 | `#enquiry` | `--surface-sunken`; contact column + the in-page form. See `08-forms-and-enquiries.md` |
 | 6 | Trail band | `Band` 80vh |
-| 7 | `#itinerary` | Centred header with flanking gold rules; expand/collapse all; `Itinerary collapsible` over `Disclosure` |
+| 7 | `#itinerary` | Centred header with flanking gold rules; expand/collapse all; `Itinerary collapsible` over `Disclosure`. A day draws its own photographs under its prose — eight tiles, the eighth counting the rest, every one opening `PhotoLightbox` |
 | 8 | `#included` | Two hairline-separated lists |
-| 9 | Gallery | `Strip`, six images, mixed ratios |
+| 9 | `#gallery` | `TripGallery`: a five-tile mosaic, a sheet listing everything, and `PhotoLightbox` over both. The photographs are the journey's own **and** the ones hung on its itinerary days, deduplicated by `src` — the band is titled "what the days look like", and a day's pictures should not be reachable only by opening that day. Hidden when the office turns the section off or there is nothing to show |
 | 10 | `#essential` | FAQ over `Disclosure` (audit B12 — currently an instant pop) |
 | 11 | `#reflections` | Two `Reflection`s + CTA + "From US$ 4,500 per adult" |
 

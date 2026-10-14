@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Prose } from '@/components/site/Prose'
 import { useId, useState, type CSSProperties } from 'react'
 import { PlusMinus } from '../primitives/Disclosure'
+import { PhotoLightbox, position, type LightboxPhoto } from '../media/PhotoLightbox'
 
 export type ItineraryDay = {
   day?: number
@@ -15,19 +16,28 @@ export type ItineraryDay = {
    * The day's own photographs, under its prose.
    *
    * Distinct from a photograph inside `body`, which arrives as a `<figure>` in
-   * the HTML and belongs to a sentence. These belong to the day, and the strip
-   * is deliberately small — three to a row, no captions, no viewer: an
-   * itinerary is read for what happens, and a gallery inside one is the
-   * journey's own band further down the page.
+   * the HTML and belongs to a sentence. These belong to the day.
    */
-  images?: { src: string; alt?: string }[]
+  images?: LightboxPhoto[]
 }
 
-/** How many of a day's photographs are drawn. The rest are in the strip. */
-const DAY_IMAGES = 6
+/**
+ * How many tiles a day's strip draws before it starts counting.
+ *
+ * Two rows at most on a wide screen, which is as much as a day can carry
+ * before the itinerary stops reading as a sequence of days.
+ */
+const DAY_IMAGES = 8
 
 /**
- * A day's photographs.
+ * A day's photographs: a strip under its prose, and the viewer over the page.
+ *
+ * The strip used to be a hard `slice(0, 6)` with nothing to click. A day with
+ * ten photographs showed six and the other four existed only in the database —
+ * no count, no overflow, no way to reach them, and nothing anywhere said so.
+ * Now the last tile counts what is left and opens the viewer on it, so the
+ * strip stays the size the design wants while every photograph is one tap
+ * away. A day may hold as many as the office likes.
  *
  * `aspect-ratio` with `fill` rather than intrinsic dimensions, because the
  * cells are a grid and a portrait among landscapes would otherwise set the
@@ -35,30 +45,79 @@ const DAY_IMAGES = 6
  * day is forty-four requests if they are all eager, and the visitor has read
  * two days of it.
  */
-function DayImages({ images }: { images: { src: string; alt?: string }[] }) {
+function DayImages({ images, dayLabel }: { images: LightboxPhoto[]; dayLabel: string }) {
+  const [viewing, setViewing] = useState<number | null>(null)
+
+  /* Where there are more than fit, the last tile becomes the counter — so it
+     is `DAY_IMAGES - 1` photographs plus the one the counter stands on. */
+  const overflowing = images.length > DAY_IMAGES
+  const shown = overflowing ? images.slice(0, DAY_IMAGES - 1) : images
+  const rest = images.length - shown.length
+
   return (
-    <div
-      style={{
-        marginTop: 16,
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-        gap: 8,
-        maxWidth: 'var(--measure)',
-      }}
-    >
-      {images.slice(0, DAY_IMAGES).map((image) => (
-        <div key={image.src} style={{ position: 'relative', aspectRatio: '4/3' }}>
-          <Image
-            src={image.src}
-            alt={image.alt ?? ''}
-            fill
-            loading="lazy"
-            sizes="(max-width: 900px) 33vw, 220px"
-            style={{ objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <div
+        style={{
+          marginTop: 16,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+          gap: 8,
+          maxWidth: 'var(--measure)',
+        }}
+      >
+        {shown.map((image, i) => (
+          <button
+            key={image.src + i}
+            type="button"
+            className="lp-mosaic-tile"
+            onClick={() => setViewing(i)}
+            aria-label={`Open photograph ${i + 1} of ${images.length}, ${dayLabel}`}
+            style={{ aspectRatio: '4/3' }}
+          >
+            <Image
+              src={image.src}
+              alt={image.alt ?? ''}
+              fill
+              loading="lazy"
+              sizes="(max-width: 900px) 33vw, 220px"
+              style={{ objectFit: 'cover', objectPosition: position(image) }}
+            />
+          </button>
+        ))}
+
+        {overflowing && (
+          <button
+            type="button"
+            className="lp-mosaic-tile"
+            onClick={() => setViewing(shown.length)}
+            aria-label={`Show the other ${rest} photographs of ${dayLabel}`}
+            style={{ aspectRatio: '4/3' }}
+          >
+            {/* The photograph under the count is the first of the ones being
+                counted, so the tile shows what it is offering. */}
+            <Image
+              src={images[shown.length]!.src}
+              alt=""
+              fill
+              loading="lazy"
+              sizes="(max-width: 900px) 33vw, 220px"
+              style={{ objectFit: 'cover', objectPosition: position(images[shown.length]!) }}
+            />
+            <span className="lp-day-more" aria-hidden>
+              +{rest}
+            </span>
+          </button>
+        )}
+      </div>
+
+      <PhotoLightbox
+        photos={images}
+        index={viewing}
+        onIndex={setViewing}
+        onClose={() => setViewing(null)}
+        label={`Photograph viewer, ${dayLabel}`}
+      />
+    </>
   )
 }
 
@@ -176,7 +235,9 @@ export function Itinerary({ days = [], collapsible = false, expanded, onToggle, 
                   style={{ margin: '14px 0 0', color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}
                 />
               )}
-              {d.images && d.images.length > 0 && <DayImages images={d.images} />}
+              {d.images && d.images.length > 0 && (
+                <DayImages images={d.images} dayLabel={`${label(d, i)}: ${d.title}`} />
+              )}
             </div>
           </li>
         ))}
@@ -331,7 +392,9 @@ export function Itinerary({ days = [], collapsible = false, expanded, onToggle, 
                           'opacity var(--dur-slow) var(--ease-breath),transform var(--dur-slow) var(--ease-breath)',
                       }}
                     />
-                    {d.images && d.images.length > 0 && <DayImages images={d.images} />}
+                    {d.images && d.images.length > 0 && (
+                      <DayImages images={d.images} dayLabel={`${label(d, i)}: ${d.title}`} />
+                    )}
                   </div>
                 </div>
               )}

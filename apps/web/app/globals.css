@@ -681,6 +681,21 @@
 .lp-mosaic-tile:focus-visible img { transform: scale(1.03) }
 .lp-mosaic-tile:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px }
 
+/* The last tile of a day's strip, when the day holds more than the strip
+   draws. It stands on the first photograph it is counting, veiled so the
+   number reads over it. */
+.lp-day-more {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--scrim);
+  color: var(--text-on-ground);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
 /* The viewer and the sheet are native dialogs; the scrim is their backdrop. */
 .lp-lightbox::backdrop { background: var(--scrim) }
 .lp-lightbox[open] { animation: veil var(--dur-quick) var(--ease-breath) }

@@ -123,7 +123,7 @@ router (`{'Our trips':'trips', 'Blog':'culture', …}` in `index.html`) goes awa
 | Component | API | Notes |
 | --- | --- | --- |
 | `TrekCard` | `image`, `region`, `title`, `days`, `altitude`, `difficulty`, `price`, `excerpt`, `href`, `size: md\|lg`, `kera` | Woven kera edge on top, portrait photo with region label, meta row, light display title. No border, no shadow. `size="lg"` + `kera={false}` is the trips-index variant |
-| `Itinerary` | `days: {day?, title, meta?, body?, rest?}[]`, `collapsible`, `expanded`, `onToggle` | Vertical timeline. Rest days get a hollow gold node and read "Rest" instead of a number. `collapsible` adds circled nodes on a dashed connector with a per-day toggle |
+| `Itinerary` | `days: {day?, title, meta?, body?, rest?, images?}[]`, `collapsible`, `expanded`, `onToggle` | Vertical timeline. Rest days get a hollow gold node and read "Rest" instead of a number. `collapsible` adds circled nodes on a dashed connector with a per-day toggle. `images` draws the day's own strip under its prose — eight tiles, the eighth counting the rest and opening `PhotoLightbox` on the first of them, so a day may hold any number |
 | `Reflection` | `quote`, `name`, `detail` | Testimonial as reflection: gold rule, quote, quiet attribution. **No stars, no ratings** |
 
 ### feedback
@@ -136,6 +136,17 @@ router (`{'Our trips':'trips', 'Blog':'culture', …}` in `index.html`) goes awa
 `InquiryDrawer` needs real dialog semantics in the port, which the prototype lacks:
 `role="dialog" aria-modal="true"`, focus trap, focus restore on close, `Escape` to close,
 `inert` on the rest of the page, and body scroll lock.
+
+### media (new)
+
+| Component | API | Notes |
+| --- | --- | --- |
+| `PhotoLightbox` | `photos: LightboxPhoto[]`, `index: number \| null`, `onIndex`, `onClose`, `label` | One photograph at a time over the page. `index` null is closed, and nothing inside renders until it opens. Arrow keys, `Home`/`End`, swipe past `SWIPE_PX`, a thumbnail rail, and the two neighbours prefetched. Letterboxed (`object-fit: contain`), never cropped |
+| `Layer` | `open`, `onClose`, `label`, `tone: light\|dark`, `children` | The native `<dialog>` the above sits in. `showModal()` gives the focus trap, the inert page, `Escape` and focus restore; each layer saves and restores the page's `overflow`, so layers stack and `Escape` in the viewer returns to the sheet under it rather than closing both |
+
+Both are shared: the journey gallery band and a day's strip in the itinerary open the same
+viewer. `LightboxPhoto` is declared structurally rather than imported from `src/content`,
+so the design system still knows nothing about a journey — a `TripPhoto` satisfies it.
 
 ### primitives (new)
 
