@@ -215,7 +215,7 @@ export async function problemsPublishingTrip(tripId: string): Promise<PublishPro
     });
   }
 
-  if (trip.overview.length === 0) {
+  if (!hasRichText(trip.overview)) {
     problems.push({
       field: 'overview',
       message: 'Write at least one paragraph of overview. It is the first thing on the page under the hero.',

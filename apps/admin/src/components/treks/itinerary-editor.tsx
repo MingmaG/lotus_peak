@@ -1,9 +1,10 @@
 'use client';
 
-import { Moon, Sun } from 'lucide-react';
+import { ImagePlus, Moon, Sun, X } from 'lucide-react';
 import * as React from 'react';
 
 import type { ItineraryDayForm } from './trip-editor';
+import { MediaMultiPicker, type PickedMedia } from '@/components/media/media-picker';
 import { Section } from '@/components/shared/editor-shell';
 import { SortableList } from '@/components/shared/sortable-list';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,16 @@ import { cn } from '@/lib/utils';
  * The same rule is in `public-site.ts`, which is what the site actually
  * renders. Two implementations of one rule is a preview that can lie, and the
  * comment is in both places so a change to either finds the other.
+ *
+ * ## A day holds photographs two ways, and both are right
+ *
+ * The body is the full editor, so a photograph can sit in the middle of what
+ * the day says — "the climb starts here", and then the climb. The row of
+ * photographs under it belongs to the *day* rather than to a sentence, and the
+ * website draws it as a strip beneath the prose. The office picks whichever
+ * one the picture is about; a day with eight photographs and four sentences
+ * wants the strip, and a day with one photograph of the pass wants it in the
+ * paragraph about the pass.
  */
 export function ItineraryEditor({
   days,
@@ -65,7 +76,14 @@ export function ItineraryEditor({
         onAdd={() =>
           onChange([
             ...days,
-            { key: crypto.randomUUID(), isRest: false, title: '', meta: '', body: '' },
+            {
+              key: crypto.randomUUID(),
+              isRest: false,
+              title: '',
+              meta: '',
+              body: '',
+              images: [],
+            },
           ])
         }
         addLabel="Add a day"
@@ -122,17 +140,85 @@ export function ItineraryEditor({
               aria-label={`Details line for day ${index + 1}`}
             />
 
+            {/* Not `compact`: a day has to be able to hold the photograph it
+                is about, and a table of distances and altitudes. */}
             <RichTextEditor
               value={day.body}
               onChange={(body) => patch(index, { body })}
-              compact
-              minHeight="min-h-[90px]"
+              minHeight="min-h-[120px]"
               placeholder="What the day is."
               aria-labelledby={`day-${index}-label`}
+            />
+
+            <DayImages
+              images={day.images}
+              onChange={(images) => patch(index, { images })}
+              dayLabel={day.isRest ? 'the rest day' : `day ${index + 1}`}
             />
           </div>
         )}
       />
     </Section>
+  );
+}
+
+/**
+ * The day's own photographs.
+ *
+ * Added in the order they are picked and removed one at a time. No drag here,
+ * deliberately: the row sits inside the list of days, which is itself
+ * draggable, and nesting one drag surface in another made picking a day up by
+ * its photograph the easiest thing to do by accident. Reordering four
+ * photographs is remove-and-re-add; reordering fourteen days is not.
+ *
+ * A photograph already on the day is skipped rather than duplicated — the
+ * table has a `@@unique([dayId, mediaId])`, so the save would silently drop
+ * the second copy anyway and the form would be the only thing that thought it
+ * was there.
+ */
+function DayImages({
+  images,
+  onChange,
+  dayLabel,
+}: {
+  images: PickedMedia[];
+  onChange: (images: PickedMedia[]) => void;
+  dayLabel: string;
+}) {
+  const add = (picked: PickedMedia[]) => {
+    const have = new Set(images.map((image) => image.id));
+    onChange([...images, ...picked.filter((image) => !have.has(image.id))]);
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {images.map((image, index) => (
+        <span key={image.id} className="group relative">
+          <img
+            src={image.url}
+            alt=""
+            className="size-14 rounded object-cover"
+          />
+          <button
+            type="button"
+            aria-label={`Remove photograph ${index + 1} from ${dayLabel}`}
+            onClick={() => onChange(images.filter((row) => row.id !== image.id))}
+            className="absolute -right-1.5 -top-1.5 rounded-full border bg-background p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
+          >
+            <X className="size-3" />
+          </button>
+        </span>
+      ))}
+
+      <MediaMultiPicker
+        onPick={add}
+        trigger={
+          <Button type="button" variant="ghost" size="sm" className="text-xs text-muted-foreground">
+            <ImagePlus className="mr-1.5 size-3.5" />
+            {images.length ? 'More photographs' : 'Photographs for the day'}
+          </Button>
+        }
+      />
+    </div>
   );
 }
