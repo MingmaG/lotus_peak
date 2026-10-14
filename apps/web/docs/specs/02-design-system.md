@@ -89,7 +89,7 @@ fetching, no domain types, no `process.env`. That is what keeps them testable an
 | `Badge` | `tone: neutral\|pine\|saffron\|maroon\|gold` | Quiet metadata only — difficulty, season, altitude. Never promotional |
 | `Divider` | `variant: hairline\|gold\|flags\|kera`, `width`, `height` | `kera` is a woven-textile rule, 6px default; `flags` at most once per page |
 | `Eyebrow` | `number`, `tone: accent\|muted\|inverse` | Tracked caps label above a heading, optionally numbered (`01 — Our purpose`) |
-| `SiteIcon` | `name: dzong\|chorten\|stupa\|monastery\|pavilion\|dzong-long\|buddha\|taktsang\|punakha\|jakar`, `size`, `color`, `framed`, `ring` | Flat single-colour mask of a Bhutanese silhouette. The first seven are building types; `taktsang`, `punakha` and `jakar` are place-specific. `framed` gives every icon the same square footprint inside a gold ring on a gold baseline — use it whenever several sit in a row. Wide silhouettes carry a framed-mode enlargement (`punakha` 1.32, `jakar` 1.25) so they do not read undersized against the square ones |
+| `SiteIcon` | `name: dzong\|chorten\|stupa\|monastery\|pavilion\|dzong-long\|buddha\|taktsang\|punakha\|jakar\|trongsa\|mongar\|pemagatshel\|trashigang\|gasa`, `size`, `color`, `framed`, `ring` | Flat single-colour mask of a Bhutanese silhouette. The first seven are building types; the other eight are place-specific, and a place that has its own drawing should use it. `framed` gives every icon the same square footprint inside a gold ring on a gold baseline — use it whenever several sit in a row. Wide silhouettes carry a framed-mode enlargement (`punakha` and `trongsa` 1.32, `jakar` and `trashigang` 1.25) so they do not read undersized against the square ones |
 | `Tooltip` | `label`, `children` | Hover/focus, for terse glosses (SDF, altitude) |
 | `WindowFrame` | `src`, `alt`, `aspectRatio`, `tone: ink\|paper` | Photo inside a traditional rabsel window — carved cornice above, timber base below. One hero-scale image per page, never in a grid |
 
@@ -172,7 +172,8 @@ project UI into `public/assets/`, preserving paths:
 ```
 assets/logo.webp
 assets/fonts/Commissioner-{Thin,ExtraLight,Regular,Medium,SemiBold,Bold,ExtraBold,Black}.ttf
-assets/icons/{buddha,chorten,dzong,dzong-long,jakar,monastery,pavilion,punakha,stupa,taktsang}.png
+assets/icons/{buddha,chorten,dzong,dzong-long,gasa,jakar,monastery,mongar,pavilion,
+              pemagatshel,punakha,stupa,taktsang,trashigang,trongsa}.png
 assets/illustrations/{bhutan-dragon.jpg, bhutan-silhouettes.png, druk-dragon-mural.jpg,
                       four-animals.jpg, four-harmonious-friends.jpg,
                       harmonious-friends-thangka.jpg,
