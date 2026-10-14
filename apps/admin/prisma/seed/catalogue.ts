@@ -235,7 +235,10 @@ async function seedTrips(
       seasonKeys: seasonKeysFrom(trip.seasonLabel),
       paceNote: trip.paceNote,
       regions: trip.regions,
-      overview: trip.overview,
+      /* The export holds one string per paragraph; the column holds one
+         rich-text document. `asParagraphs` is the same conversion the
+         migration made for the rows that were already there. */
+      overview: trip.overview.map(asParagraphs).join(''),
       heroId: media(trip.heroImage),
       sortOrder: trip.order,
       status: 'PUBLISHED' as const,

@@ -558,6 +558,8 @@ model Media {
   userAvatars       User[]            @relation("UserAvatar")
   tripHeroes        Trip[]            @relation("TripHero")
   tripRouteMaps     Trip[]            @relation("TripRouteMap")
+  tripOverviewImages Trip[]           @relation("TripOverviewImage")
+  tripOverviewInsets Trip[]           @relation("TripOverviewInset")
   tripOgImages      Trip[]            @relation("TripOgImage")
   tripGalleryItems  TripGalleryItem[]
   itineraryImages   ItineraryImage[]
@@ -655,8 +657,16 @@ model Trip {
   groupSizeMin    Int?
   groupSizeMax    Int?
 
-  /// The opening paragraphs, one row per paragraph in `overview`.
-  overview String[] @default([])
+  /// The opening paragraphs, as one rich-text document.
+  ///
+  /// `String[]`, one row per paragraph, until the office pointed out that a
+  /// journey's opening was the only long-form field on the site written in a
+  /// box that could not hold a link to the monastery it names, a photograph or
+  /// a list. It is the same column type and the same editor as an itinerary
+  /// day, a page band, a teacher's biography and a journal entry now, and
+  /// `renderStoredRichText` on the website draws a body that predates the
+  /// change as the paragraphs it was — see the note at the top of `Post`.
+  overview String?
 
   /// The figures under the title, when the five fixed ones are not the story.
   ///
@@ -686,6 +696,23 @@ model Trip {
 
   heroId String?
   hero   Media?  @relation("TripHero", fields: [heroId], references: [id], onDelete: SetNull)
+
+  /// The pair of photographs beside the overview.
+  ///
+  /// The design draws a 4/5 portrait with a smaller 3/4 one offset into its
+  /// bottom-right corner, so there are two columns rather than an ordered
+  /// join: the shapes are fixed, the positions mean different things, and a
+  /// list of unknown length would have to be truncated by whatever drew it.
+  ///
+  /// The main one is null for most journeys and falls back to the hero, which
+  /// is what the page did when these were a hardcoded asset path. With no
+  /// inset chosen the page draws the single photograph rather than inventing
+  /// one — the stock image that used to fill that corner appeared on every
+  /// journey, including the ones it was not taken on.
+  overviewImageId String?
+  overviewImage   Media?  @relation("TripOverviewImage", fields: [overviewImageId], references: [id], onDelete: SetNull)
+  overviewInsetId String?
+  overviewInset   Media?  @relation("TripOverviewInset", fields: [overviewInsetId], references: [id], onDelete: SetNull)
 
   /// The route drawn on a map, as a picture.
   ///
