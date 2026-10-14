@@ -75,6 +75,11 @@ enum SeasonKey {
 /// The Bhutanese architectural silhouettes in `src/design-system/core/SiteIcon`.
 /// An enum because the component switches on it: a value outside this set
 /// renders nothing, silently.
+///
+/// The first seven are building types. The eight after them are drawings of
+/// one place each, and a place that has its own should use it — the generic
+/// dzong beside Taktsang or Trongsa reads as a stand-in for a picture nobody
+/// got round to.
 enum SiteIcon {
   DZONG
   CHORTEN
@@ -83,6 +88,14 @@ enum SiteIcon {
   PAVILION
   DZONG_LONG
   BUDDHA
+  TAKTSANG
+  PUNAKHA
+  JAKAR
+  TRONGSA
+  MONGAR
+  PEMAGATSHEL
+  TRASHIGANG
+  GASA
 }
 
 enum DepartureStatus {

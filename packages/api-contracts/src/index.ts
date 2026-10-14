@@ -332,11 +332,11 @@ export type SeasonKey = 'spring' | 'summer' | 'autumn' | 'winter';
 /**
  * The silhouettes the design system can draw.
  *
- * The first seven are building types, and the admin stores them as the
- * `SiteIcon` enum. The last three name a single place each — Taktsang, Punakha
- * and Jakar — because those three dzongs read as themselves rather than as a
- * generic dzong, and the destinations pages use them. They are not in the
- * admin's enum yet, so only the file provider can set them for now.
+ * The first seven are building types. The eight after them name a single place
+ * each — Taktsang, Punakha, Jakar, Trongsa, Mongar, Pemagatshel, Trashigang
+ * and Gasa — because those dzongs read as themselves rather than as a generic
+ * dzong, and the destinations pages and the menu map use them. All fifteen are
+ * in the admin's `SiteIcon` enum, so the office can pick any of them.
  */
 export type SiteIconName =
   | 'dzong'
@@ -348,7 +348,12 @@ export type SiteIconName =
   | 'buddha'
   | 'taktsang'
   | 'punakha'
-  | 'jakar';
+  | 'jakar'
+  | 'trongsa'
+  | 'mongar'
+  | 'pemagatshel'
+  | 'trashigang'
+  | 'gasa';
 
 export interface ApiItineraryDay {
   /**
