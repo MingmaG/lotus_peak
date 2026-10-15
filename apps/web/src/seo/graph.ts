@@ -244,6 +244,8 @@ async function base(settings: SiteSettings): Promise<ApiSite> {
       name: settings.brand,
       tagline: settings.line,
       strapline: settings.strapline,
+      heroMedia: settings.hero.media,
+      heroYoutubeUrl: settings.hero.youtubeUrl,
       description: settings.defaultSeo.description,
       foundedYear: null,
       licenceNumber: null,

@@ -4,9 +4,17 @@ import { IMG } from './assets'
  * What plays behind the home page's headline.
  *
  * The hero has been one photograph since the design was approved. It can now
- * also be a film this site serves itself, or a film on YouTube, and this is
- * the one place that says which — `HomeHero` draws whichever is named here and
- * nothing else in the app has an opinion about it.
+ * also be a film this site serves itself, or a film on YouTube. This file is
+ * what assembles the three — `heroMediaFrom` is how the home page asks for
+ * them, `HomeHero` draws whichever comes back, and nothing else in the app has
+ * an opinion about it.
+ *
+ * **The choice itself is the office's now**, a row read with the rest of the
+ * site's settings, so a film can be tried and put back without a deploy. What
+ * stays here is everything a row cannot hold: the photograph, which is a brand
+ * asset beside the ornaments and the textures rather than a sentence somebody
+ * writes, and a film served from this origin, which is a file only a developer
+ * can put under `public/assets`.
  *
  * Three things are deliberate:
  *
@@ -16,23 +24,20 @@ import { IMG } from './assets'
  *    visitor who has asked for less motion sees. So it is never emptied to
  *    make room for a film, and a broken or private film costs the page a
  *    moving background rather than its front door.
- *  - **All three stay filled.** Switching is `kind` alone, so a film can be
- *    tried against the photograph and put back without anything being retyped.
+ *  - **Everything stays filled.** Nothing is emptied to switch, here or in the
+ *    panel, so a film can be tried against the photograph and put back
+ *    without anything being retyped.
  *  - **The type refuses a half-made choice.** `kind: 'youtube'` with no
  *    address, or `kind: 'film'` with no file, does not compile — which is
- *    where you want to find out, not on the deployed page.
+ *    where you want to find out, not on the deployed page. The panel refuses
+ *    the same thing for the same reason; `heroMediaFrom` is where a row that
+ *    got through anyway becomes the photograph.
  *
- * It is `image` today because the office has supplied no footage. When it
- * does, a file under `public/assets` is the one to prefer: it is served from
- * this origin, so it cannot be broken by a video being made private somewhere
- * else, and it opens no connection to Google.
- *
- * This is source rather than a row because the hero's *picture* always has
- * been — `IMG.hero` is a brand asset beside the ornaments and the textures,
- * not a sentence the office writes. The hero's *words* are already the
- * office's: `settings.strapline`. Giving the office the choice as well means a
- * `Setting` row, a field in `packages/api-contracts` and both providers — its
- * own change, in that order, and not one to make on the way past.
+ * `HERO_MEDIA` is `image` with no film because this repo ships no footage.
+ * When the office supplies some, a file under `public/assets` is still the one
+ * to prefer over YouTube: it is served from this origin, so it cannot be
+ * broken by a video being made private somewhere else, and it opens no
+ * connection to Google. That is why a film named here wins over the row.
  */
 export type HeroMediaKind = 'image' | 'film' | 'youtube'
 
@@ -70,4 +75,37 @@ export const HERO_MEDIA: HeroMedia = {
   film: null,
   youtubeUrl: null,
   still: null,
+}
+
+/**
+ * The hero's media for one render: the office's choice over this file's assets.
+ *
+ * Three rules, in this order.
+ *
+ *  - **A film under `public/assets` wins.** Only a developer can put one
+ *    there, and `kind: 'film'` above is that deliberate choice; the panel has
+ *    no way to express it and no business overriding it.
+ *  - **Otherwise the office decides.** `youtube` with an address plays it.
+ *  - **Anything else is the photograph** — including `youtube` with nothing to
+ *    play. The panel refuses to save that, so what this guards is a row
+ *    written before it could, or by hand: a hero that quietly loses its
+ *    motion, never its front door.
+ *
+ * What comes back is the same union the hero has always taken, so nothing
+ * downstream learns that any of it came from a row. Whether the address names
+ * a playable film is still decided in one place, `@lotuspeak/video`, when
+ * `HeroFilm` asks it for an id.
+ */
+export function heroMediaFrom(choice: {
+  media: 'image' | 'youtube'
+  youtubeUrl: string | null
+}): HeroMedia {
+  if (HERO_MEDIA.kind === 'film') return HERO_MEDIA
+
+  const youtubeUrl = choice.youtubeUrl?.trim() || null
+  if (choice.media === 'youtube' && youtubeUrl) {
+    return { ...HERO_MEDIA, kind: 'youtube', youtubeUrl }
+  }
+
+  return { ...HERO_MEDIA, kind: 'image' }
 }

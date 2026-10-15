@@ -348,6 +348,9 @@ export const SETTINGS: SiteSettings = {
   legalName: 'Lotus Peak Tours & Travel',
   line: 'Small-group journeys in Bhutan.',
   strapline: 'Mindful journeys in Bhutan',
+  /* The photograph, which is the panel's default too. A film address here is
+     how the hero's YouTube layer is looked at without the panel running. */
+  hero: { media: 'image', youtubeUrl: null },
   nav: [
     { label: 'Our trips', href: '/trips' },
     { label: 'Where we go', href: '/destinations' },

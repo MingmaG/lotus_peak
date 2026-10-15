@@ -57,6 +57,11 @@ export async function companyForm(): Promise<CompanyForm | null> {
     ogImage: toPicked(company.ogImage),
 
     strapline: company.strapline,
+    /* Narrowed where it leaves the database rather than cast: the column is a
+       string (see the schema), and anything in it that is not a film is the
+       photograph. */
+    heroMedia: company.heroMedia === 'youtube' ? ('youtube' as const) : ('image' as const),
+    heroYoutubeUrl: company.heroYoutubeUrl ?? '',
     footerNote: company.footerNote,
     footerCopyright: company.footerCopyright,
     footerCreditLabel: company.footerCreditLabel,
@@ -249,6 +254,10 @@ function profileFields(input: CompanyInput) {
     logoId: input.logoId ?? null,
     markId: input.markId ?? null,
     strapline: input.strapline,
+    heroMedia: input.heroMedia,
+    /* Empty is no film, and no film is null — so the column answers "is there
+       one" rather than "is it the empty string". */
+    heroYoutubeUrl: input.heroYoutubeUrl.trim() || null,
     footerNote: input.footerNote,
     footerCopyright: input.footerCopyright,
     footerCreditLabel: input.footerCreditLabel,
