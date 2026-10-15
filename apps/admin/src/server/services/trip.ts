@@ -72,6 +72,7 @@ export const TRIP_DETAIL_INCLUDE = {
   overviewImage: { include: { renditions: { where: { format: 'webp' } } } },
   overviewInset: { include: { renditions: { where: { format: 'webp' } } } },
   routeMap: { include: { renditions: { where: { format: 'webp' } } } },
+  trailImage: { include: { renditions: { where: { format: 'webp' } } } },
   ogImage: { include: { renditions: { where: { format: 'webp' } } } },
   highlights: { orderBy: { sortOrder: 'asc' } },
   inclusions: { orderBy: { sortOrder: 'asc' } },
@@ -206,6 +207,10 @@ export async function updateTrip(id: string, incoming: TripPatch): Promise<TripD
         overviewInsetId:
           patch.overviewInsetId === undefined ? undefined : patch.overviewInsetId,
         routeMapId: patch.routeMapId === undefined ? undefined : patch.routeMapId,
+        trailEyebrow: patch.trailEyebrow,
+        trailTitle: patch.trailTitle,
+        trailBody: patch.trailBody,
+        trailImageId: patch.trailImageId === undefined ? undefined : patch.trailImageId,
         /* Json columns. `undefined` leaves the column alone — a save from the
            SEO tab must not empty the elevation profile — and an empty array is
            stored as `null`, so "has one" is one check rather than two. */
@@ -217,6 +222,7 @@ export async function updateTrip(id: string, incoming: TripPatch): Promise<TripD
               ? patch.elevationProfile
               : Prisma.DbNull,
         featured: patch.featured,
+        showTrail: patch.showTrail,
         showGallery: patch.showGallery,
         showDestinations: patch.showDestinations,
         showCulture: patch.showCulture,

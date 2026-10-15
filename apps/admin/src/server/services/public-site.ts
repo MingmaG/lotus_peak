@@ -22,6 +22,7 @@ import type {
   ApiSocialLink,
   ApiTrip,
   ApiTripSummary,
+  ApiTripTrail,
   JournalCategory,
 } from '@lotuspeak/api-contracts';
 import type {
@@ -384,6 +385,7 @@ const TRIP_INCLUDE = {
   overviewImage: { include: MEDIA_INCLUDE },
   overviewInset: { include: MEDIA_INCLUDE },
   routeMap: { include: MEDIA_INCLUDE },
+  trailImage: { include: MEDIA_INCLUDE },
   ogImage: { include: MEDIA_INCLUDE },
   highlights: { orderBy: { sortOrder: 'asc' } },
   inclusions: { orderBy: { sortOrder: 'asc' } },
@@ -653,6 +655,7 @@ async function serialiseTrip(
     overviewImage: img(trip.overviewImage),
     overviewInsetImage: img(trip.overviewInset),
     routeMap: img(trip.routeMap),
+    trail: tripTrail(trip),
     videoUrl: trip.videoUrl,
     overview: resolve(trip.overview),
     stats: parseTripStats(trip.stats, `trip ${trip.slug}`),
@@ -710,6 +713,33 @@ async function serialiseTrip(
     featured: trip.featured,
     seo: serialiseSeo(trip, img(trip.ogImage)),
   };
+}
+
+/**
+ * The band above the itinerary, or nothing.
+ *
+ * Three ways to have no band, resolved here rather than on the website:
+ *
+ *   - switched off, which is the office saying this journey does not want it;
+ *   - no photograph, because the band is a parallax photograph under two
+ *     scrims and without one it is a grey slab with a heading on it;
+ *   - no words at all, because a picture of a ridge between the enquiry form
+ *     and the itinerary says nothing — the office has started the band and
+ *     not finished it, and half a band is worse than none.
+ *
+ * Any one piece of copy is enough: the design draws whichever of the three it
+ * is given, and a photograph with a heading and no paragraph is a band
+ * somebody may well want.
+ */
+function tripTrail(trip: TripRow): ApiTripTrail | null {
+  if (!trip.showTrail) return null;
+  const image = img(trip.trailImage);
+  if (!image) return null;
+  const eyebrow = trip.trailEyebrow.trim();
+  const title = trip.trailTitle.trim();
+  const body = trip.trailBody.trim();
+  if (!eyebrow && !title && !body) return null;
+  return { eyebrow: eyebrow || null, title: title || null, body: body || null, image };
 }
 
 /**

@@ -9,7 +9,12 @@ import { toast } from 'sonner';
 
 import { ItineraryEditor } from './itinerary-editor';
 import { TripGalleryEditor } from './trip-gallery-editor';
-import { OrderedPicker, TripPageSections, type TripSectionsForm } from './trip-page-sections';
+import {
+  OrderedPicker,
+  TripPageSections,
+  TripTrailBand,
+  type TripSectionsForm,
+} from './trip-page-sections';
 import { SeoPanel, type SeoValue } from '@/components/content/seo-panel';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import {
@@ -92,6 +97,14 @@ export interface TripFormData {
   overviewImage: PickedMedia | null;
   overviewInset: PickedMedia | null;
   routeMap: PickedMedia | null;
+  /**
+   * The band above the itinerary, as words and a photograph.
+   *
+   * One object rather than four fields on the form, because it is one band and
+   * one Section of the editor edits all of it. With no photograph the website
+   * draws no band at all — see `TripTrailBand`.
+   */
+  trail: TripTrailForm;
   ogImage: PickedMedia | null;
   destinationIds: string[];
   offeredByDestinationIds: string[];
@@ -132,6 +145,14 @@ export interface FaqGroupForm {
   key: string;
   title: string;
   blurb: string;
+}
+
+/** The band above the itinerary: "On the trail". */
+export interface TripTrailForm {
+  eyebrow: string;
+  title: string;
+  body: string;
+  image: PickedMedia | null;
 }
 
 /** One of the figures under the title, beyond the fixed five. */
@@ -273,11 +294,16 @@ export function TripEditor({
         overviewImageId: form.overviewImage?.id ?? null,
         overviewInsetId: form.overviewInset?.id ?? null,
         routeMapId: form.routeMap?.id ?? null,
+        trailEyebrow: form.trail.eyebrow,
+        trailTitle: form.trail.title,
+        trailBody: form.trail.body,
+        trailImageId: form.trail.image?.id ?? null,
         destinationIds: form.destinationIds,
         offeredByDestinationIds: form.offeredByDestinationIds,
         relatedTripIds: form.relatedTripIds,
         cultureIds: form.cultureIds,
         postIds: form.postIds,
+        showTrail: form.sections.trail,
         showGallery: form.sections.gallery,
         showDestinations: form.sections.destinations,
         showCulture: form.sections.culture,
@@ -1273,6 +1299,12 @@ export function TripEditor({
           </Section>
 
           <TripPageSections value={form.sections} onChange={(next) => set('sections', next)} />
+
+          <TripTrailBand
+            value={form.trail}
+            onChange={(next) => set('trail', next)}
+            shown={form.sections.trail}
+          />
 
           <OrderedPicker
             title="Culture to offer"

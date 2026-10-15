@@ -212,6 +212,29 @@ async function seedSeasons(media: (src?: string | null) => string | null): Promi
   console.log(`  seasons      ${seasons.length}`);
 }
 
+/**
+ * The band above the itinerary, as the website drew it.
+ *
+ * Not from the export, because it was never in the content: it was a
+ * photograph and a paragraph typed into the journey page's own source, the
+ * same two on all five journeys. The migration puts these words on the rows
+ * of a database that already exists; this puts them on a database being made
+ * from nothing, so the two agree about what the site said.
+ *
+ * Every journey gets the same band here, which is what a seed should do —
+ * reproduce the site. Telling them apart is the office's to do now that it
+ * can, and the trek is the first one worth doing it to.
+ */
+const TRAIL = {
+  trailEyebrow: 'On the trail',
+  trailTitle: 'Walked at a pace that leaves room to notice',
+  trailBody:
+    'Two nights in most valleys. Drives of no more than five hours. A rest day written in. ' +
+    'Your guide sets the pace to the slowest step in the group.',
+};
+
+const TRAIL_PHOTOGRAPH = '/assets/imagery/travellers-hike.webp';
+
 async function seedTrips(
   media: (src?: string | null) => string | null,
 ): Promise<Map<string, string>> {
@@ -240,6 +263,8 @@ async function seedTrips(
          migration made for the rows that were already there. */
       overview: trip.overview.map(asParagraphs).join(''),
       heroId: media(trip.heroImage),
+      ...TRAIL,
+      trailImageId: media(TRAIL_PHOTOGRAPH),
       sortOrder: trip.order,
       status: 'PUBLISHED' as const,
       publishedAt: now,

@@ -90,6 +90,7 @@ export function emptyTripForm(): TripFormData {
     elevationProfile: [],
     videoUrl: '',
     routeMap: null,
+    trail: { eyebrow: '', title: '', body: '', image: null },
     hero: null,
     ogImage: null,
     destinationIds: [],
@@ -106,6 +107,7 @@ export function emptyTripForm(): TripFormData {
 
 /** Every band on, which is what the columns default to. */
 const ALL_SECTIONS = {
+  trail: true,
   gallery: true,
   destinations: true,
   culture: true,
@@ -226,6 +228,12 @@ async function toForm(trip: TripDetail): Promise<TripFormData> {
       width: item.width,
     })),
     hero: toPicked(trip.hero),
+    trail: {
+      eyebrow: trip.trailEyebrow,
+      title: trip.trailTitle,
+      body: trip.trailBody,
+      image: toPicked(trip.trailImage),
+    },
     overviewImage: toPicked(trip.overviewImage),
     overviewInset: toPicked(trip.overviewInset),
     routeMap: toPicked(trip.routeMap),
@@ -239,6 +247,7 @@ async function toForm(trip: TripDetail): Promise<TripFormData> {
     cultureIds: trip.cultureLinks.map((link) => link.cultureId),
     postIds: trip.postLinks.map((link) => link.postId),
     sections: {
+      trail: trip.showTrail,
       gallery: trip.showGallery,
       destinations: trip.showDestinations,
       culture: trip.showCulture,
