@@ -14,8 +14,8 @@ export type FooterProps = {
   brand?: string
   logoSrc?: string
   /**
-   * The painted landscape the footer stands on. Decorative, so it carries no
-   * alt; `null` leaves the footer as a plain deep-sky block.
+   * The skyline the footer stands on. Decorative, so it carries no alt; `null`
+   * leaves the footer as a plain deep-sky block.
    */
   sceneSrc?: string | null
   /** The short introduction under the name. */
@@ -54,7 +54,7 @@ const LINK: CSSProperties = { color: 'var(--paper)', textDecoration: 'none', opa
 export function Footer({
   brand = 'Lotus Peak',
   logoSrc = asset('logo.webp'),
-  sceneSrc = asset('footer-landscape.png'),
+  sceneSrc = asset('footer-bhutan-simple.png'),
   line,
   columns,
   address = [],
@@ -74,13 +74,13 @@ export function Footer({
         fontFamily: 'var(--font-sans-body)',
       }}
     >
-      {/* The sky of the painting is transparent, so the ground belongs to the
+      {/* The sky of the drawing is transparent, so the ground belongs to the
           block under it rather than to the footer: whatever the page ends on
-          shows through above the peaks, and the foreground runs straight into
+          shows through above the ridge, and the foreground runs straight into
           the deep sky below. */}
       {sceneSrc && (
         <div className="lp-footer-scene" aria-hidden="true">
-          <Image src={sceneSrc} alt="" width={2172} height={472} sizes="100vw" />
+          <Image src={sceneSrc} alt="" width={1800} height={470} sizes="100vw" />
         </div>
       )}
 
