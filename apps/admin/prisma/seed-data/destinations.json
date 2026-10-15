@@ -2,7 +2,7 @@
   {
     "slug": "paro",
     "name": "Paro",
-    "icon": "dzong",
+    "icon": "taktsang",
     "blurb": "Taktsang, Kyichu and Dungtse Lhakhang",
     "standfirst": "The valley you land in, and the only one with an international airport: a dzong over the river, two of the oldest temples in the country, and Taktsang on the cliff at its head.",
     "body": [
@@ -251,7 +251,7 @@
   {
     "slug": "punakha",
     "name": "Punakha",
-    "icon": "dzong-long",
+    "icon": "punakha",
     "blurb": "The old capital, warm and low, where two rivers meet",
     "standfirst": "The warm, low valley below Dochula where the Pho Chhu and Mo Chhu meet: the capital of Bhutan until 1955, and still where the monk body comes for the winter.",
     "body": [
@@ -375,7 +375,7 @@
   {
     "slug": "bumthang",
     "name": "Bumthang",
-    "icon": "monastery",
+    "icon": "jakar",
     "blurb": "Four high valleys, and the oldest temples in the country",
     "standfirst": "Four high valleys in the centre of the country, Chhoekhor, Tang, Chhume and Ura, holding some of Bhutan’s oldest temples and the places where Guru Rinpoche and Pema Lingpa left their mark.",
     "body": [
@@ -496,7 +496,7 @@
   {
     "slug": "trongsa",
     "name": "Trongsa",
-    "icon": "chorten",
+    "icon": "trongsa",
     "blurb": "The centre of the country, and the seat of its kings",
     "standfirst": "The geographic centre of Bhutan, high above the Mangde Chhu: the road between east and west once ran through its dzong, and the Wangchuck kings governed from here before they reigned.",
     "body": [
@@ -1097,7 +1097,7 @@
   {
     "slug": "taktsang",
     "name": "Taktsang",
-    "icon": "monastery",
+    "icon": "taktsang",
     "blurb": "The temple on the cliff above the Paro valley",
     "standfirst": "The Tiger’s Nest: a monastery on a granite cliff above the Paro valley, how it came to be there, and what the walk up to it is actually like.",
     "body": [
@@ -1431,7 +1431,7 @@
   {
     "slug": "punakha-dzong",
     "name": "Punakha Dzong",
-    "icon": "dzong-long",
+    "icon": "punakha",
     "blurb": "The Palace of Great Happiness, between two rivers",
     "standfirst": "The Palace of Great Happiness, built by the Zhabdrung in 1637 and 1638 at the meeting of two rivers: where the first King was crowned and where the monk body spends the winter.",
     "body": [
@@ -2235,7 +2235,7 @@
   {
     "slug": "trongsa-dzong",
     "name": "Trongsa Dzong",
-    "icon": "dzong",
+    "icon": "trongsa",
     "blurb": "The largest dzong, on its ridge above the Mangde Chhu",
     "standfirst": "The largest dzong in Bhutan, stepping down a spur above the Mangde Chhu: the seat of the Trongsa Penlop, the ancestral home of the Wangchuck kings, and once the only road from west to east.",
     "body": [

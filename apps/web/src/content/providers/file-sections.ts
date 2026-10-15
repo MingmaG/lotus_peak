@@ -43,14 +43,14 @@ const EMPTY_SEO: EntitySeo = {
 
 /** The three place pieces, and the valley each is inside. As in the migration. */
 const PLACE_MOVES: { post: string; parent: string; icon: SiteIconName; blurb: string }[] = [
-  { post: 'taktsang', parent: 'paro', icon: 'monastery', blurb: 'The temple on the cliff above the Paro valley' },
+  { post: 'taktsang', parent: 'paro', icon: 'taktsang', blurb: 'The temple on the cliff above the Paro valley' },
   {
     post: 'punakha-dzong',
     parent: 'punakha',
-    icon: 'dzong-long',
+    icon: 'punakha',
     blurb: 'The Palace of Great Happiness, between two rivers',
   },
-  { post: 'trongsa-dzong', parent: 'trongsa', icon: 'dzong', blurb: 'The ancestral seat of the Wangchuck dynasty' },
+  { post: 'trongsa-dzong', parent: 'trongsa', icon: 'trongsa', blurb: 'The ancestral seat of the Wangchuck dynasty' },
 ]
 
 /** The two valley pieces, folded into their valley's body. */

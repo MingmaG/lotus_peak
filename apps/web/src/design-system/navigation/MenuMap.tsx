@@ -37,10 +37,11 @@ const VB = { x: -200, y: -170, w: 1192, h: 700 }
 const VIEW_BOX = `${VB.x} ${VB.y} ${VB.w} ${VB.h}`
 
 /**
- * The eleven places, with the icons the Home page's destinations already use —
- * Paro is Taktsang, Thimphu the Buddha, Punakha the dzong's long wall, Bumthang
- * Jakar, Trongsa a chorten. Lhuentse has no building silhouette in the set and
- * is drawn as a peak instead.
+ * The eleven places, each with its own silhouette: Paro is Taktsang, Thimphu
+ * the Buddha, Punakha the dzong's long wall, Bumthang Jakar, and Trongsa,
+ * Mongar, Pemagatshel, Trashigang and Gasa are now drawn as themselves rather
+ * than as a generic dzong, chorten, stupa or pavilion standing in for them.
+ * Lhuentse is the one place with no drawing in the set and is a peak instead.
  *
  * Positions are the design's, and they are hand-placed rather than derived:
  * the labels are arranged so no leader line crosses another at the resting
@@ -51,14 +52,26 @@ const PLACES: Place[] = [
   { id: 'BT-11', name: 'Paro', icon: 'taktsang', sights: ['Tiger’s Nest', 'Rinpung Dzong'], cx: 140, cy: 200, ax: -130, ay: 250, side: 'h' },
   { id: 'BT-12', name: 'Phuentsholing', icon: 'pavilion', sights: ['Bhutan Gate'], cx: 178, cy: 390, ax: 130, ay: 450, side: 'b' },
   { id: 'BT-23', name: 'Punakha', icon: 'punakha', sights: ['Punakha Dzong'], cx: 259, cy: 165, ax: 230, ay: -80, side: 'v' },
-  { id: 'BT-GA', name: 'Gasa', icon: 'dzong', sights: ['Gasa Dzong', 'Hot springs'], cx: 271, cy: 80, ax: 450, ay: -90, side: 'v' },
+  { id: 'BT-GA', name: 'Gasa', icon: 'gasa', sights: ['Gasa Dzong', 'Hot springs'], cx: 271, cy: 80, ax: 450, ay: -90, side: 'v' },
   { id: 'BT-33', name: 'Bumthang', icon: 'jakar', sights: ['Jakar Dzong'], cx: 465, cy: 150, ax: 680, ay: -60, side: 'v' },
   { id: 'BT-44', name: 'Lhuentse', icon: 'mountain', sights: ['Lhuntse Dzong'], cx: 553, cy: 125, ax: 900, ay: 110, side: 'h' },
-  { id: 'BT-41', name: 'Trashigang', icon: 'dzong', sights: ['Trashigang Dzong'], cx: 700, cy: 262, ax: 940, ay: 300, side: 'h' },
-  { id: 'BT-43', name: 'Pemagatshel', icon: 'stupa', sights: ['Yalang Ney'], cx: 600, cy: 332, ax: 850, ay: 450, side: 'b' },
-  { id: 'BT-42', name: 'Mongar', icon: 'pavilion', sights: ['Mongar Dzong'], cx: 584, cy: 262, ax: 630, ay: 450, side: 'b' },
-  { id: 'BT-32', name: 'Trongsa', icon: 'chorten', sights: ['Trongsa Dzong'], cx: 411, cy: 222, ax: 400, ay: 450, side: 'b' },
+  { id: 'BT-41', name: 'Trashigang', icon: 'trashigang', sights: ['Trashigang Dzong'], cx: 700, cy: 262, ax: 940, ay: 300, side: 'h' },
+  { id: 'BT-43', name: 'Pemagatshel', icon: 'pemagatshel', sights: ['Yalang Ney'], cx: 600, cy: 332, ax: 850, ay: 450, side: 'b' },
+  { id: 'BT-42', name: 'Mongar', icon: 'mongar', sights: ['Mongar Dzong'], cx: 584, cy: 262, ax: 630, ay: 450, side: 'b' },
+  { id: 'BT-32', name: 'Trongsa', icon: 'trongsa', sights: ['Trongsa Dzong'], cx: 411, cy: 222, ax: 400, ay: 450, side: 'b' },
 ]
+
+/**
+ * Label height for the two widest drawings.
+ *
+ * `size` is the silhouette's height and the width follows its proportion, so
+ * at a common 36 the long ridge of Trongsa and the spread of Trashigang would
+ * run out past their own labels. The design's own numbers.
+ */
+const PIN_ICON_SIZE: Partial<Record<SiteIconName, number>> = {
+  trongsa: 24,
+  trashigang: 28,
+}
 
 /**
  * Below this container width the eleven labels overlap each other and the map
@@ -551,7 +564,12 @@ export function MenuMap({
                             <path d="M12.2 7.8 L15 2 L17.8 7.8 L16.5 6.6 L15.7 7.6 L15 6.2 L14.3 7.6 L13.5 6.6 Z" fill="var(--white)" />
                           </svg>
                         ) : (
-                          <SiteIcon name={p.icon} size={36} color="var(--maroon)" style={{ pointerEvents: 'none' }} />
+                          <SiteIcon
+                            name={p.icon}
+                            size={PIN_ICON_SIZE[p.icon] ?? 36}
+                            color="var(--maroon)"
+                            style={{ pointerEvents: 'none' }}
+                          />
                         )}
                         <span
                           style={{

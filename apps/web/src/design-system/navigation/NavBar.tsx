@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { asset } from '@/lib/assets'
+import { SearchSuggest } from '@/components/site/SearchSuggest'
 import { Button } from '../core/Button'
 import { MenuMap } from './MenuMap'
 
@@ -123,6 +124,11 @@ export function NavBar({
    * Both search boxes land on `/search?q=`. The forms are real GET forms, so
    * they work before hydration; with scripts this keeps it a client-side
    * navigation and empties the box behind it.
+   *
+   * It is the fallback now rather than the only path: `SearchSuggest` answers
+   * in the box as the words are typed and takes Enter when a suggestion is
+   * chosen. This still runs for Enter on a query with nothing chosen, which is
+   * "show me everything for this", and for the glyph.
    */
   const submitSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -233,6 +239,8 @@ export function NavBar({
               onSubmit={submitSearch}
               className="lp-nav-search-wrap"
               style={{
+                /* The suggestion panel hangs from the form. */
+                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
@@ -244,13 +252,9 @@ export function NavBar({
                 backdropFilter: inverse && !scrolled && !open ? 'blur(8px)' : 'none',
               }}
             >
-              <input
-                type="search"
-                name="q"
+              <SearchSuggest
                 placeholder={searchPlaceholder}
-                aria-label="Search"
-                autoComplete="off"
-                enterKeyHint="search"
+                align="right"
                 className="lp-nav-search"
                 style={{
                   flex: 1,
@@ -428,15 +432,15 @@ export function NavBar({
                   method="get"
                   onSubmit={submitSearch}
                   className="lp-menu-search"
-                  style={{ opacity: open ? 1 : 0, transition: 'opacity var(--dur-slow) var(--ease-breath)' }}
+                  style={{
+                    position: 'relative',
+                    opacity: open ? 1 : 0,
+                    transition: 'opacity var(--dur-slow) var(--ease-breath)',
+                  }}
                 >
-                  <input
-                    type="search"
-                    name="q"
+                  <SearchSuggest
                     placeholder={searchPlaceholder}
-                    aria-label="Search"
-                    autoComplete="off"
-                    enterKeyHint="search"
+                    onNavigate={() => setOpen(false)}
                   />
                   <button type="submit">Search</button>
                 </form>

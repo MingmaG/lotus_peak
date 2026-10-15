@@ -22,5 +22,14 @@ export { TrekCard, type TrekCardProps } from './journey/TrekCard'
 export { Itinerary, type ItineraryProps, type ItineraryDay } from './journey/Itinerary'
 export { Reflection, type ReflectionProps } from './journey/Reflection'
 
+export {
+  PhotoLightbox,
+  Layer,
+  CloseButton,
+  position,
+  ratio,
+  type LightboxPhoto,
+} from './media/PhotoLightbox'
+
 export { InquiryDrawer, type InquiryDrawerProps } from './feedback/InquiryDrawer'
 export { Toast, type ToastProps } from './feedback/Toast'

@@ -4,7 +4,7 @@ import type { Media, MediaRendition, Prisma } from '@prisma/client';
 
 import { db } from '@/lib/db';
 import { storage } from '@/lib/storage';
-import { richTextMediaIds, type FigureMedia } from '@/server/schema/rich-text';
+import { richTextMediaIdsIn, type FigureMedia } from '@/server/schema/rich-text';
 import type { LinkOption } from '@/components/content/link-picker';
 import type { SeoValue } from '@/components/content/seo-panel';
 
@@ -64,7 +64,21 @@ export function seoFormValue(row: SeoColumns): SeoValue {
  * nobody has measured, because that is the one somebody needs to fix.
  */
 export async function editorFigureMedia(html: string): Promise<Map<string, FigureMedia>> {
-  const ids = richTextMediaIds(html);
+  return editorFigureMediaIn([html]);
+}
+
+/**
+ * The same, for a record whose prose is in several columns at once.
+ *
+ * A journey has four rich-text fields and two of them are lists — the
+ * overview, the price note, fourteen itinerary days and any number of answers.
+ * One query for all of them rather than one per body: a fourteen-day journey
+ * with a photograph on every day was sixteen round trips to open the editor.
+ */
+export async function editorFigureMediaIn(
+  bodies: (string | null | undefined)[],
+): Promise<Map<string, FigureMedia>> {
+  const ids = richTextMediaIdsIn(bodies);
   if (ids.length === 0) return new Map();
 
   const rows = await db.media.findMany({

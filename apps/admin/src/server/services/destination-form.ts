@@ -2,21 +2,11 @@ import 'server-only';
 
 import { db } from '@/lib/db';
 import { resolveRichTextMedia } from '@/server/schema/rich-text';
-import { destinationPath, postPath, culturePath } from './content-paths';
+import { destinationPath, postPath, culturePath, ICON_TO_WIRE } from './content-paths';
 import { EDITOR_MEDIA, editorFigureMedia, previewImage, seoFormValue } from './content-editor';
 import { emptySeo, toPicked } from './trip-form';
 import type { DestinationFormData } from '@/components/content/destination-editor';
 import type { ContentPreviewData } from '@/components/content/content-preview';
-
-const ICON_LABEL: Record<string, string> = {
-  DZONG: 'dzong',
-  CHORTEN: 'chorten',
-  STUPA: 'stupa',
-  MONASTERY: 'monastery',
-  PAVILION: 'pavilion',
-  DZONG_LONG: 'dzong-long',
-  BUDDHA: 'buddha',
-};
 
 /** The valleys a place can sit in: every row with no parent, but not itself. */
 export async function valleyOptions(excludeId?: string) {
@@ -129,7 +119,7 @@ export async function destinationPreviewData(id: string): Promise<ContentPreview
     blurb: row.blurb,
     body: resolveRichTextMedia(row.body, await editorFigureMedia(row.body)),
     image: previewImage(row.image),
-    icon: ICON_LABEL[row.icon] ?? null,
+    icon: ICON_TO_WIRE[row.icon],
     facts: [
       ...(row.altitudeMetres ? [['Altitude', `${row.altitudeMetres.toLocaleString('en-GB')} m`] as [string, string]] : []),
       ...(row.latitude !== null && row.longitude !== null

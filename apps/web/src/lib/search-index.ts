@@ -42,7 +42,19 @@ export async function buildSearchIndex(): Promise<SearchDoc[]> {
   const valleyName = new Map(destinations.map((d) => [d.slug, d.name]))
   const tripTitle = new Map(trips.map((t) => [t.slug, t.title]))
 
-  const [destinationPages, culturePages, postPages, sitePages] = await Promise.all([
+  const [tripPages, destinationPages, culturePages, postPages, sitePages] = await Promise.all([
+    /**
+     * The journeys are read in full, like everything else here.
+     *
+     * `trips.list()` answers with summaries — a card needs a twentieth of what
+     * a journey page does — and a summary's overview, highlights and itinerary
+     * are empty. Indexing those gave every journey an empty body, so a
+     * traveller searching for a word that appears only in its itinerary ("hot
+     * stone", "Jangothang") found the journal entry about it and not the
+     * journey itself. These are the same fetches the journey pages make in
+     * this build, which the fetch cache answers.
+     */
+    Promise.all(trips.map((t) => content.trips.bySlug(t.slug))),
     Promise.all(destinations.map((d) => content.destinations.bySlug(d.slug))),
     Promise.all(culture.map((c) => content.culture.bySlug(c.slug))),
     Promise.all(posts.map((p) => content.posts.bySlug(p.slug))),
@@ -51,7 +63,11 @@ export async function buildSearchIndex(): Promise<SearchDoc[]> {
 
   const docs: SearchDoc[] = []
 
-  for (const trip of trips) {
+  trips.forEach((summary, i) => {
+    /* The full record where it was read, the summary where a journey has gone
+       since the list was taken — which is a race the build cannot have, and a
+       missing body rather than a missing journey if it ever did. */
+    const trip = tripPages[i] ?? summary
     const type = toFilterLabel(capitalise(trip.type))
     docs.push({
       kind: 'journey',
@@ -63,13 +79,17 @@ export async function buildSearchIndex(): Promise<SearchDoc[]> {
       keywords: [trip.type, trip.journeyLabel, trip.seasonLabel, trip.difficulty, ...trip.regions].join(' '),
       body: clip(
         [
-          ...trip.overview,
+          /* `toPlainText`, not a spread: the overview is one rich-text body
+             now, and spreading a string spreads its characters — which
+             typechecks, indexes every letter as a word, and would have made
+             the journeys unfindable by anything they say. */
+          toPlainText(trip.overview),
           ...trip.highlights,
           ...trip.itinerary.flatMap((day) => [day.title, day.meta ?? '', toPlainText(day.body)]),
         ].join(' '),
       ),
     })
-  }
+  })
 
   destinations.forEach((d, i) => {
     const page = destinationPages[i]

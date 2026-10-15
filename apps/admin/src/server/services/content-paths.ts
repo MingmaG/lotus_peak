@@ -1,5 +1,5 @@
-import type { JournalCategory as DbJournalCategory } from '@prisma/client';
-import type { JournalCategory } from '@lotuspeak/api-contracts';
+import type { JournalCategory as DbJournalCategory, SiteIcon as DbSiteIcon } from '@prisma/client';
+import type { JournalCategory, SiteIconName } from '@lotuspeak/api-contracts';
 
 /**
  * Where each of the three sections lives on the website.
@@ -45,4 +45,50 @@ export const CATEGORY_FROM_WIRE: Record<JournalCategory, DbJournalCategory> = {
   'travel-guides': 'TRAVEL_GUIDES',
   experiences: 'EXPERIENCES',
   stories: 'STORIES',
+};
+
+/**
+ * The database's silhouette and the one the design system draws.
+ *
+ * Both directions and both total, so a drawing added to one side alone is a
+ * compile error. It has to be: `SiteIcon` renders a mask of
+ * `icons/<name>.png`, and a name the design system does not have draws
+ * nothing at all — an empty square that reads as a styling problem rather than
+ * a missing mapping. Three services used to keep their own copy of this map
+ * and the website's fixture disagreed with all of them about Paro.
+ */
+export const ICON_TO_WIRE: Record<DbSiteIcon, SiteIconName> = {
+  DZONG: 'dzong',
+  CHORTEN: 'chorten',
+  STUPA: 'stupa',
+  MONASTERY: 'monastery',
+  PAVILION: 'pavilion',
+  DZONG_LONG: 'dzong-long',
+  BUDDHA: 'buddha',
+  TAKTSANG: 'taktsang',
+  PUNAKHA: 'punakha',
+  JAKAR: 'jakar',
+  TRONGSA: 'trongsa',
+  MONGAR: 'mongar',
+  PEMAGATSHEL: 'pemagatshel',
+  TRASHIGANG: 'trashigang',
+  GASA: 'gasa',
+};
+
+export const ICON_FROM_WIRE: Record<SiteIconName, DbSiteIcon> = {
+  dzong: 'DZONG',
+  chorten: 'CHORTEN',
+  stupa: 'STUPA',
+  monastery: 'MONASTERY',
+  pavilion: 'PAVILION',
+  'dzong-long': 'DZONG_LONG',
+  buddha: 'BUDDHA',
+  taktsang: 'TAKTSANG',
+  punakha: 'PUNAKHA',
+  jakar: 'JAKAR',
+  trongsa: 'TRONGSA',
+  mongar: 'MONGAR',
+  pemagatshel: 'PEMAGATSHEL',
+  trashigang: 'TRASHIGANG',
+  gasa: 'GASA',
 };

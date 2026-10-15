@@ -219,10 +219,14 @@ export function buildLlmsFullTxt(input: LlmsFullInput): string {
     out.push(`| Pace | ${trip.paceNote} |`);
     out.push('');
 
-    if (trip.overview.length > 0) {
+    if (trip.overview) {
       out.push('### Overview');
       out.push('');
-      for (const paragraph of trip.overview) out.push(`${plain(paragraph)}\n`);
+      /* The whole document, as Markdown: a journey's opening is long-form
+         prose and may hold a list or a link, the same as a journal entry's
+         body two sections down. `plain` is for the one-line fields. */
+      out.push(richTextToMarkdown(trip.overview));
+      out.push('');
     }
 
     if (trip.highlights.length > 0) {

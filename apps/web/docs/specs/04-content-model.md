@@ -61,6 +61,8 @@ Trip = {
 
   heroImage: Ref<MediaAsset>
   gallery: Ref<MediaAsset>[]
+  overviewImage?: Ref<MediaAsset>    // the large one beside the overview; falls back to the hero
+  overviewInset?: Ref<MediaAsset>    // the small one inset into its corner; falls back to gallery[0]
 
   overview: Localised<RichText>      // the three paragraphs on the detail page
   highlights: Localised<string>[]    // 7 items, rendered as a hairline-led list
@@ -78,7 +80,8 @@ ItineraryDay = {
   rest?: boolean
   title: Localised<string>          // 'Arrive in Paro'
   meta?: Localised<string>          // '2,200 m' | 'Drive · 4 h' | '3,120 m · 5 h' | 'Full day'
-  body?: Localised<RichText>
+  body?: Localised<RichText>        // a photograph inside this one belongs to a sentence
+  images?: Ref<MediaAsset>[]        // the day's own, drawn as a small strip under the body
 }
 ```
 

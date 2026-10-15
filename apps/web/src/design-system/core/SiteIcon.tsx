@@ -12,6 +12,11 @@ export type SiteIconName =
   | 'taktsang'
   | 'punakha'
   | 'jakar'
+  | 'trongsa'
+  | 'mongar'
+  | 'pemagatshel'
+  | 'trashigang'
+  | 'gasa'
 
 /** Intrinsic width/height of each silhouette drawing. */
 const RATIO: Record<SiteIconName, number> = {
@@ -25,6 +30,11 @@ const RATIO: Record<SiteIconName, number> = {
   taktsang: 140 / 132,
   punakha: 320 / 110,
   jakar: 300 / 120,
+  trongsa: 320 / 112,
+  mongar: 220 / 150,
+  pemagatshel: 240 / 160,
+  trashigang: 260 / 130,
+  gasa: 200 / 160,
 }
 
 /**
@@ -34,7 +44,9 @@ const RATIO: Record<SiteIconName, number> = {
  */
 const FIT: Partial<Record<SiteIconName, number>> = {
   punakha: 1.32,
+  trongsa: 1.32,
   jakar: 1.25,
+  trashigang: 1.25,
 }
 
 export type SiteIconProps = {
@@ -51,9 +63,11 @@ export type SiteIconProps = {
  * Bhutanese architectural silhouette rendered as a flat single-colour mask.
  *
  * The generic names (dzong, chorten, stupa, monastery, pavilion, dzong-long,
- * buddha) are building types; `taktsang`, `punakha` and `jakar` are the three
- * place-specific silhouettes — Tiger's Nest on its cliff, Punakha Dzong's long
- * wall with three towers, and Jakar Dzong's tall utse on its hill.
+ * buddha) are building types; the other eight are place-specific — Tiger's
+ * Nest on its cliff, Punakha Dzong's long wall with three towers, Jakar
+ * Dzong's tall utse on its hill, Trongsa strung along its ridge, and Mongar,
+ * Pemagatshel, Trashigang and Gasa as each stands. A place that has its own
+ * drawing should use it: the generic dzong beside it reads as a stand-in.
  *
  * `framed` gives every silhouette the same square footprint: fitted by its
  * longest side inside a size×size box, standing on a gold hairline baseline

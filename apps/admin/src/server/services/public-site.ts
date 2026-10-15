@@ -23,7 +23,6 @@ import type {
   ApiTrip,
   ApiTripSummary,
   JournalCategory,
-  SiteIconName,
 } from '@lotuspeak/api-contracts';
 import type {
   Difficulty,
@@ -45,7 +44,7 @@ import {
 } from '@/server/schema/blocks';
 import {
   resolveRichTextMedia,
-  richTextMediaIds,
+  richTextMediaIdsIn,
   type FigureMedia,
 } from '@/server/schema/rich-text';
 import { MEDIA_INCLUDE, serialiseMedia, type MediaWithRenditions } from './media';
@@ -54,6 +53,7 @@ import {
   CATEGORY_TO_WIRE,
   culturePath,
   destinationPath,
+  ICON_TO_WIRE,
   postPath,
 } from './content-paths';
 
@@ -109,24 +109,6 @@ const SEASON_KEY: Record<SeasonKey, ApiSeason['key']> = {
   SUMMER: 'summer',
   AUTUMN: 'autumn',
   WINTER: 'winter',
-};
-
-/**
- * The enum, as the design system's icon component names them.
- *
- * `Record<SiteIcon, SiteIconName>` on both sides, so adding a silhouette to
- * either end without the other is a compile error. A wrong name here renders
- * nothing at all — the component switches on it — and nothing is the one
- * failure that looks like a styling problem rather than a data one.
- */
-const ICON: Record<SiteIcon, SiteIconName> = {
-  DZONG: 'dzong',
-  CHORTEN: 'chorten',
-  STUPA: 'stupa',
-  MONASTERY: 'monastery',
-  PAVILION: 'pavilion',
-  DZONG_LONG: 'dzong-long',
-  BUDDHA: 'buddha',
 };
 
 /* -------------------------------------------------------------------------- */
@@ -393,6 +375,8 @@ function toNavLink(all: MenuItem[]) {
 
 const TRIP_INCLUDE = {
   hero: { include: MEDIA_INCLUDE },
+  overviewImage: { include: MEDIA_INCLUDE },
+  overviewInset: { include: MEDIA_INCLUDE },
   routeMap: { include: MEDIA_INCLUDE },
   ogImage: { include: MEDIA_INCLUDE },
   highlights: { orderBy: { sortOrder: 'asc' } },
@@ -488,7 +472,7 @@ export async function getTrip(
     trip.showRelated ? tripRelated(trip) : [],
   ]);
 
-  return { ...serialiseTrip(trip), destinations, culture, posts, related };
+  return { ...(await serialiseTrip(trip)), destinations, culture, posts, related };
 }
 
 /** How many cards a band at the foot of a journey offers when the office chose none. */
@@ -609,10 +593,26 @@ async function tripRelated(trip: TripRow): Promise<ApiTripSummary[]> {
 
 type TripRow = Prisma.TripGetPayload<{ include: typeof TRIP_INCLUDE }>;
 
-/** Everything but the bands `getTrip` reads with queries of their own. */
-function serialiseTrip(
+/**
+ * Everything but the bands `getTrip` reads with queries of their own.
+ *
+ * Async because of the figures. Four of a journey's fields are rich text and
+ * each may name a photograph by id alone; the URLs are filled in here, on the
+ * way out, so re-cropping a photograph or correcting its description reaches
+ * every journey that used it without an UPDATE over anybody's prose.
+ */
+async function serialiseTrip(
   trip: TripRow,
-): Omit<ApiTrip, 'destinations' | 'culture' | 'posts' | 'related'> {
+): Promise<Omit<ApiTrip, 'destinations' | 'culture' | 'posts' | 'related'>> {
+  const figures = await resolveFigureMediaIn([
+    trip.overview,
+    trip.priceNote,
+    ...trip.itinerary.map((day) => day.body),
+    ...trip.faqs.map((faq) => faq.answer),
+    ...trip.faqGroups.map((group) => group.blurb),
+  ]);
+  const resolve = (html: string | null) => (html ? resolveRichTextMedia(html, figures) : null);
+
   return {
     slug: trip.slug,
     title: trip.title,
@@ -626,7 +626,7 @@ function serialiseTrip(
     difficulty: DIFFICULTY[trip.difficulty],
     priceFromUsd: trip.priceFromUsd,
     priceCurrency: trip.priceCurrency,
-    priceNote: trip.priceNote,
+    priceNote: resolve(trip.priceNote),
     pricingTiers: trip.pricingTiers.map((tier) => ({
       label: tier.label,
       minPeople: tier.minPeople,
@@ -642,13 +642,17 @@ function serialiseTrip(
     groupSizeMin: trip.groupSizeMin,
     groupSizeMax: trip.groupSizeMax,
     heroImage: img(trip.hero),
+    /* Null falls back to the hero on the website, which is what the page drew
+       when these were a path written into a component. */
+    overviewImage: img(trip.overviewImage),
+    overviewInsetImage: img(trip.overviewInset),
     routeMap: img(trip.routeMap),
     videoUrl: trip.videoUrl,
-    overview: trip.overview,
+    overview: resolve(trip.overview),
     stats: parseTripStats(trip.stats, `trip ${trip.slug}`),
     elevationProfile: parseElevationProfile(trip.elevationProfile, `trip ${trip.slug}`),
     highlights: trip.highlights.map((row) => row.text),
-    itinerary: numberItinerary(trip.itinerary),
+    itinerary: numberItinerary(trip.itinerary, resolve),
     included: trip.inclusions.filter((row) => row.isIncluded).map((row) => row.text),
     excluded: trip.inclusions.filter((row) => !row.isIncluded).map((row) => row.text),
     /**
@@ -661,13 +665,16 @@ function serialiseTrip(
      */
     faq: trip.faqs
       .filter((row) => row.groupId === null)
-      .map((row) => ({ question: row.question, answer: row.answer })),
+      .map((row) => ({ question: row.question, answer: resolve(row.answer) ?? '' })),
     faqGroups: trip.faqGroups
       .filter((group) => group.faqs.length > 0)
       .map((group) => ({
         title: group.title,
-        blurb: group.blurb,
-        items: group.faqs.map((row) => ({ question: row.question, answer: row.answer })),
+        blurb: resolve(group.blurb),
+        items: group.faqs.map((row) => ({
+          question: row.question,
+          answer: resolve(row.answer) ?? '',
+        })),
       })),
     gallery: trip.gallery
       .map((item) => {
@@ -717,14 +724,17 @@ function serialiseTrip(
  * derive for itself: the admin panel's editor shows live numbers as the office
  * drags days around, and both have to count the same way or the preview lies.
  */
-function numberItinerary(days: TripRow['itinerary']): ApiTrip['itinerary'] {
+function numberItinerary(
+  days: TripRow['itinerary'],
+  resolve: (html: string | null) => string | null,
+): ApiTrip['itinerary'] {
   return days.map((day, index) => {
     return {
       day: day.isRest ? null : index + 1,
       rest: day.isRest,
       title: day.title,
       meta: day.meta,
-      body: day.body,
+      body: resolve(day.body),
       images: day.images
         .map((row) => img(row.media))
         .filter((image): image is ApiImage => image !== null),
@@ -899,7 +909,20 @@ export async function postSlugs(): Promise<string[]> {
  * makes no query at all, which is most of them.
  */
 async function resolveFigureMedia(html: string): Promise<Map<string, FigureMedia>> {
-  const ids = richTextMediaIds(html);
+  return resolveFigureMediaIn([html]);
+}
+
+/**
+ * The same, for a record whose prose is spread over several columns.
+ *
+ * A journey is the one that needs it: the overview, the price note, every
+ * itinerary day and every answer are each rich text, and resolving them one at
+ * a time would be sixteen queries to serialise one page.
+ */
+async function resolveFigureMediaIn(
+  bodies: (string | null | undefined)[],
+): Promise<Map<string, FigureMedia>> {
+  const ids = richTextMediaIdsIn(bodies);
   if (ids.length === 0) return new Map();
 
   const rows = await db.media.findMany({
@@ -997,7 +1020,7 @@ function serialiseDestinationSummary(row: DestinationSummaryRow): ApiDestination
     name: row.name,
     path: destinationPath(row.slug, row.parent?.slug),
     parentSlug: row.parent?.slug ?? null,
-    icon: ICON[row.icon],
+    icon: ICON_TO_WIRE[row.icon],
     blurb: row.blurb,
     standfirst: row.standfirst,
     image: img(row.image),
@@ -1122,7 +1145,7 @@ export async function listActivities(): Promise<ApiActivity[]> {
       slug: row.slug,
       name: row.name,
       blurb: row.blurb,
-      icon: ICON[row.icon],
+      icon: ICON_TO_WIRE[row.icon],
       image: img(row.image),
       examples: row.examples,
       tripSlugs: row.trips
@@ -1162,7 +1185,7 @@ function serialiseCultureSummary(row: {
     title: row.title,
     path: culturePath(row.slug),
     standfirst: row.standfirst,
-    icon: ICON[row.icon],
+    icon: ICON_TO_WIRE[row.icon],
     image: img(row.image),
   };
 }
@@ -1352,7 +1375,7 @@ function serialiseSections(
         points: section.points.map((point) => ({
           title: point.title,
           body: point.body,
-          icon: point.icon as SiteIconName | null,
+          icon: point.icon,
         })),
       });
       continue;

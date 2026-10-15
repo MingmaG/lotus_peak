@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Badge, Button, Divider, Eyebrow, Reflection, SiteIcon, Tooltip } from '@/design-system'
 import { getContent } from '@/content'
-import { fmt } from '@/content/types'
+import { fmt, type TripPhoto } from '@/content/types'
 import { IMG, altFor } from '@/lib/assets'
 import { ogImage } from '@/lib/seo'
 import { Reveal } from '@/motion'
@@ -36,6 +36,24 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
+/**
+ * The same photograph twice is one photograph.
+ *
+ * A picture good enough for the gallery band is often also hung on the day it
+ * was taken, and the band would otherwise show it once for each — and count it
+ * twice in "view all N photographs".
+ */
+function uniqueBySrc(photos: TripPhoto[]): TripPhoto[] {
+  const seen = new Set<string>()
+  const out: TripPhoto[] = []
+  for (const photo of photos) {
+    if (seen.has(photo.src)) continue
+    seen.add(photo.src)
+    out.push(photo)
+  }
+  return out
+}
+
 function List({ items }: { items: string[] }) {
   return (
     <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 16 }}>
@@ -62,9 +80,21 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
     content.settings.get(),
   ])
 
+  /* The band draws the journey's own photographs and the ones hung on its
+     days. The office adds a day's pictures while writing that day, and the
+     band is titled "what the days look like" — a visitor asking exactly that
+     should not have to open eleven days to find them.
+     Composed here rather than in the provider: the record goes on saying which
+     photographs the office chose for the band and which belong to a day, and
+     both already travel on it. */
+  const galleryPhotos = uniqueBySrc([
+    ...trip.gallery,
+    ...trip.itinerary.flatMap((day) => day.images ?? []),
+  ])
+
   /* Hidden by the office, or nothing to show: either way there is no band,
      and the sub-nav must not offer a jump to it. */
-  const showGallery = trip.sections.gallery && trip.gallery.length > 0
+  const showGallery = trip.sections.gallery && galleryPhotos.length > 0
 
   const badges: [string, 'neutral' | 'pine' | 'saffron' | 'gold'][] = [
     [fmt.duration(trip), 'neutral'],
@@ -109,29 +139,29 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
             marginTop: 'var(--space-8)',
           }}
         >
-          <TripOverviewImages main={trip.heroImage} inset={IMG.hike} insetAlt={altFor(IMG.hike)} />
+          {/* The main photograph carries a description only when it is not
+              the hero, which is already described at the top of this page. */}
+          <TripOverviewImages
+            main={trip.overviewImage}
+            mainAlt={
+              trip.overviewImage === trip.heroImage ? undefined : trip.overviewImageAlt
+            }
+            inset={trip.overviewInset}
+            insetAlt={trip.overviewInsetAlt}
+          />
 
           <div>
             <Reveal>
               <h2 style={{ fontSize: 'var(--text-h2)', maxWidth: '18ch' }}>{trip.excerpt}</h2>
             </Reveal>
             <Reveal delay={240}>
-              <div>
-                {trip.overview.map((p, i) => (
-                  <p
-                    key={i}
-                    style={{
-                      marginTop: i === 0 ? 28 : 20,
-                      color: 'var(--text-muted)',
-                      ...(i === 0
-                        ? { fontSize: 'var(--text-lead)', lineHeight: 'var(--leading-lead)' }
-                        : null),
-                    }}
-                  >
-                    {p}
-                  </p>
-                ))}
-              </div>
+              {/* Rich text now, so the first paragraph's lead type is a CSS
+                  rule rather than an index — see `.lp-prose-lead`. */}
+              <Prose
+                html={trip.overview}
+                className="lp-prose-lead"
+                style={{ marginTop: 28 }}
+              />
             </Reveal>
             <Reveal delay={480}>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 32 }}>
@@ -491,7 +521,7 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
             <Centered eyebrow="Photographs" title="What the days look like" />
           </Reveal>
           <div style={{ maxWidth: 'var(--container)', margin: 'var(--space-8) auto 0' }}>
-            <TripGallery photos={trip.gallery} title={trip.title} />
+            <TripGallery photos={galleryPhotos} title={trip.title} />
           </div>
         </Section>
       )}

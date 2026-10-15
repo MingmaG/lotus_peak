@@ -332,11 +332,11 @@ export type SeasonKey = 'spring' | 'summer' | 'autumn' | 'winter';
 /**
  * The silhouettes the design system can draw.
  *
- * The first seven are building types, and the admin stores them as the
- * `SiteIcon` enum. The last three name a single place each — Taktsang, Punakha
- * and Jakar — because those three dzongs read as themselves rather than as a
- * generic dzong, and the destinations pages use them. They are not in the
- * admin's enum yet, so only the file provider can set them for now.
+ * The first seven are building types. The eight after them name a single place
+ * each — Taktsang, Punakha, Jakar, Trongsa, Mongar, Pemagatshel, Trashigang
+ * and Gasa — because those dzongs read as themselves rather than as a generic
+ * dzong, and the destinations pages and the menu map use them. All fifteen are
+ * in the admin's `SiteIcon` enum, so the office can pick any of them.
  */
 export type SiteIconName =
   | 'dzong'
@@ -348,7 +348,12 @@ export type SiteIconName =
   | 'buddha'
   | 'taktsang'
   | 'punakha'
-  | 'jakar';
+  | 'jakar'
+  | 'trongsa'
+  | 'mongar'
+  | 'pemagatshel'
+  | 'trashigang'
+  | 'gasa';
 
 export interface ApiItineraryDay {
   /**
@@ -464,11 +469,33 @@ export interface ApiTrip {
   groupSizeMin: number | null;
   groupSizeMax: number | null;
   heroImage: ApiImage | null;
+  /**
+   * The large photograph beside the overview, and the small one inset into its
+   * corner.
+   *
+   * Two fields rather than a list, because the design draws exactly two in
+   * fixed shapes — a 4/5 portrait with a 3/4 one offset into its bottom-right
+   * corner — and a list of unknown length would have to be truncated by
+   * whatever renders it. Either may be null: the main one falls back to the
+   * hero, and with no inset chosen the page draws the single photograph.
+   */
+  overviewImage: ApiImage | null;
+  overviewInsetImage: ApiImage | null;
   /** The route drawn on a map. A picture, not a live map. */
   routeMap: ApiImage | null;
   /** A film, where there is one. Rendered as a façade, never as an iframe. */
   videoUrl: string | null;
-  overview: string[];
+  /**
+   * The opening paragraphs, as one rich-text document.
+   *
+   * An array of plain paragraphs until the office pointed out that a journey's
+   * opening was the only long-form field on the site that could not carry a
+   * link to the monastery it names, or a photograph, or a list. It is now the
+   * same column type and the same editor as an itinerary day, a page band and
+   * a journal entry — and the same `renderStoredRichText` on the way out, so a
+   * journey written before the change still renders as the paragraphs it was.
+   */
+  overview: string | null;
   /** Beyond the fixed five. Usually empty. */
   stats: ApiTripStat[];
   /** Empty for everything but the trekking journeys. */

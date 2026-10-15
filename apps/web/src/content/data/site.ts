@@ -78,7 +78,7 @@ export const DESTINATIONS: SeedDestination[] = [
   {
     slug: 'trongsa',
     name: 'Trongsa',
-    icon: 'chorten',
+    icon: 'trongsa',
     blurb: 'The gateway dzong to the centre',
     detail:
       'The largest dzong in the country, strung along a ridge above the Mangde Chhu, and the ancestral seat of the Wangchuck dynasty. For centuries every journey between east and west passed beneath it.',

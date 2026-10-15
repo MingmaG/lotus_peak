@@ -3,6 +3,8 @@ import 'server-only';
 import { parseElevationProfile, parseTripStats } from '@/server/schema/blocks';
 import { db } from '@/lib/db';
 import { storage } from '@/lib/storage';
+import { resolveRichTextMedia } from '@/server/schema/rich-text';
+import { editorFigureMediaIn } from './content-editor';
 import { TRIP_DETAIL_INCLUDE, type TripDetail } from './trip';
 import type { TripFormData } from '@/components/treks/trip-editor';
 import type { PickedMedia } from '@/components/media/media-picker';
@@ -74,7 +76,9 @@ export function emptyTripForm(): TripFormData {
     groupSizeMin: null,
     groupSizeMax: null,
     regions: [],
-    overview: [],
+    overview: '',
+    overviewImage: null,
+    overviewInset: null,
     highlights: [],
     included: [],
     excluded: [],
@@ -128,7 +132,24 @@ export function emptySeo() {
   };
 }
 
-function toForm(trip: TripDetail): TripFormData {
+/**
+ * A journey's four rich-text fields, as the editor reads them.
+ *
+ * Every figure in them is stored as a media id and nothing else, so the editor
+ * would otherwise open on a photograph with no `src`. This fills them in from
+ * the library — see `schema/rich-text.ts` — and `stripPatchMedia` in
+ * `trip.ts` takes the URLs back out on the way to the column.
+ */
+async function toForm(trip: TripDetail): Promise<TripFormData> {
+  const media = await editorFigureMediaIn([
+    trip.overview,
+    trip.priceNote,
+    ...trip.itinerary.map((day) => day.body),
+    ...trip.faqs.map((faq) => faq.answer),
+    ...trip.faqGroups.map((group) => group.blurb),
+  ]);
+  const resolve = (html: string | null) => resolveRichTextMedia(html, media);
+
   return {
     id: trip.id,
     slug: trip.slug,
@@ -142,7 +163,7 @@ function toForm(trip: TripDetail): TripFormData {
     difficulty: trip.difficulty,
     priceFromUsd: trip.priceFromUsd,
     priceCurrency: trip.priceCurrency,
-    priceNote: trip.priceNote ?? '',
+    priceNote: resolve(trip.priceNote),
     pricingTiers: trip.pricingTiers.map((tier) => ({
       key: tier.id,
       label: tier.label,
@@ -158,7 +179,7 @@ function toForm(trip: TripDetail): TripFormData {
     groupSizeMin: trip.groupSizeMin,
     groupSizeMax: trip.groupSizeMax,
     regions: trip.regions,
-    overview: trip.overview,
+    overview: resolve(trip.overview),
     highlights: trip.highlights.map((row) => row.text),
     included: trip.inclusions.filter((row) => row.isIncluded).map((row) => row.text),
     excluded: trip.inclusions.filter((row) => !row.isIncluded).map((row) => row.text),
@@ -170,7 +191,11 @@ function toForm(trip: TripDetail): TripFormData {
       isRest: day.isRest,
       title: day.title,
       meta: day.meta ?? '',
-      body: day.body ?? '',
+      body: resolve(day.body),
+      /* The day's own photographs, in the order the office put them in. */
+      images: day.images.map((row) => toPicked(row.media)).filter(
+        (picked): picked is PickedMedia => picked !== null,
+      ),
     })),
     /**
      * A question refers to its heading by title, not by id.
@@ -182,11 +207,11 @@ function toForm(trip: TripDetail): TripFormData {
     faqGroups: trip.faqGroups.map((group) => ({
       key: group.title,
       title: group.title,
-      blurb: group.blurb ?? '',
+      blurb: resolve(group.blurb),
     })),
     faqs: trip.faqs.map((faq) => ({
       question: faq.question,
-      answer: faq.answer,
+      answer: resolve(faq.answer),
       groupKey:
         trip.faqGroups.find((group) => group.id === faq.groupId)?.title ?? null,
     })),
@@ -201,6 +226,8 @@ function toForm(trip: TripDetail): TripFormData {
       width: item.width,
     })),
     hero: toPicked(trip.hero),
+    overviewImage: toPicked(trip.overviewImage),
+    overviewInset: toPicked(trip.overviewInset),
     routeMap: toPicked(trip.routeMap),
     ogImage: toPicked(trip.ogImage),
     destinationIds: trip.destinations.map((link) => link.destinationId),

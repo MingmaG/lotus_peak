@@ -68,7 +68,8 @@ export interface TripFormData {
   groupSizeMin: number | null;
   groupSizeMax: number | null;
   regions: string[];
-  overview: string[];
+  /** The opening, as one rich-text document. */
+  overview: string;
   highlights: string[];
   included: string[];
   excluded: string[];
@@ -80,6 +81,16 @@ export interface TripFormData {
   elevationProfile: ElevationPointForm[];
   videoUrl: string;
   hero: PickedMedia | null;
+  /**
+   * The pair of photographs beside the overview.
+   *
+   * Null main means the hero, which is what the page drew before these
+   * existed. Null inset means no inset at all — the corner used to hold a
+   * stock photograph of somebody walking, on every journey, including the ones
+   * that do no walking.
+   */
+  overviewImage: PickedMedia | null;
+  overviewInset: PickedMedia | null;
   routeMap: PickedMedia | null;
   ogImage: PickedMedia | null;
   destinationIds: string[];
@@ -142,6 +153,15 @@ export interface ItineraryDayForm {
   title: string;
   meta: string;
   body: string;
+  /**
+   * The day's own photographs, beside its prose.
+   *
+   * Separate from a photograph pasted *into* the prose, and both are right: a
+   * figure in the body belongs to a sentence, and these belong to the day —
+   * the design draws them as a row under it. The office uses whichever the
+   * picture is about.
+   */
+  images: PickedMedia[];
 }
 
 export interface TripEditorProps {
@@ -222,7 +242,7 @@ export function TripEditor({
         groupSizeMin: form.groupSizeMin,
         groupSizeMax: form.groupSizeMax,
         regions: form.regions,
-        overview: form.overview.filter((line) => line.trim()),
+        overview: form.overview || null,
         highlights: form.highlights.filter((line) => line.trim()),
         included: form.included.filter((line) => line.trim()),
         excluded: form.excluded.filter((line) => line.trim()),
@@ -231,6 +251,7 @@ export function TripEditor({
           title: day.title,
           meta: day.meta || null,
           body: day.body || null,
+          mediaIds: day.images.map((image) => image.id),
         })),
         faqs: form.faqs.filter((faq) => faq.question.trim() && faq.answer.trim()),
         faqGroups: form.faqGroups
@@ -249,6 +270,8 @@ export function TripEditor({
         elevationProfile: form.elevationProfile.filter((point) => point.label.trim()),
         videoUrl: form.videoUrl.trim() || null,
         heroId: form.hero?.id ?? null,
+        overviewImageId: form.overviewImage?.id ?? null,
+        overviewInsetId: form.overviewInset?.id ?? null,
         routeMapId: form.routeMap?.id ?? null,
         destinationIds: form.destinationIds,
         offeredByDestinationIds: form.offeredByDestinationIds,
@@ -658,15 +681,36 @@ export function TripEditor({
 
           <Section
             title="Overview"
-            description="The paragraphs under the hero. One box per paragraph."
+            description="The opening, under the hero. The same editor as everywhere else on the site: headings, lists, links, photographs and films."
           >
-            <StringList
-              items={form.overview}
+            <RichTextEditor
+              value={form.overview}
               onChange={(overview) => set('overview', overview)}
-              placeholder="Write a paragraph…"
-              addLabel="Add a paragraph"
-              empty="Nothing written yet."
+              placeholder="Write the opening…"
+              minHeight="min-h-[240px]"
             />
+          </Section>
+
+          <Section
+            title="The photographs beside the overview"
+            description="The large one, and the small one inset into its corner. Leave the large one empty and the hero is used; leave the inset empty and the page draws the single photograph."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">The large one</p>
+                <MediaPicker
+                  value={form.overviewImage}
+                  onChange={(media) => set('overviewImage', media)}
+                />
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">The inset</p>
+                <MediaPicker
+                  value={form.overviewInset}
+                  onChange={(media) => set('overviewInset', media)}
+                />
+              </div>
+            </div>
           </Section>
         </div>
       )}

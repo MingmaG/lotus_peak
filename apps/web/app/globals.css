@@ -464,6 +464,25 @@
 .lp-prose-compact figure.lp-figure { margin: 16px 0 }
 .lp-prose-compact blockquote { font-size: inherit; line-height: inherit }
 
+/* --- an opening, where the first paragraph is the standfirst --------------- */
+
+/**
+ * `.lp-prose-lead` is a body whose first paragraph is set in lead type.
+ *
+ * A journey's overview, which the design draws that way: the opening sentence
+ * larger and looser, the rest quieter beneath it. It was three paragraphs
+ * styled by index in the page component until the office got the same editor
+ * here as everywhere else, and an index is not something a rich-text body has
+ * — the first thing in one may be a list or a photograph, and styling "the
+ * first paragraph" is the rule the design actually states.
+ */
+.lp-prose-lead { color: var(--text-muted) }
+
+.lp-prose-lead > p:first-child {
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+}
+
 /* The journeys index filters in the browser so the page can stay static.
    `TripFilter` writes the active type onto the grid and these hide the rest;
    with no JavaScript the attribute stays `all` and every journey is shown,
@@ -662,6 +681,21 @@
 .lp-mosaic-tile:focus-visible img { transform: scale(1.03) }
 .lp-mosaic-tile:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px }
 
+/* The last tile of a day's strip, when the day holds more than the strip
+   draws. It stands on the first photograph it is counting, veiled so the
+   number reads over it. */
+.lp-day-more {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--scrim);
+  color: var(--text-on-ground);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
 /* The viewer and the sheet are native dialogs; the scrim is their backdrop. */
 .lp-lightbox::backdrop { background: var(--scrim) }
 .lp-lightbox[open] { animation: veil var(--dur-quick) var(--ease-breath) }
@@ -747,6 +781,107 @@
   text-decoration: underline;
   text-decoration-color: var(--gold);
   text-underline-offset: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   The navigation's box, answering as it is typed
+   (src/components/site/SearchSuggest.tsx).
+
+   Paper, a hairline and one soft shadow: the panel is the same material as the
+   menu it hangs under, not a new surface. The rows are the search page's rows
+   at a smaller size — a thumbnail, what kind of thing it is, the title — so
+   recognising a result in the suggestions and recognising it on /search is the
+   same act of recognition.
+
+   It hangs from the form, which is `position: relative` for exactly this.
+   --------------------------------------------------------------------------- */
+.lp-suggest {
+  position: absolute;
+  top: calc(100% + 10px);
+  z-index: 60;
+  width: max(100%, 340px);
+  max-height: min(62vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface-page);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lift);
+  color: var(--ink);
+  text-align: left;
+}
+
+.lp-suggest[data-align='right'] { right: 0 }
+.lp-suggest[data-align='left'] { left: 0 }
+
+.lp-suggest ul { list-style: none; margin: 0; padding: var(--space-2) }
+
+.lp-suggest li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--dur-quick) var(--ease-breath);
+}
+
+/* The pointer and the arrow keys light the same row — `data-active` is set by
+   both, so there is never a hover highlight and a keyboard highlight at once. */
+.lp-suggest li[data-active='true'] { background: var(--surface-sunken) }
+
+.lp-suggest-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: var(--surface-sunken);
+}
+
+.lp-suggest-text { display: grid; gap: 2px; min-width: 0 }
+
+.lp-suggest-kind {
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.lp-suggest-title {
+  font-size: var(--text-small);
+  line-height: var(--leading-heading);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-suggest-title mark {
+  background: var(--sky-wash);
+  color: inherit;
+  padding: 0 .08em;
+}
+
+/* The last row is the way out of a short list: everything, on the search page,
+   where the results can be filtered and read properly. */
+.lp-suggest li.lp-suggest-all {
+  grid-template-columns: 1fr;
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--border-hairline);
+  border-radius: 0;
+  padding-top: var(--space-4);
+  font-size: var(--text-small);
+  color: var(--text-accent);
+}
+
+.lp-suggest-empty {
+  margin: 0;
+  padding: var(--space-5);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+  color: var(--text-muted);
 }
 
 /* On a phone the picture is a small square beside the words, not a column

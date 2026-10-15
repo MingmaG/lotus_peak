@@ -272,7 +272,12 @@ export function SectionEditor({
                         />
                         <div className="w-36">
                           <IconSelect
-                            value={point.icon ?? 'DZONG'}
+                            /* `wire`: a point's icon is stored in the
+                               section's JSON as the website spells it, and the
+                               enum spelling fails `storedPageSectionSchema` on
+                               save. */
+                            naming="wire"
+                            value={point.icon ?? 'dzong'}
                             onChange={(icon) => {
                               const points = [...section.points];
                               points[pointIndex] = { ...point, icon };

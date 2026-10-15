@@ -1,6 +1,8 @@
 import type { Difficulty, SeasonKey, SiteIcon, TripType } from '@prisma/client';
+import type { SiteIconName } from '@lotuspeak/api-contracts';
 
 import { db } from '@/lib/db';
+import { ICON_FROM_WIRE } from '@/server/services/content-paths';
 
 import { asParagraphs, blocksToHtml, type Block } from './blocks';
 import type { ImageMap } from './media';
@@ -52,15 +54,15 @@ const SEASON_KEY: Record<string, SeasonKey> = {
   winter: 'WINTER',
 };
 
-const ICON: Record<string, SiteIcon> = {
-  dzong: 'DZONG',
-  chorten: 'CHORTEN',
-  stupa: 'STUPA',
-  monastery: 'MONASTERY',
-  pavilion: 'PAVILION',
-  'dzong-long': 'DZONG_LONG',
-  buddha: 'BUDDHA',
-};
+/**
+ * The JSON spells a silhouette the way the website does; the column holds the
+ * enum. `content-paths` owns the mapping — this only has to cope with a name
+ * the export wrote that the design system no longer draws, which is what the
+ * fallback is for.
+ */
+function icon(name: string, fallback: SiteIcon): SiteIcon {
+  return name in ICON_FROM_WIRE ? ICON_FROM_WIRE[name as SiteIconName] : fallback;
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Shapes, as the export wrote them                                           */
@@ -233,7 +235,10 @@ async function seedTrips(
       seasonKeys: seasonKeysFrom(trip.seasonLabel),
       paceNote: trip.paceNote,
       regions: trip.regions,
-      overview: trip.overview,
+      /* The export holds one string per paragraph; the column holds one
+         rich-text document. `asParagraphs` is the same conversion the
+         migration made for the rows that were already there. */
+      overview: trip.overview.map(asParagraphs).join(''),
       heroId: media(trip.heroImage),
       sortOrder: trip.order,
       status: 'PUBLISHED' as const,
@@ -373,7 +378,7 @@ export async function seedDestinations(
     const base = {
       name: destination.name,
       parentId,
-      icon: ICON[destination.icon] ?? 'DZONG',
+      icon: icon(destination.icon, 'DZONG'),
       blurb: destination.blurb,
       standfirst: destination.standfirst,
       body,
@@ -525,7 +530,7 @@ async function seedActivities(
     const base = {
       name: activity.name,
       blurb: activity.blurb,
-      icon: ICON[activity.icon] ?? 'PAVILION',
+      icon: icon(activity.icon, 'PAVILION'),
       imageId: media(activity.image),
       examples: activity.examples,
       sortOrder: activity.order,
@@ -570,7 +575,7 @@ export async function seedCulture(
       title: article.title,
       standfirst: article.standfirst,
       body,
-      icon: ICON[article.icon] ?? 'CHORTEN',
+      icon: icon(article.icon, 'CHORTEN'),
       imageId: media(article.image),
       sortOrder: article.order,
       status: 'PUBLISHED' as const,

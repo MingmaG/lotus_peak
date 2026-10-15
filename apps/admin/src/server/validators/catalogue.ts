@@ -25,6 +25,14 @@ const icon = z.enum([
   'PAVILION',
   'DZONG_LONG',
   'BUDDHA',
+  'TAKTSANG',
+  'PUNAKHA',
+  'JAKAR',
+  'TRONGSA',
+  'MONGAR',
+  'PEMAGATSHEL',
+  'TRASHIGANG',
+  'GASA',
 ]);
 
 /**
