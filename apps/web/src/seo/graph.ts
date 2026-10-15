@@ -126,6 +126,9 @@ function widenTrip(trip: Trip): ApiTrip {
     priceNote: null,
     pricingTiers: [],
     routeMap: null,
+    /* The band above the itinerary is the page's furniture, not a fact about
+       the journey, and its photograph is not one of the journey's own. */
+    trail: null,
     videoUrl: null,
     stats: [],
     elevationProfile: [],

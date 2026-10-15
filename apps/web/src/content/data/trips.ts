@@ -19,6 +19,7 @@ export type TripRecord = Omit<
   | 'related'
   | 'overviewImage'
   | 'overviewInset'
+  | 'trail'
 > & {
   gallery: [src: string, ratio?: string, width?: string][]
   /**
@@ -52,6 +53,25 @@ export type TripRecord = Omit<
  * journey's own description, region list, length and altitude so the site is
  * complete and honest, and they NEED LOTUS PEAK'S SIGN-OFF before launch.
  */
+
+/**
+ * The band above the itinerary, as the website drew it before the office
+ * could.
+ *
+ * One constant rather than a field on each of the five journeys, because that
+ * is honestly what it was: the same photograph and the same paragraph about
+ * pace on every journey page, written into the component. In a database each
+ * journey has its own, which is the point of the change — this is the fixture,
+ * and the fixture's job is to be what the site said.
+ */
+export const TRAIL = {
+  eyebrow: 'On the trail',
+  title: 'Walked at a pace that leaves room to notice',
+  body:
+    'Two nights in most valleys. Drives of no more than five hours. A rest day written in. ' +
+    'Your guide sets the pace to the slowest step in the group.',
+  image: IMG.hike,
+} as const
 
 const SHARED_INCLUDED = [
   'Airport transfers in our own vehicle',

@@ -23,7 +23,7 @@ import {
   fileDestinationPage,
   filePosts,
 } from './file-sections'
-import { TRIPS, type TripRecord } from '../data/trips'
+import { TRAIL, TRIPS, type TripRecord } from '../data/trips'
 import type { ContentRepository, EnquiryInput } from '../repository'
 import type { Activity, GalleryImage, PageBand, Season, SitePage, Trip } from '../types'
 
@@ -61,6 +61,7 @@ const withAlt = {
       height: null,
       focal: [0.5, 0.5],
     })),
+    trail: { ...TRAIL, imageAlt: altFor(TRAIL.image) },
     sections: { gallery: true, destinations: true, culture: true, journal: true, related: true },
     destinations: [],
     culture: [],
@@ -330,6 +331,7 @@ function fileLlmsFullInput() {
       priceNote: null,
       pricingTiers: [],
       routeMap: null,
+      trail: null,
       videoUrl: null,
       stats: [],
       elevationProfile: [],
