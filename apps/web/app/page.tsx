@@ -12,6 +12,7 @@ import { getContent } from "@/content";
 import { bandFrom, pointsFrom } from "@/content/page-copy";
 import { fmt } from "@/content/types";
 import { IMG, altFor } from "@/lib/assets";
+import { HERO_MEDIA } from "@/lib/hero-media";
 import { Reveal, Split, Strip } from "@/motion";
 import { HomeHero } from "@/sections/home/HomeHero";
 import { Seasons } from "@/sections/home/Seasons";
@@ -71,10 +72,15 @@ export default async function HomePage() {
                 })}
             />
             {/* The hero's headline is the strapline in the panel's company
-             settings (the site tab), falling back to the tagline. */}
+             settings (the site tab), falling back to the tagline. What plays
+             behind it — the photograph, a film on this origin, or a film on
+             YouTube — is `lib/hero-media.ts`, and the photograph is the LCP
+             element in all three cases. The description is read here because
+             `altFor` is a module-scope registry and resolves to "" inside a
+             client component. */}
             <HomeHero
-                image={IMG.hero}
-                alt={altFor(IMG.hero)}
+                media={HERO_MEDIA}
+                alt={altFor(HERO_MEDIA.image)}
                 line={settings.strapline}
             />
 

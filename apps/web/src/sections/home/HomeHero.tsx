@@ -1,8 +1,10 @@
 "use client";
 
 import { Button } from "@/design-system";
+import type { HeroMedia } from "@/lib/hero-media";
 import { Parallax, Reveal, ScrollCue } from "@/motion";
 import { heroOffset } from "../shared/Section";
+import { HeroFilm } from "./HeroFilm";
 
 /* Where Taktshang sits in the photograph. The picture is 4:3 and the frame is
    a full viewport, so on any screen wider than 4:3 `cover` throws away the top
@@ -17,20 +19,39 @@ const FOCUS = "50% 0%";
  * of the transform. One headline — the strapline from the panel, in the hero
  * face — and one button, centred beneath the monastery so the words never sit
  * over the thing the photograph is of.
+ *
+ * What is behind the words is the photograph, a film on this origin, or a film
+ * on YouTube, as `lib/hero-media.ts` says. Whichever it is, the picture is what
+ * loads first and what is still there if a film never plays: `HeroFilm` lies
+ * over this `Parallax` inside its clipped frame and covers it once it has
+ * frames, so the hero's largest paint is the same photograph in all three cases
+ * — see the note on `HeroFilm`.
  */
 export function HomeHero({
-    image,
+    media,
     alt,
     line,
 }: {
-    image: string;
+    media: HeroMedia;
+    /**
+     * The photograph's description, read on the server. A client component
+     * cannot look an alt up — the registry is module scope and resolves to ""
+     * here, which is how that was found — so it travels as a prop.
+     */
     alt?: string;
     line: string;
 }) {
+    /* Under a film the picture is the film's first frame, which describes
+       nothing the headline does not; the photograph keeps its description
+       because under a film it is what a reader who declined the motion is
+       actually looking at. */
+    const still = media.kind === "image" ? media.image : media.still ?? media.image;
+    const stillAlt = still === media.image ? alt : "";
+
     return (
         <Parallax
-            src={image}
-            alt={alt}
+            src={still}
+            alt={stillAlt}
             speed={0.6}
             priority
             imgStyle={{
@@ -47,6 +68,9 @@ export function HomeHero({
                 ...heroOffset,
             }}
         >
+            {/* The film, where there is one: over the picture, under the scrim,
+          and nothing at all when the hero is a photograph. */}
+            <HeroFilm media={media} focus={FOCUS} />
             {/* Only the lower half darkens, for the words. The upper half is the
           monastery and the sky, and is left as the photograph has it. */}
             <div
