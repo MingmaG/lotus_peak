@@ -169,6 +169,8 @@ function fileSite(): ApiSite {
       name: s.brand,
       tagline: s.line,
       strapline: s.strapline,
+      heroMedia: s.hero.media,
+      heroYoutubeUrl: s.hero.youtubeUrl,
       description: s.defaultSeo.description,
       foundedYear: null,
       licenceNumber: null,

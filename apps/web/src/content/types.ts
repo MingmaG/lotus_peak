@@ -356,6 +356,14 @@ export type SiteSettings = {
   line: string
   /** The words over the home page's photograph; the tagline when the office left it empty. */
   strapline: string
+  /**
+   * What the office chose to play behind those words.
+   *
+   * The choice and the address, not the picture: the hero's photograph is a
+   * brand asset in `lib/assets`, as it has been since the design was approved,
+   * and `lib/hero-media.ts` is what puts the two together.
+   */
+  hero: { media: 'image' | 'youtube'; youtubeUrl: string | null }
   nav: { label: string; href: string }[]
   navCta: { label: string; href: string }
   footer: {

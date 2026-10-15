@@ -1704,6 +1704,19 @@ model CompanyProfile {
 
   // --- Site chrome the whole site reads ---
   strapline       String @default("")
+  /// What plays behind the strapline on the home page: `image` or `youtube`.
+  ///
+  /// A string rather than an enum, for the reason `twitterCard` is one: the
+  /// panel's Zod schema is already the allowlist, the website's hero has a
+  /// third route only a developer can fill (an MP4 under its own
+  /// `public/assets`), and adding the next one should be a value rather than a
+  /// migration on a table with one row in it.
+  heroMedia       String @default("image")
+  /// The hero's film on YouTube, as the office copied it — a watch link, a
+  /// `youtu.be` link or an embed address; `@lotuspeak/video` is what reads it.
+  /// Kept when `heroMedia` is `image`, so a film can be put back without being
+  /// retyped.
+  heroYoutubeUrl  String?
   /// The short introduction under the name in the footer. It used to be the
   /// line along the foot, beside the copyright — which the credit now holds.
   footerNote      String @default("")

@@ -245,6 +245,12 @@ export async function getSite(): Promise<ApiSite> {
     name: company.name,
     tagline: company.tagline,
     strapline: company.strapline,
+    /* Serialised as stored, narrowed only to the two values the contract has.
+       Whether the address still names a playable film is the website's
+       decision, taken once in `@lotuspeak/video` — asking it here as well
+       would be two places that have to agree about a typo. */
+    heroMedia: company.heroMedia === 'youtube' ? 'youtube' : 'image',
+    heroYoutubeUrl: company.heroYoutubeUrl || null,
     description: company.description,
     foundedYear: company.foundedYear,
     licenceNumber: company.licenceNumber,

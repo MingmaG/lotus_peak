@@ -472,6 +472,7 @@ export function toSettings(site: ApiSite): SiteSettings {
     legalName: site.company.legalName,
     line: site.company.tagline,
     strapline: site.company.strapline || site.company.tagline,
+    hero: { media: site.company.heroMedia, youtubeUrl: site.company.heroYoutubeUrl },
     nav: site.nav.map((link) => ({ label: link.label, href: link.href })),
     navCta: site.navCta ?? { label: 'Explore trips', href: '/trips' },
     footer: {

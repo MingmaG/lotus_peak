@@ -58,6 +58,9 @@ export interface CompanyFormValue {
   mark: PickedMedia | null;
   ogImage: PickedMedia | null;
   strapline: string;
+  /** What plays behind the strapline: the photograph, or a film on YouTube. */
+  heroMedia: 'image' | 'youtube';
+  heroYoutubeUrl: string;
   footerNote: string;
   footerCopyright: string;
   footerCreditLabel: string;
@@ -829,7 +832,7 @@ export function CompanyForm({ initial }: { initial: CompanyFormValue }) {
           <>
             <Section
               title="The home page"
-              description="The words laid over the photograph at the top of the home page, above the Explore trips button."
+              description="The top of the home page: the words laid over it, above the Explore trips button, and whether what is behind them is the photograph or a film."
             >
               <Field
                 label="Headline over the photograph"
@@ -839,6 +842,39 @@ export function CompanyForm({ initial }: { initial: CompanyFormValue }) {
                   value={form.strapline}
                   maxLength={200}
                   onChange={(event) => set('strapline', event.target.value)}
+                />
+              </Field>
+
+              <Field
+                label="What plays behind it"
+                hint="Whichever is chosen, the photograph is what loads first and what a visitor sees if the film never plays — a film lies over it and covers it once it is running. A visitor who has asked their computer for less movement is shown the photograph and never downloads the film."
+              >
+                <Select
+                  value={form.heroMedia}
+                  onValueChange={(value) =>
+                    set('heroMedia', value === 'youtube' ? 'youtube' : 'image')
+                  }
+                >
+                  <SelectTrigger className="h-8 w-60 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="image">The photograph</SelectItem>
+                    <SelectItem value="youtube">A film on YouTube</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field
+                label="The film on YouTube"
+                hint="The address from the browser's bar or from Share: https://www.youtube.com/watch?v=... , https://youtu.be/... or an embed address. It plays silently, on a loop, cropped to fill the screen, with none of YouTube's own titles, buttons or suggested films over it, so use footage with no words burnt into the picture — the headline sits on top of it. It is kept when the photograph is showing, so a film can be put back without being typed again."
+                error={errors.heroYoutubeUrl}
+              >
+                <Input
+                  value={form.heroYoutubeUrl}
+                  maxLength={300}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  onChange={(event) => set('heroYoutubeUrl', event.target.value)}
                 />
               </Field>
             </Section>

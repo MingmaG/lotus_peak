@@ -12,7 +12,7 @@ import { getContent } from "@/content";
 import { bandFrom, pointsFrom } from "@/content/page-copy";
 import { fmt } from "@/content/types";
 import { IMG, altFor } from "@/lib/assets";
-import { HERO_MEDIA } from "@/lib/hero-media";
+import { HERO_MEDIA, heroMediaFrom } from "@/lib/hero-media";
 import { Reveal, Split, Strip } from "@/motion";
 import { HomeHero } from "@/sections/home/HomeHero";
 import { Seasons } from "@/sections/home/Seasons";
@@ -71,15 +71,15 @@ export default async function HomePage() {
                     crumbs: [],
                 })}
             />
-            {/* The hero's headline is the strapline in the panel's company
-             settings (the site tab), falling back to the tagline. What plays
-             behind it — the photograph, a film on this origin, or a film on
-             YouTube — is `lib/hero-media.ts`, and the photograph is the LCP
-             element in all three cases. The description is read here because
-             `altFor` is a module-scope registry and resolves to "" inside a
-             client component. */}
+            {/* The hero's headline and what plays behind it are both the
+             panel's company settings, the site tab: the strapline (falling back
+             to the tagline), and the photograph or a film on YouTube.
+             `lib/hero-media.ts` puts that choice together with the assets this
+             repo ships, and the photograph is the LCP element whichever wins.
+             The description is read here because `altFor` is a module-scope
+             registry and resolves to "" inside a client component. */}
             <HomeHero
-                media={HERO_MEDIA}
+                media={heroMediaFrom(settings.hero)}
                 alt={altFor(HERO_MEDIA.image)}
                 line={settings.strapline}
             />

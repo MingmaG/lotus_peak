@@ -229,6 +229,17 @@ export interface ApiOfficeHours {
   closed: boolean;
 }
 
+/**
+ * What the office chose to play behind the home page's headline.
+ *
+ * Two values rather than three. The hero can also play an MP4 the website
+ * serves itself, but nothing the office can reach puts a file under the
+ * website's `public/assets`, so that route stays a developer's choice in
+ * `apps/web/src/lib/hero-media.ts`. A third value here would be one the panel
+ * could offer and never fulfil.
+ */
+export type HeroMediaChoice = 'image' | 'youtube';
+
 export interface ApiCompany {
   legalName: string;
   /** What the site calls itself. "Lotus Peak". */
@@ -236,6 +247,23 @@ export interface ApiCompany {
   tagline: string;
   /** The words over the home page's photograph. Empty: the tagline. */
   strapline: string;
+  /**
+   * What plays behind those words: the photograph, or a film on YouTube.
+   *
+   * It travels beside `strapline` because it is the same decision about the
+   * same part of the same page, and the panel edits the two in one place.
+   */
+  heroMedia: HeroMediaChoice;
+  /**
+   * The film, as any address somebody might copy — a watch link, a `youtu.be`
+   * share link, an embed address. Parsed by `@lotuspeak/video` on both sides.
+   *
+   * It stays filled when `heroMedia` is `image`, so a film can be put back
+   * without being retyped, and the panel refuses `youtube` with nothing here.
+   * The website still treats an address naming no film as the photograph: a
+   * typo must cost the hero its motion, never its front door.
+   */
+  heroYoutubeUrl: string | null;
   description: string;
   foundedYear: number | null;
   /** Tourism Council of Bhutan licence, shown in the footer. */
