@@ -6,7 +6,6 @@ import { notFound } from 'next/navigation'
 import { Badge, Button, Divider, Eyebrow, Reflection, SiteIcon, Tooltip } from '@/design-system'
 import { getContent } from '@/content'
 import { fmt, type TripPhoto } from '@/content/types'
-import { IMG, altFor } from '@/lib/assets'
 import { ogImage } from '@/lib/seo'
 import { Reveal } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
@@ -378,14 +377,29 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         </div>
       </Section>
 
-      <BandLink
-        href="/trips"
-        src={IMG.hike}
-        height="80vh"
-        eyebrow="On the trail"
-        title="Walked at a pace that leaves room to notice"
-        body="Two nights in most valleys. Drives of no more than five hours. A rest day written in. Your guide sets the pace to the slowest step in the group."
-      />
+      {/**
+        * The band above the itinerary, as the office wrote it.
+        *
+        * Was a photograph of four travellers on a ridge and a paragraph about
+        * pace, typed in here, on every journey — including the trek that walks
+        * for eight days and the festival journey that hardly walks at all.
+        *
+        * `trip.trail` is null when the office switched the band off, chose no
+        * photograph or wrote nothing; the provider decides that, so there is
+        * no emptiness test here. `height` stays in the page because it is the
+        * design's measurement of this band, not a thing to edit.
+        */}
+      {trip.trail && (
+        <BandLink
+          href="/trips"
+          src={trip.trail.image}
+          alt={trip.trail.imageAlt ?? ''}
+          height="80vh"
+          eyebrow={trip.trail.eyebrow ?? undefined}
+          title={trip.trail.title ?? undefined}
+          body={trip.trail.body ?? undefined}
+        />
+      )}
 
       <Section id="itinerary">
         <Reveal>

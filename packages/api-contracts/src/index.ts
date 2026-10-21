@@ -511,6 +511,16 @@ export interface ApiTrip {
   overviewInsetImage: ApiImage | null;
   /** The route drawn on a map. A picture, not a live map. */
   routeMap: ApiImage | null;
+  /**
+   * The full-bleed band above the itinerary — "On the trail".
+   *
+   * Null where the office switched it off or left it empty, and that is the
+   * whole decision: unlike `sections` below, nothing else on the page reads
+   * this photograph or these words, so there is nothing for the website to do
+   * with a band it is not drawing. Resolving it here keeps the rule in one
+   * place rather than in two that have to agree.
+   */
+  trail: ApiTripTrail | null;
   /** A film, where there is one. Rendered as a façade, never as an iframe. */
   videoUrl: string | null;
   /**
@@ -574,6 +584,23 @@ export interface ApiTrip {
   related: ApiTripSummary[];
   featured: boolean;
   seo: ApiSeo;
+}
+
+/**
+ * The band above the itinerary: a photograph, and the words over it.
+ *
+ * The photograph is not nullable, because a parallax band with no photograph
+ * is a scrim over nothing — so a journey with no picture chosen has no band,
+ * which is what a null `trail` says. The three pieces of copy are each
+ * optional: the design draws whichever of them is there, and an office that
+ * wants a photograph and a heading and no paragraph should get that rather
+ * than a sentence it was made to invent.
+ */
+export interface ApiTripTrail {
+  eyebrow: string | null;
+  title: string | null;
+  body: string | null;
+  image: ApiImage;
 }
 
 /** The journey page's optional bands. Each is drawn only when it has something in it. */

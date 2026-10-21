@@ -161,6 +161,19 @@ export const tripSchema = z.object({
   overviewImageId: z.string().nullable().optional(),
   overviewInsetId: z.string().nullable().optional(),
   routeMapId: z.string().nullable().optional(),
+  /**
+   * The band above the itinerary, as words and a photograph.
+   *
+   * The lengths are the design's: the heading is set at display size over a
+   * photograph and wraps at about fourteen characters a line, and the
+   * paragraph is held to `--measure-narrow`. A 2 kB heading is not a heading
+   * the design can draw, and refusing it here is kinder than letting the
+   * office find out on the page.
+   */
+  trailEyebrow: z.string().max(60).default(''),
+  trailTitle: z.string().max(120).default(''),
+  trailBody: z.string().max(400).default(''),
+  trailImageId: z.string().nullable().optional(),
   videoUrl: z.string().max(500).nullable().optional(),
   destinationIds: z.array(z.string()).max(30).default([]),
   /** Destinations that offer this journey, in the order they offer it. */
@@ -174,6 +187,7 @@ export const tripSchema = z.object({
    */
   postIds: z.array(z.string()).max(12).default([]),
   /** The optional bands on the journey's page. */
+  showTrail: z.boolean().default(true),
   showGallery: z.boolean().default(true),
   showDestinations: z.boolean().default(true),
   showCulture: z.boolean().default(true),

@@ -93,6 +93,16 @@ export type Trip = {
   /** The route drawn on a map. Empty where the office has not made one. */
   routeMap: string | null
   routeMapAlt?: ImageAlt
+  /**
+   * The band above the itinerary — "On the trail".
+   *
+   * Null where the office switched it off, chose no photograph or wrote
+   * nothing, and the page then draws no band. The three rules are the
+   * provider's, not the page's: a page that had to decide for itself whether
+   * a band is empty is a page that will one day disagree with the panel about
+   * it.
+   */
+  trail: TripTrail | null
   /** A film. Rendered as a façade — see `VideoEmbed`. */
   videoUrl: string | null
   /** Beyond the fixed five under the title. Usually empty. */
@@ -114,6 +124,22 @@ export type Trip = {
    * Nothing renders more of them than a `TrekCard` does.
    */
   related: Trip[]
+}
+
+/**
+ * The band above the itinerary: a photograph, and the words over it.
+ *
+ * The photograph is always there — a band without one is no band, which the
+ * provider spells as a null `trail` — and each piece of copy is optional,
+ * because the design draws whichever of the three it is given.
+ */
+export type TripTrail = {
+  eyebrow: string | null
+  title: string | null
+  body: string | null
+  image: string
+  /** Carried on the record, because the band is a client component. See `ImageAlt`. */
+  imageAlt?: ImageAlt
 }
 
 /** The journey page's optional bands. Each draws only when it has something in it. */

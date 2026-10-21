@@ -170,6 +170,7 @@ export function toTripSummary(row: ApiTripSummary, index: number): Trip {
     overview: '',
     overviewImage: imagePath(row.heroImage),
     overviewInset: null,
+    trail: null,
     highlights: [],
     itinerary: [],
     included: [],
@@ -209,6 +210,17 @@ export function toTrip(row: ApiTrip): Trip {
     })),
     routeMap: row.routeMap ? imagePath(row.routeMap) : null,
     routeMapAlt: row.routeMap?.alt,
+    /* Already resolved: the panel sends null for a band that is switched off,
+       has no photograph or has no words. See `ApiTripTrail`. */
+    trail: row.trail
+      ? {
+          eyebrow: row.trail.eyebrow,
+          title: row.trail.title,
+          body: row.trail.body,
+          image: imagePath(row.trail.image),
+          imageAlt: row.trail.image.alt,
+        }
+      : null,
     videoUrl: row.videoUrl,
     stats: row.stats,
     elevationProfile: row.elevationProfile,

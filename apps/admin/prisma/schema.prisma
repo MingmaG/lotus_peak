@@ -560,6 +560,7 @@ model Media {
   tripRouteMaps     Trip[]            @relation("TripRouteMap")
   tripOverviewImages Trip[]           @relation("TripOverviewImage")
   tripOverviewInsets Trip[]           @relation("TripOverviewInset")
+  tripTrailImages   Trip[]            @relation("TripTrailImage")
   tripOgImages      Trip[]            @relation("TripOgImage")
   tripGalleryItems  TripGalleryItem[]
   itineraryImages   ItineraryImage[]
@@ -723,6 +724,25 @@ model Trip {
   routeMapId String?
   routeMap   Media?  @relation("TripRouteMap", fields: [routeMapId], references: [id], onDelete: SetNull)
 
+  /// The band above the itinerary: "On the trail".
+  ///
+  /// Four columns, because they are one band — a photograph and the three
+  /// pieces of copy the design lays over it — and the band was typed into the
+  /// website's journey page, the same picture and the same paragraph about
+  /// pace on every journey, including the trek that walks for eight days and
+  /// the festival journey that barely walks at all.
+  ///
+  /// Empty strings rather than nulls on the copy, for the reason `strapline`
+  /// and `footerNote` are: these are words, the editor sends what is in the
+  /// box, and "" and NULL would mean the same thing to everything that reads
+  /// them. The photograph is the one that decides whether the band exists —
+  /// see `showTrail`.
+  trailEyebrow String  @default("")
+  trailTitle   String  @default("")
+  trailBody    String  @default("")
+  trailImageId String?
+  trailImage   Media?  @relation("TripTrailImage", fields: [trailImageId], references: [id], onDelete: SetNull)
+
   /// The walking profile: `[{ day, label, metres }]`, ascending by day.
   ///
   /// Json because it is a list whose only consumer is one chart, and a table
@@ -754,11 +774,16 @@ model Trip {
 
   /// Which of the optional bands the journey page draws.
   ///
-  /// Columns rather than a Json list of section names: there are five, the
+  /// Columns rather than a Json list of section names: there are six, the
   /// design fixes their order, and a boolean cannot name a section the page
   /// has no styles for. Each defaults to on — a band with nothing in it draws
   /// nothing anyway, so "on" only ever means "show it when there is something
   /// to show".
+  ///
+  /// The photograph above the itinerary. The only one of the six that is not
+  /// at the foot of the page, and the only one whose content is on this row
+  /// rather than joined to it.
+  showTrail        Boolean @default(true)
   showGallery      Boolean @default(true)
   /// The places on the route, as cards.
   showDestinations Boolean @default(true)

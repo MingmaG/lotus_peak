@@ -1,20 +1,25 @@
 'use client';
 
-import { Section } from '@/components/shared/editor-shell';
+import { Field, Section } from '@/components/shared/editor-shell';
+import { MediaPicker } from '@/components/media/media-picker';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import type { TripTrailForm } from './trip-editor';
 
 /**
- * What the journey's page draws below the itinerary, and what goes in it.
+ * What the journey's page draws around the itinerary, and what goes in it.
  *
  * Its own file because the Links tab was already the longest in the editor,
- * and these five switches and two pickers are one decision: "what does this
- * page offer somebody who has read to the bottom of it".
+ * and these six switches, the band above the itinerary and two pickers are
+ * one decision: "what does this page offer somebody reading down it".
  */
 
 export interface TripSectionsForm {
+  trail: boolean;
   gallery: boolean;
   destinations: boolean;
   culture: boolean;
@@ -23,6 +28,11 @@ export interface TripSectionsForm {
 }
 
 const BANDS: { key: keyof TripSectionsForm; label: string; hint: string }[] = [
+  {
+    key: 'trail',
+    label: 'On the trail',
+    hint: 'The photograph across the page, above the itinerary. Its words and its picture are below.',
+  },
   {
     key: 'gallery',
     label: 'Photographs',
@@ -80,6 +90,90 @@ export function TripPageSections({
             />
           </label>
         ))}
+      </div>
+    </Section>
+  );
+}
+
+/**
+ * The band above the itinerary: a photograph, and the words over it.
+ *
+ * Beside the switches rather than on the Journey tab with the hero and the
+ * overview, because what it is *for* is the question the switches ask — this
+ * is the part of the page that says what the walking is like, and an office
+ * deciding whether to draw it is deciding that and this together.
+ *
+ * The photograph is what decides whether the band exists: without one the
+ * site draws nothing, because the band is a photograph under two scrims and
+ * without it there is nothing to put the words on. The field says so rather
+ * than making somebody save and go and look.
+ */
+export function TripTrailBand({
+  value,
+  onChange,
+  shown,
+}: {
+  value: TripTrailForm;
+  onChange: (next: TripTrailForm) => void;
+  /** The switch above is off: the words are kept, and the field says so. */
+  shown: boolean;
+}) {
+  const set = <K extends keyof TripTrailForm>(key: K, next: TripTrailForm[K]) =>
+    onChange({ ...value, [key]: next });
+
+  return (
+    <Section
+      title="On the trail"
+      description={
+        shown
+          ? 'The photograph across the page between the enquiry form and the itinerary, and the words over it. Without a photograph the band is not drawn.'
+          : 'Switched off above, so none of this shows. It is kept.'
+      }
+    >
+      <div className={cn('space-y-4', !shown && 'opacity-60')}>
+        <MediaPicker
+          value={value.image}
+          onChange={(media) => set('image', media)}
+          label="The photograph"
+          description="Wide, and with room in the middle for the words. It is read as part of the page, not as decoration, so its description is used."
+        />
+
+        <Field label="Eyebrow" hint="The small line above the heading. “On the trail”.">
+          <Input
+            value={value.eyebrow}
+            maxLength={60}
+            onChange={(event) => set('eyebrow', event.target.value)}
+            placeholder="On the trail"
+          />
+        </Field>
+
+        <Field label="Heading" hint="Set large over the photograph, so it wraps after a few words.">
+          <Input
+            value={value.title}
+            maxLength={120}
+            onChange={(event) => set('title', event.target.value)}
+            placeholder="Walked at a pace that leaves room to notice"
+          />
+        </Field>
+
+        <Field
+          label="Words"
+          hint="Two or three short sentences. What the days are actually like on this journey."
+        >
+          <Textarea
+            value={value.body}
+            maxLength={400}
+            rows={3}
+            onChange={(event) => set('body', event.target.value)}
+            placeholder="Two nights in most valleys. Drives of no more than five hours…"
+          />
+        </Field>
+
+        {value.image === null && (value.eyebrow || value.title || value.body) && (
+          <p className="text-xs text-muted-foreground">
+            Choose a photograph, or these words are not drawn.
+          </p>
+        )}
       </div>
     </Section>
   );
