@@ -66,8 +66,17 @@ bash scripts/generate-secrets.sh          # paste into both; the pairs must matc
 $EDITOR apps/admin/.env apps/web/.env
 ```
 
-Every variable is commented in those two files. The four that fail quietly
-rather than loudly are worth checking twice:
+`generate-secrets.sh` prints four secrets: the panel's two auth secrets, and
+two of the three that both files share. It does **not** print
+`MAIL_REPORT_SECRET` — generate that one yourself and put the same value in
+both files, or mail goes out and the Email screen stays empty:
+
+```bash
+openssl rand -base64 32        # → MAIL_REPORT_SECRET, in both .env files
+```
+
+Every variable is commented in those two files. The four pairings that fail
+quietly rather than loudly are worth checking twice:
 
 | admin | web | if they differ |
 | --- | --- | --- |
