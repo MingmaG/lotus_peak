@@ -205,6 +205,9 @@ export function NavBar({
               width={198}
               height={145}
               priority
+              // The logo defaults to a file in public/, which has no renditions
+              // to choose between; a logo coming from the media library does.
+              unoptimized={logoSrc.startsWith('/')}
               style={{
                 height: 36,
                 width: 'auto',

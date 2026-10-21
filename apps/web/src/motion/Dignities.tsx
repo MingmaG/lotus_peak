@@ -199,6 +199,9 @@ export function Dignities() {
                     width={g.width}
                     height={g.height}
                     sizes={g.w}
+                    // A file in public/, so there is nothing for the loader to pick
+                    // between: without this every width in `srcSet` is the same URL.
+                    unoptimized
                     // Always lazy, never `priority`. The layer is fixed, so the
                     // first guardian is in the viewport at load and is fetched
                     // straight away regardless; marking it eager only buys it a
@@ -502,6 +505,8 @@ function DignityPlate({ index, onClosed }: { index: number; onClosed: () => void
             width={d.width}
             height={d.height}
             sizes="(max-width: 760px) 92vw, 420px"
+            /* As above: one file, so one entry rather than seven identical ones. */
+            unoptimized
             style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
           />
         </div>
