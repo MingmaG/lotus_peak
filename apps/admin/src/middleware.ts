@@ -30,13 +30,20 @@ const PUBLIC_PATHS = [
 ];
 
 /**
- * Open to the website, not to a person.
+ * Open to a machine, not to a person.
  *
  * `/api/public/*` is what the marketing site reads, and it carries no
  * credential because it serves only published rows. `/api/storage/*` serves
  * media when the local driver is in use, and the same applies.
+ *
+ * `/api/webhooks/*` carries no cookie either — the caller is a provider, not a
+ * browser — and authenticates itself: the Resend endpoint verifies a Svix
+ * signature over the raw body and refuses everything when its secret is unset.
+ * Leaving it out of this list is not a safer default, it is a webhook that
+ * answers 401 to every delivery notice and a log that never learns what
+ * arrived.
  */
-const UNAUTHENTICATED_API = ['/api/public', '/api/storage'];
+const UNAUTHENTICATED_API = ['/api/public', '/api/storage', '/api/webhooks'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

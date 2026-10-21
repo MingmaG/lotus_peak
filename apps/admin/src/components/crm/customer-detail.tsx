@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, BookMarked, Mail, Pencil, Phone, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import * as React from 'react';
 import { toast } from 'sonner';
 
 import { BookingStatusBadge, PaymentStateBadge } from '@/components/bookings/badges';
@@ -13,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { apiDelete } from '@/lib/api-client';
 import { balanceCents, paymentState } from '@/lib/booking-money';
 import { formatDate, formatDateTime, humanise, money, relativeTime } from '@/lib/format';
-import { CustomerSheet, type CustomerForm } from './customer-form';
 
 export interface CustomerDetailData {
   id: string;
@@ -84,7 +82,6 @@ export function CustomerDetail({
 }) {
   const router = useRouter();
   const client = useQueryClient();
-  const [editing, setEditing] = React.useState(false);
 
   const destroy = useMutation({
     mutationFn: () => apiDelete(`/api/customers/${customer.id}`),
@@ -104,29 +101,6 @@ export function CustomerDetail({
     customer.postalCode,
     customer.country,
   ].filter(Boolean);
-
-  const form: CustomerForm = {
-    id: customer.id,
-    name: customer.name,
-    email: customer.email,
-    phone: customer.phone ?? '',
-    country: customer.country ?? '',
-    notes: customer.notes ?? '',
-    addressLine1: customer.addressLine1 ?? '',
-    addressLine2: customer.addressLine2 ?? '',
-    city: customer.city ?? '',
-    region: customer.region ?? '',
-    postalCode: customer.postalCode ?? '',
-    countryCode: customer.countryCode ?? '',
-    dateOfBirth: customer.dateOfBirth?.slice(0, 10) ?? '',
-    nationality: customer.nationality ?? '',
-    passportNumber: customer.passportNumber ?? '',
-    passportExpiry: customer.passportExpiry?.slice(0, 10) ?? '',
-    dietary: customer.dietary ?? '',
-    emergencyContactName: customer.emergencyContactName ?? '',
-    emergencyContactPhone: customer.emergencyContactPhone ?? '',
-    marketingOptIn: customer.marketingOptIn,
-  };
 
   return (
     <div className="space-y-5">
@@ -148,9 +122,11 @@ export function CustomerDetail({
             </Button>
           )}
           {canWrite && (
-            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-              <Pencil className="mr-1.5 size-3.5" />
-              Edit
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/customers/${customer.id}/edit`}>
+                <Pencil className="mr-1.5 size-3.5" />
+                Edit
+              </Link>
             </Button>
           )}
           {canDelete && (
@@ -356,13 +332,6 @@ export function CustomerDetail({
           )}
         </aside>
       </div>
-
-      <CustomerSheet
-        form={form}
-        open={editing}
-        onOpenChange={setEditing}
-        onSaved={() => router.refresh()}
-      />
     </div>
   );
 }

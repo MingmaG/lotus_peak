@@ -47,7 +47,7 @@ These come from the design system's own rules. Breaking one is a bug, not a styl
 | Content | Provider-agnostic repository (`src/content`) | See §4 |
 | Admin | `apps/admin`, a separate Next app, reached over HTTP | See §4 |
 | Validation | Zod at every provider boundary | Content from an API is untrusted input |
-| Email | Sent by the admin panel, not here | This app has no mail credential |
+| Email | Sent from here (`src/lib/mail/`), recorded by the panel | A panel that is down must not be able to stop an enquiry reaching the office |
 
 **npm workspaces**, Node 20+. Run everything from the repo root.
 
@@ -64,6 +64,7 @@ src/
   content/                domain types, the repository interface, the api and file providers
   seo/                    the JSON-LD graph for each page type
   lib/                    env, seo helpers, the asset registry, enquiry submission
+  lib/mail/               the one POST to Resend, and an enquiry's two messages
 docs/specs/               the build specification — authoritative
 docs/audit/               findings carried over from the prototype
 design-source/            imported reference from the design project (do not import at runtime)
@@ -90,7 +91,9 @@ Read `docs/specs/05-data-layer.md` before touching any of it.
 
 Rules:
 - **Never import `@prisma/client`, `@/lib/db`, or anything from `apps/admin`.** The HTTP
-  boundary is the architecture, not an inconvenience.
+  boundary is the architecture, not an inconvenience. A mail credential here is *not* a
+  breach of it: this app sends an enquiry's email so that a panel which is down cannot
+  swallow it, and it still cannot read a row of the database.
 - **Never memoise content on a module-scope closure.** The closure outlives the request,
   so publishing stops reaching the site while every cache header still says it worked.
   This happened once and took a while to see.

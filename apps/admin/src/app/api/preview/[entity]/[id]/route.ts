@@ -4,6 +4,7 @@ import { currentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { env } from '@/lib/env';
 import { signPreviewToken } from '@/lib/auth/preview';
+import { culturePath, destinationPath } from '@/server/services/content-paths';
 
 /**
  * Opens the website's preview of one unpublished thing.
@@ -50,6 +51,17 @@ async function pathFor(entity: string, id: string): Promise<string | null> {
     case 'post': {
       const row = await db.post.findUnique({ where: { id }, select: { slug: true } });
       return row ? `/journal/${row.slug}` : null;
+    }
+    case 'destination': {
+      const row = await db.destination.findUnique({
+        where: { id },
+        select: { slug: true, parent: { select: { slug: true } } },
+      });
+      return row ? destinationPath(row.slug, row.parent?.slug) : null;
+    }
+    case 'culture': {
+      const row = await db.cultureArticle.findUnique({ where: { id }, select: { slug: true } });
+      return row ? culturePath(row.slug) : null;
     }
     case 'page': {
       const row = await db.page.findUnique({ where: { id }, select: { path: true } });

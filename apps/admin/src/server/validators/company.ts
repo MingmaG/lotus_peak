@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { youtubeId } from '@lotuspeak/video';
+
 /**
  * The company, once.
  *
@@ -107,8 +109,41 @@ export const companySchema = z.object({
   markId: z.string().nullable().optional(),
 
   strapline: z.string().max(200).default(''),
+  /** What plays behind the strapline on the home page. */
+  heroMedia: z.enum(['image', 'youtube']).default('image'),
+  /*
+   * Not `.url()`. The four shapes the office might paste — a watch link, a
+   * `youtu.be` link, an embed address, a short — are all URLs, and so are a
+   * channel page and a playlist, which name no film at all. `youtubeId` is the
+   * one thing in this repo that decides, and it refuses an id that is not
+   * eleven characters, which is the paste worth catching: it looks right in the
+   * field and plays nothing on the page.
+   */
+  heroYoutubeUrl: z
+    .string()
+    .max(300)
+    .default('')
+    .refine(
+      (value) => value.trim() === '' || youtubeId(value) !== null,
+      'That address does not name a film on YouTube.',
+    ),
   footerNote: z.string().max(300).default(''),
   footerCopyright: z.string().max(200).default('© {year} {name}'),
+  footerCreditLabel: z.string().max(60).default(''),
+  footerCreditName: z.string().max(80).default(''),
+  footerCreditUrl: z.string().url('That is not a web address.').max(300).or(z.literal('')).default(''),
+  footerShowLinks: z.boolean().default(true),
+  footerShowAddress: z.boolean().default(true),
+  footerShowContacts: z.boolean().default(true),
+  footerShowSocials: z.boolean().default(true),
+  journeyPlacesTitle: z.string().max(80).default(''),
+  journeyPlacesMore: z.string().max(60).default(''),
+  journeyCultureTitle: z.string().max(80).default(''),
+  journeyCultureMore: z.string().max(60).default(''),
+  journeyJournalTitle: z.string().max(80).default(''),
+  journeyJournalMore: z.string().max(60).default(''),
+  journeyRelatedTitle: z.string().max(80).default(''),
+  journeyRelatedMore: z.string().max(60).default(''),
   replyPromise: z.string().max(200).default(''),
 
   pledgePercent: z.number().int().min(0).max(100).nullable().optional(),
@@ -166,6 +201,20 @@ export const companySchema = z.object({
       tripadvisorWidgetId: z.string().max(60).nullable().optional(),
     })
     .optional(),
+}).superRefine((value, ctx) => {
+  /*
+   * The half-made choice the website's own type refuses: the film chosen with
+   * no film named. The hero would quietly fall back to the photograph and
+   * nothing would look broken — which is exactly why it is refused here,
+   * rather than left to look like a page that ignored the office.
+   */
+  if (value.heroMedia === 'youtube' && value.heroYoutubeUrl.trim() === '') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['heroYoutubeUrl'],
+      message: "Add the film's address, or choose the photograph.",
+    });
+  }
 });
 
 export type CompanyInput = z.infer<typeof companySchema>;

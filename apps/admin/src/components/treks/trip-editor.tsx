@@ -9,6 +9,12 @@ import { toast } from 'sonner';
 
 import { ItineraryEditor } from './itinerary-editor';
 import { TripGalleryEditor } from './trip-gallery-editor';
+import {
+  OrderedPicker,
+  TripPageSections,
+  TripTrailBand,
+  type TripSectionsForm,
+} from './trip-page-sections';
 import { SeoPanel, type SeoValue } from '@/components/content/seo-panel';
 import { MediaPicker, type PickedMedia } from '@/components/media/media-picker';
 import {
@@ -67,7 +73,8 @@ export interface TripFormData {
   groupSizeMin: number | null;
   groupSizeMax: number | null;
   regions: string[];
-  overview: string[];
+  /** The opening, as one rich-text document. */
+  overview: string;
   highlights: string[];
   included: string[];
   excluded: string[];
@@ -79,11 +86,32 @@ export interface TripFormData {
   elevationProfile: ElevationPointForm[];
   videoUrl: string;
   hero: PickedMedia | null;
+  /**
+   * The pair of photographs beside the overview.
+   *
+   * Null main means the hero, which is what the page drew before these
+   * existed. Null inset means no inset at all — the corner used to hold a
+   * stock photograph of somebody walking, on every journey, including the ones
+   * that do no walking.
+   */
+  overviewImage: PickedMedia | null;
+  overviewInset: PickedMedia | null;
   routeMap: PickedMedia | null;
+  /**
+   * The band above the itinerary, as words and a photograph.
+   *
+   * One object rather than four fields on the form, because it is one band and
+   * one Section of the editor edits all of it. With no photograph the website
+   * draws no band at all — see `TripTrailBand`.
+   */
+  trail: TripTrailForm;
   ogImage: PickedMedia | null;
   destinationIds: string[];
   offeredByDestinationIds: string[];
   relatedTripIds: string[];
+  cultureIds: string[];
+  postIds: string[];
+  sections: TripSectionsForm;
   featured: boolean;
   status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
   seo: SeoValue;
@@ -119,6 +147,14 @@ export interface FaqGroupForm {
   blurb: string;
 }
 
+/** The band above the itinerary: "On the trail". */
+export interface TripTrailForm {
+  eyebrow: string;
+  title: string;
+  body: string;
+  image: PickedMedia | null;
+}
+
 /** One of the figures under the title, beyond the fixed five. */
 export interface StatForm {
   label: string;
@@ -138,12 +174,23 @@ export interface ItineraryDayForm {
   title: string;
   meta: string;
   body: string;
+  /**
+   * The day's own photographs, beside its prose.
+   *
+   * Separate from a photograph pasted *into* the prose, and both are right: a
+   * figure in the body belongs to a sentence, and these belong to the day —
+   * the design draws them as a row under it. The office uses whichever the
+   * picture is about.
+   */
+  images: PickedMedia[];
 }
 
 export interface TripEditorProps {
   initial: TripFormData;
   destinations: { id: string; name: string }[];
   otherTrips: { id: string; title: string }[];
+  culture: { id: string; title: string }[];
+  posts: { id: string; title: string; published: boolean }[];
   siteUrl: string;
   canPublish: boolean;
 }
@@ -163,6 +210,8 @@ export function TripEditor({
   initial,
   destinations,
   otherTrips,
+  culture,
+  posts,
   siteUrl,
   canPublish,
 }: TripEditorProps) {
@@ -214,7 +263,7 @@ export function TripEditor({
         groupSizeMin: form.groupSizeMin,
         groupSizeMax: form.groupSizeMax,
         regions: form.regions,
-        overview: form.overview.filter((line) => line.trim()),
+        overview: form.overview || null,
         highlights: form.highlights.filter((line) => line.trim()),
         included: form.included.filter((line) => line.trim()),
         excluded: form.excluded.filter((line) => line.trim()),
@@ -223,6 +272,7 @@ export function TripEditor({
           title: day.title,
           meta: day.meta || null,
           body: day.body || null,
+          mediaIds: day.images.map((image) => image.id),
         })),
         faqs: form.faqs.filter((faq) => faq.question.trim() && faq.answer.trim()),
         faqGroups: form.faqGroups
@@ -241,10 +291,24 @@ export function TripEditor({
         elevationProfile: form.elevationProfile.filter((point) => point.label.trim()),
         videoUrl: form.videoUrl.trim() || null,
         heroId: form.hero?.id ?? null,
+        overviewImageId: form.overviewImage?.id ?? null,
+        overviewInsetId: form.overviewInset?.id ?? null,
         routeMapId: form.routeMap?.id ?? null,
+        trailEyebrow: form.trail.eyebrow,
+        trailTitle: form.trail.title,
+        trailBody: form.trail.body,
+        trailImageId: form.trail.image?.id ?? null,
         destinationIds: form.destinationIds,
         offeredByDestinationIds: form.offeredByDestinationIds,
         relatedTripIds: form.relatedTripIds,
+        cultureIds: form.cultureIds,
+        postIds: form.postIds,
+        showTrail: form.sections.trail,
+        showGallery: form.sections.gallery,
+        showDestinations: form.sections.destinations,
+        showCulture: form.sections.culture,
+        showJournal: form.sections.journal,
+        showRelated: form.sections.related,
         featured: form.featured,
         status: form.status,
         seo: { ...form.seo, ogImageId: form.ogImage?.id ?? null },
@@ -441,8 +505,8 @@ export function TripEditor({
               <label htmlFor="featured" className="text-sm">
                 Feature this journey
                 <span className="mt-0.5 block text-xs text-muted-foreground">
-                  Marks it on the cards. Does not change which journeys the home page
-                  shows — that is the first four in catalogue order.
+                  The home page shows the first four featured journeys, in catalogue
+                  order. With none featured, it shows the first four in the catalogue.
                 </span>
               </label>
             </div>
@@ -643,15 +707,36 @@ export function TripEditor({
 
           <Section
             title="Overview"
-            description="The paragraphs under the hero. One box per paragraph."
+            description="The opening, under the hero. The same editor as everywhere else on the site: headings, lists, links, photographs and films."
           >
-            <StringList
-              items={form.overview}
+            <RichTextEditor
+              value={form.overview}
               onChange={(overview) => set('overview', overview)}
-              placeholder="Write a paragraph…"
-              addLabel="Add a paragraph"
-              empty="Nothing written yet."
+              placeholder="Write the opening…"
+              minHeight="min-h-[240px]"
             />
+          </Section>
+
+          <Section
+            title="The photographs beside the overview"
+            description="The large one, and the small one inset into its corner. Leave the large one empty and the hero is used; leave the inset empty and the page draws the single photograph."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">The large one</p>
+                <MediaPicker
+                  value={form.overviewImage}
+                  onChange={(media) => set('overviewImage', media)}
+                />
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">The inset</p>
+                <MediaPicker
+                  value={form.overviewInset}
+                  onChange={(media) => set('overviewInset', media)}
+                />
+              </div>
+            </div>
           </Section>
         </div>
       )}
@@ -1213,11 +1298,47 @@ export function TripEditor({
             </p>
           </Section>
 
+          <TripPageSections value={form.sections} onChange={(next) => set('sections', next)} />
+
+          <TripTrailBand
+            value={form.trail}
+            onChange={(next) => set('trail', next)}
+            shown={form.sections.trail}
+          />
+
+          <OrderedPicker
+            title="Culture to offer"
+            description="Shown near the foot of this page, in the order you tick them. Left empty, the site offers what is linked to the places on the route."
+            options={culture.map((article) => ({ id: article.id, label: article.title }))}
+            value={form.cultureIds}
+            onChange={(next) => set('cultureIds', next)}
+            disabled={!form.sections.culture}
+            empty="There are no culture pieces yet."
+          />
+
+          <OrderedPicker
+            title="Journal entries to offer"
+            description="The same link as an entry's own Journeys field — ticking one here ticks this journey there. Shown newest first. Left empty, the site offers the newest entries about the route."
+            options={posts.map((post) => ({
+              id: post.id,
+              label: post.title,
+              detail: post.published ? undefined : 'not published',
+            }))}
+            value={form.postIds}
+            onChange={(next) => set('postIds', next)}
+            disabled={!form.sections.journal}
+            empty="There are no journal entries yet."
+          />
+
           <Section
             title="Other journeys to offer"
-            description="Shown at the foot of this page. Left empty, the site offers the next few in catalogue order."
+            description={
+              form.sections.related
+                ? 'Shown at the foot of this page. Left empty, the site offers the next few in catalogue order.'
+                : 'Switched off above, so nothing here shows.'
+            }
           >
-            <div className="space-y-2">
+            <div className={cn('space-y-2', !form.sections.related && 'opacity-60')}>
               {otherTrips.map((trip) => (
                 <label
                   key={trip.id}

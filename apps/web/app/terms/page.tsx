@@ -33,8 +33,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TermsPage() {
-  const page = await getContent().pages.byPath('/terms')
+  const content = getContent()
+  const [page, settings] = await Promise.all([content.pages.byPath('/terms'), content.settings.get()])
   if (!page) notFound()
+
+  /* Who these terms are with, from the company record, then the page's own
+     note. The name and town were typed here once, beside a date. */
+  const note = [settings.legalName, settings.address.lines.join(', '), page.note]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <>
@@ -56,7 +63,7 @@ export default async function TermsPage() {
         title={page.title}
         lead={page.lead ?? ''}
         bands={page.bands}
-        note="Lotus Peak Tours & Travel · Thimphu, Bhutan · Last revised for the 2026 season."
+        note={note}
       />
     </>
   )

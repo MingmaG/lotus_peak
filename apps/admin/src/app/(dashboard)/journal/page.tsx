@@ -17,7 +17,7 @@ export default async function JournalPage() {
     <>
       <PageHeader
         title="Journal"
-        description="Notes from the valleys. Each entry is written as blocks, so a table of facts renders as a table and reads as one to a search engine."
+        description="Dated editorial, on four shelves: journeys, travel guides, experiences and stories. An entry can be about a place or a piece of culture — it links to those pages rather than describing them again."
         actions={
           canWrite && (
             <Button asChild>

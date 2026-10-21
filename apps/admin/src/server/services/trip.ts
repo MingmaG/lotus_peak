@@ -5,6 +5,7 @@ import type { Trip } from '@prisma/client';
 
 import { db } from '@/lib/db';
 import { toSlug, uniqueSlug } from '@/lib/slug';
+import { stripRichTextMedia } from '@/server/schema/rich-text';
 import { changeSlug, resolvePublishing } from './publish';
 import type { TripPatch } from '@/server/validators/trip';
 
@@ -26,9 +27,52 @@ import type { TripPatch } from '@/server/validators/trip';
  * is the row's `createdAt`, which nothing shows.
  */
 
+/**
+ * Takes the derived image URLs back out of a journey's rich text.
+ *
+ * Four of a journey's fields are rich text — the overview, the price note, an
+ * itinerary day and an answer — and each may hold a `<figure>` whose `<img>`
+ * carries the URL the editor was handed on the way in. That URL is derived
+ * from the `Media` row and must not be written back into the column; see the
+ * note at the top of `schema/rich-text.ts` for what goes stale when it is.
+ *
+ * Done here rather than in the route handler, which is where the journal and
+ * the places do it, because a journey has four of these fields and two of them
+ * are inside lists: a route that mapped the patch to reach them would be a
+ * second description of the patch's shape, and the one that drifted would be
+ * the one nobody reads. Every write to a journey comes through here.
+ */
+function stripPatchMedia(patch: TripPatch): TripPatch {
+  return {
+    ...patch,
+    ...(patch.overview !== undefined
+      ? { overview: patch.overview === null ? null : stripRichTextMedia(patch.overview) }
+      : {}),
+    ...(patch.priceNote !== undefined
+      ? { priceNote: patch.priceNote === null ? null : stripRichTextMedia(patch.priceNote) }
+      : {}),
+    ...(patch.itinerary
+      ? {
+          itinerary: patch.itinerary.map((day) => ({
+            ...day,
+            ...(day.body !== undefined && day.body !== null
+              ? { body: stripRichTextMedia(day.body) }
+              : {}),
+          })),
+        }
+      : {}),
+    ...(patch.faqs
+      ? { faqs: patch.faqs.map((faq) => ({ ...faq, answer: stripRichTextMedia(faq.answer) })) }
+      : {}),
+  };
+}
+
 export const TRIP_DETAIL_INCLUDE = {
   hero: { include: { renditions: { where: { format: 'webp' } } } },
+  overviewImage: { include: { renditions: { where: { format: 'webp' } } } },
+  overviewInset: { include: { renditions: { where: { format: 'webp' } } } },
   routeMap: { include: { renditions: { where: { format: 'webp' } } } },
+  trailImage: { include: { renditions: { where: { format: 'webp' } } } },
   ogImage: { include: { renditions: { where: { format: 'webp' } } } },
   highlights: { orderBy: { sortOrder: 'asc' } },
   inclusions: { orderBy: { sortOrder: 'asc' } },
@@ -56,6 +100,8 @@ export const TRIP_DETAIL_INCLUDE = {
     orderBy: { sortOrder: 'asc' },
     include: { target: { select: { id: true, title: true, slug: true } } },
   },
+  cultureLinks: { orderBy: { sortOrder: 'asc' } },
+  postLinks: { orderBy: { sortOrder: 'asc' } },
   departures: { orderBy: { startDate: 'asc' } },
 } satisfies Prisma.TripInclude;
 
@@ -91,7 +137,9 @@ export async function createTrip(input: TripPatch & { title: string }): Promise<
   return updateTrip(trip.id, input);
 }
 
-export async function updateTrip(id: string, patch: TripPatch): Promise<TripDetail> {
+export async function updateTrip(id: string, incoming: TripPatch): Promise<TripDetail> {
+  const patch = stripPatchMedia(incoming);
+
   const current = await db.trip.findUnique({ where: { id } });
   if (!current) throw new Error('That journey no longer exists.');
 
@@ -154,7 +202,15 @@ export async function updateTrip(id: string, patch: TripPatch): Promise<TripDeta
         priceNote: patch.priceNote === undefined ? undefined : patch.priceNote,
         videoUrl: patch.videoUrl === undefined ? undefined : patch.videoUrl,
         heroId: patch.heroId === undefined ? undefined : patch.heroId,
+        overviewImageId:
+          patch.overviewImageId === undefined ? undefined : patch.overviewImageId,
+        overviewInsetId:
+          patch.overviewInsetId === undefined ? undefined : patch.overviewInsetId,
         routeMapId: patch.routeMapId === undefined ? undefined : patch.routeMapId,
+        trailEyebrow: patch.trailEyebrow,
+        trailTitle: patch.trailTitle,
+        trailBody: patch.trailBody,
+        trailImageId: patch.trailImageId === undefined ? undefined : patch.trailImageId,
         /* Json columns. `undefined` leaves the column alone — a save from the
            SEO tab must not empty the elevation profile — and an empty array is
            stored as `null`, so "has one" is one check rather than two. */
@@ -166,6 +222,12 @@ export async function updateTrip(id: string, patch: TripPatch): Promise<TripDeta
               ? patch.elevationProfile
               : Prisma.DbNull,
         featured: patch.featured,
+        showTrail: patch.showTrail,
+        showGallery: patch.showGallery,
+        showDestinations: patch.showDestinations,
+        showCulture: patch.showCulture,
+        showJournal: patch.showJournal,
+        showRelated: patch.showRelated,
         sortOrder: patch.sortOrder,
         ...(publishing ?? {}),
         ...seoFields(patch),
@@ -358,6 +420,37 @@ export async function updateTrip(id: string, patch: TripPatch): Promise<TripDeta
              offer it — but a stale form or an import can still send it. */
           .filter((targetId) => targetId !== id)
           .map((targetId, index) => ({ sourceId: id, targetId, sortOrder: index })),
+        skipDuplicates: true,
+      });
+    }
+
+    if (patch.cultureIds) {
+      await tx.cultureOnTrip.deleteMany({ where: { tripId: id } });
+      await tx.cultureOnTrip.createMany({
+        data: patch.cultureIds.map((cultureId, index) => ({
+          tripId: id,
+          cultureId,
+          sortOrder: index,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    /**
+     * The entry ↔ journey join, from the journey's end.
+     *
+     * The entry's editor writes the same rows from the other end, so a link
+     * made there arrives here checked, and one removed here is gone from the
+     * entry too. `sortOrder` is left at the entry's own value where the row
+     * already existed — it orders the entry's journeys, not the journey's
+     * entries, and the page orders those by date.
+     */
+    if (patch.postIds) {
+      await tx.postOnTrip.deleteMany({
+        where: { tripId: id, postId: { notIn: patch.postIds } },
+      });
+      await tx.postOnTrip.createMany({
+        data: patch.postIds.map((postId) => ({ tripId: id, postId })),
         skipDuplicates: true,
       });
     }

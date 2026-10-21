@@ -3,8 +3,9 @@ import { graphForPage } from '@/seo/graph'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Button, Divider, Eyebrow, Reflection, WindowFrame } from '@/design-system'
+import { Prose } from '@/components/site/Prose'
 import { getContent } from '@/content'
-import { figurePairsFrom, plainText, pointsFrom } from '@/content/page-copy'
+import { figurePairsFrom, pointsFrom } from '@/content/page-copy'
 import { ogImage } from '@/lib/seo'
 import { IMG, altFor } from '@/lib/assets'
 import { Reveal } from '@/motion'
@@ -51,7 +52,7 @@ export default async function AboutPage() {
   ])
   const PURPOSES: [string, string, string][] = figurePairsFrom(page).map((pair) => [
     pair.title,
-    plainText(pair.body),
+    pair.body,
     pair.src,
   ])
 
@@ -115,7 +116,7 @@ export default async function AboutPage() {
                   <Reveal key={t} delay={400 + i * 140}>
                     <Divider variant="gold" />
                     <h3 style={{ fontSize: 'var(--text-h3)', marginTop: 20 }}>{t}</h3>
-                    <p style={{ marginTop: 10, color: 'var(--text-muted)' }}>{b}</p>
+                    <Prose html={b} compact style={{ marginTop: 10, color: 'var(--text-muted)' }} />
                   </Reveal>
                 ))}
               </div>
@@ -131,7 +132,11 @@ export default async function AboutPage() {
             const copy = (
               <div>
                 <h3 style={{ fontSize: 'var(--text-h2)', maxWidth: flipped ? '18ch' : '14ch' }}>{t}</h3>
-                <p style={{ marginTop: 20, color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}>{b}</p>
+                <Prose
+                  html={b}
+                  compact
+                  style={{ marginTop: 20, color: 'var(--text-muted)', maxWidth: 'var(--measure)' }}
+                />
               </div>
             )
             const image = (

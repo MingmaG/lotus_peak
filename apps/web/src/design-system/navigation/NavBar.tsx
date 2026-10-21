@@ -2,8 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { asset } from '@/lib/assets'
+import { SearchSuggest } from '@/components/site/SearchSuggest'
+import { Button } from '../core/Button'
+import { MenuMap } from './MenuMap'
 
 export type NavItem = { label: string; href: string }
 
@@ -20,6 +24,18 @@ export type NavBarProps = {
   menu?: boolean
   search?: boolean
   searchPlaceholder?: string
+  /** Show the map of Bhutan beside the menu's links. Default true. */
+  map?: boolean
+  /**
+   * Where choosing a district goes. Defaults to the panel's own call to
+   * action, which is the journeys index — so the destination stays a row the
+   * office edits rather than a path written into the navigation.
+   */
+  mapHref?: string
+  /** The destinations the map's places lead to, when one has a page. */
+  mapDestinations?: { name: string; path: string }[]
+  /** The page being read, so the map can light the place it is about. */
+  pathname?: string
 }
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
@@ -43,16 +59,26 @@ export function NavBar({
   menu = true,
   search = true,
   searchPlaceholder = 'Search',
+  map = true,
+  mapHref,
+  mapDestinations,
+  pathname,
 }: NavBarProps) {
+  const router = useRouter()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [shown, setShown] = useState(false)
   const barRef = useRef<HTMLDivElement>(null)
 
   const fg = inverse && !scrolled && !open ? 'var(--paper)' : 'var(--ink)'
+  const showMap = menu && map
+  const mapTarget = mapHref ?? cta?.href ?? items[0]?.href
 
   // Publish the bar height. The nav itself changes height when scrolled, so
-  // this is observed rather than measured once.
+  // this is observed rather than measured once. It is the border box that is
+  // watched: scrolling changes only the padding, which leaves the content box —
+  // the observer's default — the same size, so --nav-h stuck at the unscrolled
+  // height and the trip sub-nav hung a padding-width gap below the bar.
   useIsomorphicLayoutEffect(() => {
     const el = barRef.current
     if (!el) return
@@ -60,7 +86,7 @@ export function NavBar({
       document.documentElement.style.setProperty('--nav-h', `${Math.round(el.getBoundingClientRect().height)}px`)
     write()
     const ro = new ResizeObserver(write)
-    ro.observe(el)
+    ro.observe(el, { box: 'border-box' })
     return () => ro.disconnect()
   }, [scrolled])
 
@@ -79,6 +105,39 @@ export function NavBar({
     const t = setTimeout(() => setShown(false), 700)
     return () => clearTimeout(t)
   }, [open])
+
+  /* The page under an open menu must not scroll. Without this a wheel or a
+     swipe that reaches the end of the panel carries on into the page, and every
+     parallax layer and reveal behind the paper keeps moving. `scrollbar-gutter:
+     stable` on <html> keeps the width from jumping when the bar goes. */
+  useEffect(() => {
+    if (!open) return
+    const root = document.documentElement
+    const was = root.style.overflow
+    root.style.overflow = 'hidden'
+    return () => {
+      root.style.overflow = was
+    }
+  }, [open])
+
+  /**
+   * Both search boxes land on `/search?q=`. The forms are real GET forms, so
+   * they work before hydration; with scripts this keeps it a client-side
+   * navigation and empties the box behind it.
+   *
+   * It is the fallback now rather than the only path: `SearchSuggest` answers
+   * in the box as the words are typed and takes Enter when a suggestion is
+   * chosen. This still runs for Enter on a query with nothing chosen, which is
+   * "show me everything for this", and for the glyph.
+   */
+  const submitSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    const q = String(new FormData(form).get('q') ?? '').trim()
+    form.reset()
+    setOpen(false)
+    router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search')
+  }
 
   useEffect(() => {
     if (!open) return
@@ -146,6 +205,9 @@ export function NavBar({
               width={198}
               height={145}
               priority
+              // The logo defaults to a file in public/, which has no renditions
+              // to choose between; a logo coming from the media library does.
+              unoptimized={logoSrc.startsWith('/')}
               style={{
                 height: 36,
                 width: 'auto',
@@ -173,9 +235,15 @@ export function NavBar({
           {!menu && items.map((it) => <NavLink key={it.href} item={it} active={active === it.label} />)}
 
           {search && (
-            <label
+            <form
+              role="search"
+              action="/search"
+              method="get"
+              onSubmit={submitSearch}
               className="lp-nav-search-wrap"
               style={{
+                /* The suggestion panel hangs from the form. */
+                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
@@ -187,9 +255,9 @@ export function NavBar({
                 backdropFilter: inverse && !scrolled && !open ? 'blur(8px)' : 'none',
               }}
             >
-              <input
+              <SearchSuggest
                 placeholder={searchPlaceholder}
-                aria-label="Search"
+                align="right"
                 className="lp-nav-search"
                 style={{
                   flex: 1,
@@ -202,8 +270,24 @@ export function NavBar({
                   fontSize: 'var(--text-small)',
                 }}
               />
-              <span aria-hidden="true" style={{ position: 'relative', width: 14, height: 14, flexShrink: 0 }}>
+              {/* The glyph submits, so the box can be used by pointer alone. */}
+              <button
+                type="submit"
+                aria-label="Search"
+                style={{
+                  position: 'relative',
+                  width: 14,
+                  height: 14,
+                  flexShrink: 0,
+                  padding: 0,
+                  border: 0,
+                  background: 'transparent',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                }}
+              >
                 <span
+                  aria-hidden="true"
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -215,6 +299,7 @@ export function NavBar({
                   }}
                 />
                 <span
+                  aria-hidden="true"
                   style={{
                     position: 'absolute',
                     right: 0,
@@ -226,8 +311,8 @@ export function NavBar({
                     transformOrigin: 'right',
                   }}
                 />
-              </span>
-            </label>
+              </button>
+            </form>
           )}
 
           {menu ? (
@@ -316,6 +401,7 @@ export function NavBar({
             zIndex: 1,
             height: 'calc(100svh - 100%)',
             overflowY: 'auto',
+            overscrollBehavior: 'contain',
             padding: 'var(--space-8) var(--gutter) var(--space-9)',
             color: 'var(--ink)',
             boxSizing: 'border-box',
@@ -331,50 +417,135 @@ export function NavBar({
               maxWidth: 'var(--container)',
               margin: '0 auto',
               display: 'grid',
-              gridTemplateColumns: '1fr auto',
-              gap: 'var(--space-8)',
-              alignItems: 'end',
+              /* With the map, the links take only what they need and the map
+                 takes the rest; without it, the panel is the two-column
+                 arrangement it has always been. */
+              gridTemplateColumns: showMap ? 'minmax(220px, auto) minmax(0, 1fr)' : '1fr auto',
+              gap: 'var(--space-8) clamp(32px, 5vw, 80px)',
+              alignItems: showMap ? 'start' : 'end',
             }}
           >
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 18 }}>
-              {items.map((it, i) => (
-                <li
-                  key={it.href}
+            <div style={{ display: 'grid', gap: 'var(--space-8)', justifyItems: 'start', alignContent: 'start' }}>
+              {/* The bar's search box is hidden on a phone (globals.css), so
+                  the panel carries one there instead. */}
+              {search && (
+                <form
+                  role="search"
+                  action="/search"
+                  method="get"
+                  onSubmit={submitSearch}
+                  className="lp-menu-search"
                   style={{
+                    position: 'relative',
                     opacity: open ? 1 : 0,
-                    transform: open ? 'translateY(0)' : 'translateY(16px)',
-                    transition: `opacity var(--dur-slow) var(--ease-breath) ${open ? i * 70 : 0}ms, transform var(--dur-slow) var(--ease-settle) ${open ? i * 70 : 0}ms`,
+                    transition: 'opacity var(--dur-slow) var(--ease-breath)',
                   }}
                 >
-                  <MenuLink item={it} active={active === it.label} onClick={() => setOpen(false)} />
-                </li>
-              ))}
-            </ul>
-            {cta && (
-              <Link
-                href={cta.href}
-                onClick={() => {
-                  setOpen(false)
-                  onCta?.()
-                }}
+                  <SearchSuggest
+                    placeholder={searchPlaceholder}
+                    onNavigate={() => setOpen(false)}
+                  />
+                  <button type="submit">Search</button>
+                </form>
+              )}
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 18 }}>
+                {items.map((it, i) => (
+                  <li
+                    key={it.href}
+                    style={{
+                      opacity: open ? 1 : 0,
+                      transform: open ? 'translateY(0)' : 'translateY(16px)',
+                      transition: `opacity var(--dur-slow) var(--ease-breath) ${open ? i * 70 : 0}ms, transform var(--dur-slow) var(--ease-settle) ${open ? i * 70 : 0}ms`,
+                    }}
+                  >
+                    <MenuLink item={it} active={active === it.label} onClick={() => setOpen(false)} />
+                  </li>
+                ))}
+              </ul>
+              {/* The design system's outline button, not a hand-rolled copy of
+                  its resting state. It looked identical at rest and did nothing
+                  under the pointer — no rising fill, no press — which is the one
+                  control in the panel that a reader is most likely to try.
+                  The entrance fade is the panel's, so it is restated here
+                  alongside the button's own transitions rather than replacing
+                  them: `style` is merged last. */}
+              {cta && (
+                <Button
+                  variant="outline"
+                  href={cta.href}
+                  onClick={() => {
+                    setOpen(false)
+                    onCta?.()
+                  }}
+                  style={{
+                    padding: '14px 24px',
+                    fontSize: 'var(--text-label)',
+                    opacity: open ? 1 : 0,
+                    transition: `opacity var(--dur-slow) var(--ease-breath) ${open ? items.length * 70 : 0}ms, color var(--dur-slow) var(--ease-settle), border-color var(--dur-slow) var(--ease-settle), transform var(--dur-quick) var(--ease-breath)`,
+                  }}
+                >
+                  {cta.label}
+                </Button>
+              )}
+            </div>
+
+            {showMap && (
+              <div
                 style={{
-                  padding: '14px 24px',
-                  border: '1px solid var(--ink)',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'transparent',
-                  color: 'var(--ink)',
-                  fontFamily: 'inherit',
-                  fontSize: 'var(--text-label)',
-                  letterSpacing: 'var(--tracking-label)',
-                  textTransform: 'uppercase',
-                  fontWeight: 500,
-                  textDecoration: 'none',
+                  minWidth: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
                   opacity: open ? 1 : 0,
-                  transition: `opacity var(--dur-slow) var(--ease-breath) ${open ? items.length * 70 : 0}ms`,
+                  transform: open ? 'translateY(0)' : 'translateY(24px)',
+                  transition: `opacity var(--dur-reveal) var(--ease-breath) ${open ? 200 : 0}ms, transform var(--dur-reveal) var(--ease-settle) ${open ? 200 : 0}ms`,
                 }}
               >
-                {cta.label}
-              </Link>
+                <MenuMap
+                  destinations={mapDestinations}
+                  current={pathname}
+                  onSelect={(place) => {
+                    setOpen(false)
+                    const to = place.href ?? mapTarget
+                    if (to) router.push(to)
+                  }}
+                  style={{ width: '100%', maxWidth: 820, margin: '0 auto' }}
+                />
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 16,
+                    paddingTop: 12,
+                    borderTop: '1px solid var(--gold)',
+                    maxWidth: 820,
+                    margin: '0 auto',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <span
+                    style={{
+                      flex: 'none',
+                      fontSize: 'var(--text-micro)',
+                      fontWeight: 500,
+                      letterSpacing: 'var(--tracking-label)',
+                      textTransform: 'uppercase',
+                      color: 'var(--text-accent)',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    Eleven places
+                  </span>
+                  <span style={{ fontSize: 'var(--text-small)', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                    <span className="lp-map-hint-fine">
+                      Rest the cursor on a district or a place. Drag to turn the map.
+                    </span>
+                    <span className="lp-map-hint-coarse">
+                      Touch a district or a place. Drag across it to turn the map.
+                    </span>
+                  </span>
+                </div>
+              </div>
             )}
           </div>
         </div>

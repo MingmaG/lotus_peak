@@ -1,11 +1,15 @@
-import type { ApiEnquiryInput } from '@lotuspeak/api-contracts'
+import type { ApiEmailRecord, ApiEnquiryInput, ApiEnquiryMail } from '@lotuspeak/api-contracts'
 
 import type {
   Activity,
   CultureArticle,
+  CulturePage,
   Destination,
+  DestinationPage,
   GalleryImage,
+  JournalCategory,
   Post,
+  PostPage,
   Reflection,
   Person,
   Season,
@@ -60,6 +64,21 @@ export class EnquiryRefused extends Error {
   }
 }
 
+/**
+ * What the panel answered when it wrote the enquiry down.
+ *
+ * `mailRemaining` is the day's provider allowance, which only the panel can
+ * count — the messages are rows in its table. A receipt that never arrived is
+ * `null` to the caller, and that is a different thing from an allowance of
+ * nought: nothing recorded the enquiry, so the mail is the only copy of it
+ * there is and it goes regardless.
+ */
+export interface EnquiryReceipt {
+  id: string
+  reference: string
+  mailRemaining: number
+}
+
 export type EnquiryInput = Omit<
   ApiEnquiryInput,
   'source' | 'honeypot' | 'pagePath' | 'utm'
@@ -83,25 +102,31 @@ export interface ContentRepository {
   readonly name: string
 
   trips: {
-    list(opts?: { type?: TripType; limit?: number }): Promise<Trip[]>
+    /** `featured` filters on the office's "Feature this journey" switch. */
+    list(opts?: { type?: TripType; featured?: boolean; limit?: number }): Promise<Trip[]>
     bySlug(slug: string): Promise<Trip | null>
     slugs(): Promise<string[]>
   }
   posts: {
-    list(opts?: { limit?: number; exclude?: string }): Promise<Post[]>
-    bySlug(slug: string): Promise<Post | null>
+    list(opts?: { limit?: number; exclude?: string; category?: JournalCategory }): Promise<Post[]>
+    bySlug(slug: string): Promise<PostPage | null>
     slugs(): Promise<string[]>
   }
+  /**
+   * Where we go. `list` is every valley and every place, valleys first;
+   * `bySlug` finds either — destination slugs are unique across both, and the
+   * page checks the valley in its URL against the record's.
+   */
   destinations: {
     list(): Promise<Destination[]>
-    bySlug(slug: string): Promise<Destination | null>
+    bySlug(slug: string): Promise<DestinationPage | null>
   }
   activities: { list(): Promise<Activity[]> }
   gallery: { list(opts?: { limit?: number }): Promise<GalleryImage[]> }
   seasons: { list(): Promise<Season[]> }
   culture: {
     list(): Promise<CultureArticle[]>
-    bySlug(slug: string): Promise<CultureArticle | null>
+    bySlug(slug: string): Promise<CulturePage | null>
   }
   reflections: {
     list(opts?: { tripSlug?: string; featured?: boolean; limit?: number }): Promise<Reflection[]>
@@ -142,7 +167,25 @@ export interface ContentRepository {
     llmsFullTxt(): Promise<string>
   }
 
-  enquiries: { create(input: EnquiryInput): Promise<{ id: string }> }
+  enquiries: {
+    create(input: EnquiryInput): Promise<EnquiryReceipt>
+    /**
+     * The words, the sender and the two switches an enquiry's mail is made of.
+     *
+     * Read like any other content — tagged, cached for the hour — because this
+     * site sends that mail itself, and the whole reason it does is the day the
+     * panel is not there to be asked.
+     */
+    mail(): Promise<ApiEnquiryMail>
+    /**
+     * What was sent, on its way to the panel's log.
+     *
+     * Best-effort by design and never awaited for the traveller's sake: the
+     * messages have already gone by the time this is called, and a report that
+     * fails costs the office a row on a screen rather than a customer.
+     */
+    report(messages: ApiEmailRecord[]): Promise<void>
+  }
 
   health(): Promise<{ ok: boolean; detail?: string }>
 }

@@ -38,6 +38,8 @@ export function WindowFrame({
     <figure style={{ margin: 0, display: 'grid', gap: 0, ...style }}>
       <Image
         src={asset('ornaments/window-cornice.png')}
+        // A file in public/, not a media row: one URL, so one srcSet entry.
+        unoptimized
         alt=""
         aria-hidden="true"
         {...CORNICE}
@@ -66,6 +68,8 @@ export function WindowFrame({
       </div>
       <Image
         src={asset('ornaments/window-base.png')}
+        // A file in public/, not a media row: one URL, so one srcSet entry.
+        unoptimized
         alt=""
         aria-hidden="true"
         {...BASE}

@@ -1,3 +1,4 @@
+import { journalCategoryLabel } from '@lotuspeak/api-contracts'
 import { siteUrl } from '@/lib/env'
 import { getContent } from '@/content'
 
@@ -28,11 +29,11 @@ export async function GET() {
     .map(
       (post) => `    <item>
       <title>${escape(post.title)}</title>
-      <link>${base}/journal/${post.slug}</link>
-      <guid isPermaLink="true">${base}/journal/${post.slug}</guid>
+      <link>${base}${post.path}</link>
+      <guid isPermaLink="true">${base}${post.path}</guid>
       <description>${escape(post.standfirst)}</description>
       <pubDate>${new Date(`${post.date}T00:00:00Z`).toUTCString()}</pubDate>
-      <category>${escape(post.region)}</category>
+      <category>${escape(journalCategoryLabel(post.category))}</category>
     </item>`,
     )
     .join('\n')

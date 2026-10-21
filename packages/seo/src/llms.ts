@@ -1,6 +1,8 @@
 import type {
   ApiCultureArticle,
+  ApiCultureSummary,
   ApiDestination,
+  ApiDestinationSummary,
   ApiPage,
   ApiPost,
   ApiSite,
@@ -62,7 +64,9 @@ export interface LlmsInput {
   site: ApiSite;
   trips: ApiTripSummary[];
   posts: { slug: string; title: string; standfirst: string }[];
-  destinations: Pick<ApiDestination, 'slug' | 'name' | 'blurb'>[];
+  /** Valleys and places together; a place is listed under its valley. */
+  destinations: Pick<ApiDestinationSummary, 'slug' | 'name' | 'blurb' | 'path' | 'parentSlug'>[];
+  culture: Pick<ApiCultureSummary, 'title' | 'path' | 'standfirst'>[];
   pages: Pick<ApiPage, 'path' | 'title' | 'lead'>[];
 }
 
@@ -124,10 +128,18 @@ export function buildLlmsTxt(input: LlmsInput): string {
 
   out.push('## Where we go');
   out.push('');
-  for (const destination of input.destinations) {
-    out.push(
-      `- [${destination.name}](${abs(siteUrl, '/destinations')}#${destination.slug}): ${destination.blurb}`,
-    );
+  for (const valley of input.destinations.filter((d) => !d.parentSlug)) {
+    out.push(`- [${valley.name}](${abs(siteUrl, valley.path)}): ${valley.blurb}`);
+    for (const place of input.destinations.filter((d) => d.parentSlug === valley.slug)) {
+      out.push(`  - [${place.name}](${abs(siteUrl, place.path)}): ${place.blurb}`);
+    }
+  }
+  out.push('');
+
+  out.push('## Culture');
+  out.push('');
+  for (const article of input.culture) {
+    out.push(`- [${article.title}](${abs(siteUrl, article.path)}): ${article.standfirst}`);
   }
   out.push('');
 
@@ -207,10 +219,14 @@ export function buildLlmsFullTxt(input: LlmsFullInput): string {
     out.push(`| Pace | ${trip.paceNote} |`);
     out.push('');
 
-    if (trip.overview.length > 0) {
+    if (trip.overview) {
       out.push('### Overview');
       out.push('');
-      for (const paragraph of trip.overview) out.push(`${plain(paragraph)}\n`);
+      /* The whole document, as Markdown: a journey's opening is long-form
+         prose and may hold a list or a link, the same as a journal entry's
+         body two sections down. `plain` is for the one-line fields. */
+      out.push(richTextToMarkdown(trip.overview));
+      out.push('');
     }
 
     if (trip.highlights.length > 0) {
@@ -261,10 +277,16 @@ export function buildLlmsFullTxt(input: LlmsFullInput): string {
   out.push('# Where we go');
   out.push('');
   for (const destination of input.destinations) {
-    out.push(`## ${destination.name}`);
+    out.push(`## ${destination.parent ? `${destination.name}, ${destination.parent.title}` : destination.name}`);
     out.push('');
-    out.push(plain(destination.detail || destination.blurb));
+    out.push(abs(siteUrl, destination.path));
     out.push('');
+    out.push(plain(destination.standfirst || destination.blurb));
+    out.push('');
+    if (destination.body) {
+      out.push(richTextToMarkdown(destination.body));
+      out.push('');
+    }
   }
 
   out.push(rule);
@@ -273,8 +295,14 @@ export function buildLlmsFullTxt(input: LlmsFullInput): string {
   for (const article of input.culture) {
     out.push(`## ${article.title}`);
     out.push('');
-    out.push(plain(article.body));
+    out.push(abs(siteUrl, article.path));
     out.push('');
+    out.push(plain(article.standfirst));
+    out.push('');
+    if (article.body) {
+      out.push(richTextToMarkdown(article.body));
+      out.push('');
+    }
   }
 
   out.push(rule);

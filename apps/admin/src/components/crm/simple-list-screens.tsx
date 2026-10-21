@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Send, Users } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -9,11 +10,6 @@ import { toast } from 'sonner';
 import { DataTable, type Column } from '@/components/shared/data-table';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
-import {
-  CustomerSheet,
-  blankCustomer,
-  type CustomerForm,
-} from '@/components/crm/customer-form';
 import {
   Select,
   SelectContent,
@@ -203,13 +199,11 @@ interface Customer {
  * invoiced to somebody, so these are now made *before* a booking as well as
  * after two enquiries turn out to be one person.
  *
- * Adding one is a sheet rather than a page: it is a dozen optional fields
- * around a name and an address, and a whole route for that is a route with a
- * Back button that loses what was typed.
+ * Adding one is a page of its own (`/customers/new`), like editing one: the
+ * record is twenty fields in four groups, and a sheet never had room for them.
  */
 export function CustomersScreen({ canWrite }: { canWrite: boolean }) {
   const { search, page, setParams } = useListParams('/customers');
-  const [editing, setEditing] = React.useState<CustomerForm | null>(null);
 
   const { data, isLoading } = useQuery<{
     items: Customer[];
@@ -280,9 +274,11 @@ export function CustomersScreen({ canWrite }: { canWrite: boolean }) {
             description="A customer is who a booking is invoiced to, and who several enquiries turn out to be. Neither is guessed from a matching address — both are somebody's judgement."
             action={
               canWrite ? (
-                <Button size="sm" onClick={() => setEditing(blankCustomer())}>
-                  <Plus className="mr-1.5 size-3.5" />
-                  Add a customer
+                <Button size="sm" asChild>
+                  <Link href="/customers/new">
+                    <Plus className="mr-1.5 size-3.5" />
+                    Add a customer
+                  </Link>
                 </Button>
               ) : undefined
             }
@@ -298,19 +294,15 @@ export function CustomersScreen({ canWrite }: { canWrite: boolean }) {
         toolbar={
           canWrite && (data?.items.length ?? 0) > 0 ? (
             <div className="flex justify-end">
-              <Button size="sm" onClick={() => setEditing(blankCustomer())}>
-                <Plus className="mr-1.5 size-3.5" />
-                Add a customer
+              <Button size="sm" asChild>
+                <Link href="/customers/new">
+                  <Plus className="mr-1.5 size-3.5" />
+                  Add a customer
+                </Link>
               </Button>
             </div>
           ) : undefined
         }
-      />
-
-      <CustomerSheet
-        form={editing}
-        open={editing !== null}
-        onOpenChange={(open) => !open && setEditing(null)}
       />
     </>
   );

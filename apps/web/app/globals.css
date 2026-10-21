@@ -39,6 +39,17 @@
   .lp-three-col { grid-template-columns: minmax(0, 1fr) !important }
   .lp-facts { grid-template-columns: 1fr 1fr !important }
 }
+/* The home hero's scroll cue stands beside the headline and button. On a
+   phone there is no room beside them, and a phone needs no telling to scroll. */
+@media (max-width: 700px) {
+  .lp-hero-row { grid-template-columns: minmax(0, 1fr) !important }
+  .lp-hero-row > :first-child { grid-column: 1 !important }
+  .lp-hero-cue { display: none }
+}
+/* The cover photograph above a page's heading (sections/shared/Cover.tsx). */
+.lp-cover { height: var(--cover-h) }
+@media (max-width: 900px) { .lp-cover { height: var(--cover-h-narrow) } }
+
 /* Gallery: a column layout so the photographs keep their own proportions.
    The Reveal wrappers carry `break-inside: avoid` at their call site. */
 .lp-gallery { column-count: 3; column-gap: var(--space-6) }
@@ -60,6 +71,28 @@
 @media (max-width: 620px) {
   .lp-form-row { grid-template-columns: minmax(0, 1fr) !important }
   .lp-footer-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important }
+  .lp-footer-brand { grid-column: 1 / -1 }
+}
+
+/* The footer's social marks: a quiet ring on the dark ground that fills on
+   hover. 40px, which is also the touch target. */
+.lp-footer-social {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-on-ground);
+  color: var(--text-on-ground);
+  transition:
+    background-color var(--dur-quick) var(--ease-breath),
+    border-color var(--dur-quick) var(--ease-breath);
+}
+.lp-footer-social:hover,
+.lp-footer-social:focus-visible {
+  background: var(--surface-on-ground);
+  border-color: var(--text-on-ground-muted);
+  color: var(--text-on-ground);
 }
 
 /* The navigation's search field is a fixed 200px sitting beside the brand and
@@ -72,6 +105,48 @@
    menu panel already carries the navigation on a phone. */
 @media (max-width: 720px) {
   .lp-nav-search-wrap { display: none !important }
+}
+
+/* The menu panel's search box: the phone's way in, since the bar's box above
+   is hidden there. Above that width the bar's own box is always in view, and
+   a second one in the panel would be the same control twice. */
+.lp-menu-search { display: none }
+@media (max-width: 720px) {
+  .lp-menu-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    width: 100%;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: var(--space-2);
+  }
+  .lp-menu-search:focus-within { border-bottom-color: var(--sky-deep) }
+  .lp-menu-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    /* 16px or more, or iOS zooms the page when the box takes focus. */
+    font-size: var(--text-lead);
+    padding: var(--space-2) 0;
+  }
+  .lp-menu-search input::placeholder { color: var(--text-faint) }
+  .lp-menu-search input::-webkit-search-cancel-button { display: none }
+  .lp-menu-search button {
+    border: 0;
+    background: transparent;
+    padding: var(--space-3) 0 var(--space-3) var(--space-3);
+    color: var(--text-accent);
+    font-family: inherit;
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-nav);
+    text-transform: uppercase;
+    font-weight: 500;
+    cursor: pointer;
+  }
 }
 
 /* Below 380px the brand and the Menu button are together wider than the
@@ -389,6 +464,25 @@
 .lp-prose-compact figure.lp-figure { margin: 16px 0 }
 .lp-prose-compact blockquote { font-size: inherit; line-height: inherit }
 
+/* --- an opening, where the first paragraph is the standfirst --------------- */
+
+/**
+ * `.lp-prose-lead` is a body whose first paragraph is set in lead type.
+ *
+ * A journey's overview, which the design draws that way: the opening sentence
+ * larger and looser, the rest quieter beneath it. It was three paragraphs
+ * styled by index in the page component until the office got the same editor
+ * here as everywhere else, and an index is not something a rich-text body has
+ * — the first thing in one may be a list or a photograph, and styling "the
+ * first paragraph" is the rule the design actually states.
+ */
+.lp-prose-lead { color: var(--text-muted) }
+
+.lp-prose-lead > p:first-child {
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+}
+
 /* The journeys index filters in the browser so the page can stay static.
    `TripFilter` writes the active type onto the grid and these hide the rest;
    with no JavaScript the attribute stays `all` and every journey is shown,
@@ -417,4 +511,383 @@
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   The menu's map of Bhutan
+
+   `MenuMap` writes these two animations from inline styles, where a keyframe
+   cannot be declared. The drift is a degree and a half either side of rest —
+   reduced motion switches it off in the component rather than here, because it
+   is the only way to stop an infinite animation without leaving it mid-turn.
+   --------------------------------------------------------------------------- */
+
+@keyframes lp-map-fade { from { opacity: 0 } to { opacity: 1 } }
+
+@keyframes lp-map-drift {
+  0% { transform: rotateZ(-1.5deg) }
+  50% { transform: rotateZ(1.5deg) }
+  100% { transform: rotateZ(-1.5deg) }
+}
+
+/* What to do with the map depends on what is pointing at it, not on how wide
+   the screen is: a small laptop still has a cursor to rest, and a large tablet
+   has not. */
+.lp-map-hint-coarse { display: none }
+
+@media (pointer: coarse) {
+  .lp-map-hint-fine { display: none }
+  .lp-map-hint-coarse { display: inline }
+}
+
+/* ---------------------------------------------------------------------------
+   Phones
+   --------------------------------------------------------------------------- */
+
+/* The journey page's sub-nav is seven items in a centred row. On a phone they
+   wrap to four lines, and four lines of sticky chrome beneath a sticky nav
+   leaves a reading window barely taller than a heading. It becomes one line
+   that scrolls sideways instead; `SectionNav` keeps the section being read
+   inside it. */
+@media (max-width: 900px) {
+  .lp-section-nav {
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 28px !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lp-section-nav::-webkit-scrollbar { display: none }
+  .lp-section-nav > button { flex: none; white-space: nowrap }
+}
+
+/* The dignity rail is a caption plate fixed to the bottom-right corner. On a
+   desktop it sits in the margin; on a phone there is no margin, so it stands on
+   top of whatever is being read, on every page, for as long as the visit lasts.
+   The medallion it opens is an ornament, not a route — the same trade as the
+   search field above. */
+@media (max-width: 720px) {
+  .lp-dignity-rail { display: none !important }
+}
+
+/* Footer links are set at reading size in a tight column, which is a 28px
+   target on a screen that is touched rather than pointed at.
+
+   Not the social marks: they are already a 40px target, and this selector
+   outranks .lp-footer-social, so on a phone it turned each ring from a
+   centring grid into an inline block with padding and the mark sat low and
+   off-centre inside its circle. */
+@media (pointer: coarse) {
+  .lp-footer-cols a:not(.lp-footer-social) { display: inline-block; padding-block: 6px }
+}
+
+/* The skyline the footer stands on (Footer.tsx).
+
+   At its own proportions it is 3.8:1, which on a phone is a 98px strip of
+   specks. So it keeps its proportions only down to a 9.5rem floor, and
+   below that it is cropped from the sides, centred — the Buddha Dordenma, the
+   chorten and Tashichho Dzong stay, the outermost houses go first. It is
+   always anchored to its bottom edge, which is the one that meets the deep sky
+   and must never show a gap.
+
+   The height is worked out from the footer's width (`cqi`) rather than with
+   aspect-ratio. aspect-ratio plus a min-height turns the floor into a minimum
+   width as well: at 375px the box grew to 700px and the whole page scrolled
+   sideways. */
+.lp-footer { container-type: inline-size }
+.lp-footer-scene {
+  position: relative;
+  height: var(--footer-scene-h);
+  pointer-events: none;
+}
+/* Out of flow, so the image's intrinsic 1800px can never size the box. */
+.lp-footer-scene img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+/* The drawing ends in a solid band of --surface-ground-deep, so it meets the
+   block below in its own colour — but a fractional height rounds differently
+   from that block, and without this there is a one-pixel line of page ground
+   between the two on some zoom levels. It is the hairline this covers, not a
+   change of colour. */
+.lp-footer-scene::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 12%;
+  background: linear-gradient(to bottom, transparent, var(--surface-ground-deep));
+}
+
+/* ---------------------------------------------------------------------------
+   A journey's photographs (src/sections/trip/TripGallery.tsx).
+
+   The mosaic is one large photograph and up to four beside it, the way the
+   count allows: a journey with three photographs gets three good cells rather
+   than five with two empty. On a phone it is the large one and two under it —
+   every other photograph is one tap away in the sheet, and a phone-height
+   stack of five is a gallery nobody scrolls past.
+   --------------------------------------------------------------------------- */
+.lp-mosaic {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, clamp(150px, 17vw, 260px));
+}
+.lp-mosaic > :first-child { grid-column: span 2; grid-row: span 2 }
+
+.lp-mosaic[data-count="1"] { grid-template-columns: 1fr; grid-template-rows: clamp(300px, 44vw, 600px) }
+.lp-mosaic[data-count="1"] > :first-child { grid-column: auto; grid-row: auto }
+.lp-mosaic[data-count="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: clamp(260px, 30vw, 460px) }
+.lp-mosaic[data-count="2"] > :first-child { grid-column: auto; grid-row: auto }
+.lp-mosaic[data-count="3"] { grid-template-columns: 2fr 1fr }
+.lp-mosaic[data-count="3"] > :first-child { grid-column: auto }
+.lp-mosaic[data-count="4"] { grid-template-columns: 2fr 1fr 1fr }
+.lp-mosaic[data-count="4"] > :first-child { grid-column: auto }
+.lp-mosaic[data-count="4"] > :last-child { grid-column: span 2 }
+
+@media (max-width: 700px) {
+  .lp-mosaic,
+  .lp-mosaic[data-count] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 62vw;
+    grid-auto-rows: 36vw;
+  }
+  .lp-mosaic > :first-child,
+  .lp-mosaic[data-count] > :first-child { grid-column: span 2; grid-row: auto }
+  .lp-mosaic[data-count] > :last-child:nth-child(2) { grid-column: span 2 }
+  .lp-mosaic[data-count="4"] > :last-child { grid-column: auto }
+  .lp-mosaic > :nth-child(n + 4) { display: none }
+  /* The button sits under the mosaic rather than on it: on a phone the
+     corner of the last photograph is too small to stand a label on. */
+  .lp-gallery-all { position: static !important; width: 100%; justify-content: center; margin-top: var(--space-3) }
+}
+
+.lp-mosaic-tile {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--paper-2);
+  cursor: zoom-in;
+}
+.lp-mosaic-tile img { transition: transform var(--dur-slow) var(--ease-breath) }
+.lp-mosaic-tile:hover img,
+.lp-mosaic-tile:focus-visible img { transform: scale(1.03) }
+.lp-mosaic-tile:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px }
+
+/* The last tile of a day's strip, when the day holds more than the strip
+   draws. It stands on the first photograph it is counting, veiled so the
+   number reads over it. */
+.lp-day-more {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--scrim);
+  color: var(--text-on-ground);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The viewer and the sheet are native dialogs; the scrim is their backdrop. */
+.lp-lightbox::backdrop { background: var(--scrim) }
+.lp-lightbox[open] { animation: veil var(--dur-quick) var(--ease-breath) }
+.lp-thumbs::-webkit-scrollbar { display: none }
+
+/* On a phone the photograph is the whole width and the swipe is the way
+   through; the arrows would sit on top of it. */
+@media (max-width: 700px) {
+  .lp-viewer-step { display: none !important }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-mosaic-tile:hover img,
+  .lp-mosaic-tile:focus-visible img { transform: none }
+}
+
+/* ---------------------------------------------------------------------------
+   Search (app/search, src/sections/search/SearchView.tsx).
+
+   The box is the navigation's outlined field at reading size: one hairline
+   underneath rather than a boxed input, so the page reads as a question
+   rather than a form. Results are rows, not cards — a result list is scanned,
+   and cards make the eye travel twice as far between titles.
+   --------------------------------------------------------------------------- */
+.lp-search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--border-strong);
+  padding-bottom: var(--space-3);
+  color: var(--ink);
+  transition: border-color var(--dur-quick) var(--ease-breath);
+}
+.lp-search-field:focus-within { border-bottom-color: var(--sky-deep) }
+.lp-search-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: var(--text-h3);
+  line-height: var(--leading-heading);
+  padding: var(--space-2) 0;
+}
+.lp-search-field input::placeholder { color: var(--text-faint) }
+/* The browser's own clear cross sits beside our glyph and is a 12px target;
+   emptying the box by keyboard is one shortcut away. */
+.lp-search-field input::-webkit-search-cancel-button { display: none }
+
+.lp-search-hit {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  padding: var(--space-5) 0;
+  color: inherit;
+  text-decoration: none;
+}
+/* The site's link hover underlines; on a row that is a picture and three lines
+   it underlines a paragraph. The title turning sky is the hover here. */
+.lp-search-hit:hover { color: inherit; text-decoration: none }
+.lp-search-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--surface-sunken);
+}
+.lp-search-thumb img { transition: transform var(--dur-slow) var(--ease-settle) }
+.lp-search-hit:hover .lp-search-thumb img,
+.lp-search-hit:focus-visible .lp-search-thumb img { transform: scale(1.04) }
+.lp-search-hit:hover > span:last-child > span:nth-child(2) { color: var(--text-accent) }
+
+.lp-search-hit mark {
+  background: var(--sky-wash);
+  color: inherit;
+  padding: 0 .08em;
+}
+
+.lp-search-browse {
+  color: var(--text-body);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   The navigation's box, answering as it is typed
+   (src/components/site/SearchSuggest.tsx).
+
+   Paper, a hairline and one soft shadow: the panel is the same material as the
+   menu it hangs under, not a new surface. The rows are the search page's rows
+   at a smaller size — a thumbnail, what kind of thing it is, the title — so
+   recognising a result in the suggestions and recognising it on /search is the
+   same act of recognition.
+
+   It hangs from the form, which is `position: relative` for exactly this.
+   --------------------------------------------------------------------------- */
+.lp-suggest {
+  position: absolute;
+  top: calc(100% + 10px);
+  z-index: 60;
+  width: max(100%, 340px);
+  max-height: min(62vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface-page);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lift);
+  color: var(--ink);
+  text-align: left;
+}
+
+.lp-suggest[data-align='right'] { right: 0 }
+.lp-suggest[data-align='left'] { left: 0 }
+
+.lp-suggest ul { list-style: none; margin: 0; padding: var(--space-2) }
+
+.lp-suggest li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--dur-quick) var(--ease-breath);
+}
+
+/* The pointer and the arrow keys light the same row — `data-active` is set by
+   both, so there is never a hover highlight and a keyboard highlight at once. */
+.lp-suggest li[data-active='true'] { background: var(--surface-sunken) }
+
+.lp-suggest-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: var(--surface-sunken);
+}
+
+.lp-suggest-text { display: grid; gap: 2px; min-width: 0 }
+
+.lp-suggest-kind {
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.lp-suggest-title {
+  font-size: var(--text-small);
+  line-height: var(--leading-heading);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-suggest-title mark {
+  background: var(--sky-wash);
+  color: inherit;
+  padding: 0 .08em;
+}
+
+/* The last row is the way out of a short list: everything, on the search page,
+   where the results can be filtered and read properly. */
+.lp-suggest li.lp-suggest-all {
+  grid-template-columns: 1fr;
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--border-hairline);
+  border-radius: 0;
+  padding-top: var(--space-4);
+  font-size: var(--text-small);
+  color: var(--text-accent);
+}
+
+.lp-suggest-empty {
+  margin: 0;
+  padding: var(--space-5);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+  color: var(--text-muted);
+}
+
+/* On a phone the picture is a small square beside the words, not a column
+   that squeezes them into a third of the screen. */
+@media (max-width: 620px) {
+  .lp-search-hit { grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-4) }
+  .lp-search-thumb { aspect-ratio: 1 }
 }

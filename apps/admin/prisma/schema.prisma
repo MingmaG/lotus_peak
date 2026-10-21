@@ -75,6 +75,11 @@ enum SeasonKey {
 /// The Bhutanese architectural silhouettes in `src/design-system/core/SiteIcon`.
 /// An enum because the component switches on it: a value outside this set
 /// renders nothing, silently.
+///
+/// The first seven are building types. The eight after them are drawings of
+/// one place each, and a place that has its own should use it — the generic
+/// dzong beside Taktsang or Trongsa reads as a stand-in for a picture nobody
+/// got round to.
 enum SiteIcon {
   DZONG
   CHORTEN
@@ -83,6 +88,14 @@ enum SiteIcon {
   PAVILION
   DZONG_LONG
   BUDDHA
+  TAKTSANG
+  PUNAKHA
+  JAKAR
+  TRONGSA
+  MONGAR
+  PEMAGATSHEL
+  TRASHIGANG
+  GASA
 }
 
 enum DepartureStatus {
@@ -300,14 +313,25 @@ enum EmailKind {
 }
 
 enum EmailStatus {
+  /// Recorded, nothing attempted yet.
   QUEUED
+  /// Handed to the provider, no answer yet. A row that stays here is a real
+  /// signal — the process died mid-send, or the provider hung — and it is
+  /// exactly what a log written only after the fact cannot show.
+  PROCESSING
+  /// The provider accepted it. Acceptance is not arrival.
   SENT
+  /// The provider says it reached the mailbox. Only the webhook knows this.
   DELIVERED
   OPENED
   CLICKED
   BOUNCED
   COMPLAINED
   FAILED
+  /// Never attempted: the day's sending allowance was already spent. Not the
+  /// same as a provider refusal — the row names the enquiry it belongs to, so
+  /// the office can see who went unanswered and write to them by hand.
+  SKIPPED
 }
 
 enum SubscriberStatus {
@@ -534,6 +558,9 @@ model Media {
   userAvatars       User[]            @relation("UserAvatar")
   tripHeroes        Trip[]            @relation("TripHero")
   tripRouteMaps     Trip[]            @relation("TripRouteMap")
+  tripOverviewImages Trip[]           @relation("TripOverviewImage")
+  tripOverviewInsets Trip[]           @relation("TripOverviewInset")
+  tripTrailImages   Trip[]            @relation("TripTrailImage")
   tripOgImages      Trip[]            @relation("TripOgImage")
   tripGalleryItems  TripGalleryItem[]
   itineraryImages   ItineraryImage[]
@@ -631,8 +658,16 @@ model Trip {
   groupSizeMin    Int?
   groupSizeMax    Int?
 
-  /// The opening paragraphs, one row per paragraph in `overview`.
-  overview String[] @default([])
+  /// The opening paragraphs, as one rich-text document.
+  ///
+  /// `String[]`, one row per paragraph, until the office pointed out that a
+  /// journey's opening was the only long-form field on the site written in a
+  /// box that could not hold a link to the monastery it names, a photograph or
+  /// a list. It is the same column type and the same editor as an itinerary
+  /// day, a page band, a teacher's biography and a journal entry now, and
+  /// `renderStoredRichText` on the website draws a body that predates the
+  /// change as the paragraphs it was — see the note at the top of `Post`.
+  overview String?
 
   /// The figures under the title, when the five fixed ones are not the story.
   ///
@@ -663,6 +698,23 @@ model Trip {
   heroId String?
   hero   Media?  @relation("TripHero", fields: [heroId], references: [id], onDelete: SetNull)
 
+  /// The pair of photographs beside the overview.
+  ///
+  /// The design draws a 4/5 portrait with a smaller 3/4 one offset into its
+  /// bottom-right corner, so there are two columns rather than an ordered
+  /// join: the shapes are fixed, the positions mean different things, and a
+  /// list of unknown length would have to be truncated by whatever drew it.
+  ///
+  /// The main one is null for most journeys and falls back to the hero, which
+  /// is what the page did when these were a hardcoded asset path. With no
+  /// inset chosen the page draws the single photograph rather than inventing
+  /// one — the stock image that used to fill that corner appeared on every
+  /// journey, including the ones it was not taken on.
+  overviewImageId String?
+  overviewImage   Media?  @relation("TripOverviewImage", fields: [overviewImageId], references: [id], onDelete: SetNull)
+  overviewInsetId String?
+  overviewInset   Media?  @relation("TripOverviewInset", fields: [overviewInsetId], references: [id], onDelete: SetNull)
+
   /// The route drawn on a map, as a picture.
   ///
   /// A picture rather than coordinates, because that is what the office has: a
@@ -671,6 +723,25 @@ model Trip {
   /// working — for a route that changes about once a year.
   routeMapId String?
   routeMap   Media?  @relation("TripRouteMap", fields: [routeMapId], references: [id], onDelete: SetNull)
+
+  /// The band above the itinerary: "On the trail".
+  ///
+  /// Four columns, because they are one band — a photograph and the three
+  /// pieces of copy the design lays over it — and the band was typed into the
+  /// website's journey page, the same picture and the same paragraph about
+  /// pace on every journey, including the trek that walks for eight days and
+  /// the festival journey that barely walks at all.
+  ///
+  /// Empty strings rather than nulls on the copy, for the reason `strapline`
+  /// and `footerNote` are: these are words, the editor sends what is in the
+  /// box, and "" and NULL would mean the same thing to everything that reads
+  /// them. The photograph is the one that decides whether the band exists —
+  /// see `showTrail`.
+  trailEyebrow String  @default("")
+  trailTitle   String  @default("")
+  trailBody    String  @default("")
+  trailImageId String?
+  trailImage   Media?  @relation("TripTrailImage", fields: [trailImageId], references: [id], onDelete: SetNull)
 
   /// The walking profile: `[{ day, label, metres }]`, ascending by day.
   ///
@@ -699,6 +770,31 @@ model Trip {
   relatedTo    TripRelated[]       @relation("RelatedTarget")
   postLinks    PostOnTrip[]
   pageLinks    PageOnTrip[]
+  cultureLinks CultureOnTrip[]
+
+  /// Which of the optional bands the journey page draws.
+  ///
+  /// Columns rather than a Json list of section names: there are six, the
+  /// design fixes their order, and a boolean cannot name a section the page
+  /// has no styles for. Each defaults to on — a band with nothing in it draws
+  /// nothing anyway, so "on" only ever means "show it when there is something
+  /// to show".
+  ///
+  /// The photograph above the itinerary. The only one of the six that is not
+  /// at the foot of the page, and the only one whose content is on this row
+  /// rather than joined to it.
+  showTrail        Boolean @default(true)
+  showGallery      Boolean @default(true)
+  /// The places on the route, as cards.
+  showDestinations Boolean @default(true)
+  /// The culture seen on the way — chosen in `cultureLinks`, or else what is
+  /// linked to the places on the route.
+  showCulture      Boolean @default(true)
+  /// Journal entries — the ones linked in `postLinks`, or else entries about
+  /// the places on the route.
+  showJournal      Boolean @default(true)
+  /// Other journeys — `relatedFrom`, or else the next few in catalogue order.
+  showRelated      Boolean @default(true)
 
   featured     Boolean       @default(false)
   status       ContentStatus @default(DRAFT)
@@ -961,15 +1057,37 @@ model Departure {
 // THE CATALOGUE — places, activities, seasons, culture
 // =============================================================================
 
+/// Where we go: a valley, or a place inside one.
+///
+/// One table for both, because they are the same kind of thing at two scales.
+/// Paro is a destination; Taktsang is a destination whose `parentId` is Paro.
+/// Each has a page of its own — `/destinations/paro` and
+/// `/destinations/paro/taktsang` — with the same fields, the same editor and
+/// the same SEO tab. A second `Attraction` table would have meant a second
+/// editor, a second set of routes and, sooner or later, Taktsang written up in
+/// both.
+///
+/// One level deep, by rule rather than by schema: the API refuses a parent
+/// that itself has a parent. A place inside a place inside a valley is a
+/// breadcrumb nobody reads and a URL nobody types.
 model Destination {
-  id     String   @id @default(cuid())
-  slug   String   @unique
-  name   String
-  icon   SiteIcon @default(DZONG)
-  /// One line, on the card.
-  blurb  String
-  /// A paragraph, on the index.
-  detail String
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  name       String
+  icon       SiteIcon @default(DZONG)
+  /// One line, on the card. "Taktsang, Kichu and Dungtse Lhakhang".
+  blurb      String
+  /// The sentence under the title. Also the default meta description, so it
+  /// has to stand on its own.
+  standfirst String   @default("")
+  /// The page, written as one rich-text document. Figures store a media id,
+  /// never a URL — see `server/schema/rich-text.ts`.
+  body       String   @default("")
+
+  /// Null for a valley. A place names the valley it is in.
+  parentId String?
+  parent   Destination?  @relation("DestinationPlaces", fields: [parentId], references: [id], onDelete: SetNull)
+  places   Destination[] @relation("DestinationPlaces")
 
   imageId String?
   image   Media?  @relation("DestinationImage", fields: [imageId], references: [id], onDelete: SetNull)
@@ -979,8 +1097,10 @@ model Destination {
   longitude      Float?
 
   trips       TripOnDestination[]
-  sortOrder   Int                 @default(0)
-  status      ContentStatus       @default(PUBLISHED)
+  culture     CultureOnDestination[]
+  posts       PostOnDestination[]
+  sortOrder   Int                    @default(0)
+  status      ContentStatus          @default(PUBLISHED)
   publishedAt DateTime?
 
   metaTitle         String?
@@ -1005,6 +1125,7 @@ model Destination {
   deletedAt DateTime?
 
   @@index([status, sortOrder])
+  @@index([parentId, sortOrder])
   @@map("destinations")
 }
 
@@ -1141,12 +1262,25 @@ model Season {
   @@map("seasons")
 }
 
+/// Culture: what makes Bhutan Bhutan. Tshechu, dzongs, textiles, the thirteen
+/// arts. Each has a page at `/culture/<slug>`.
+///
+/// Not a place — a dzong in general is culture, Punakha Dzong is a
+/// destination — and not an entry in the journal, which is dated and
+/// editorial. `destinations` is where a traveller goes to see it.
 model CultureArticle {
-  id    String   @id @default(cuid())
-  slug  String   @unique
-  title String
-  body  String
-  icon  SiteIcon @default(CHORTEN)
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  title      String
+  /// The sentence under the title, on the card and in the meta description.
+  standfirst String   @default("")
+  /// The page, as one rich-text document.
+  body       String
+  icon       SiteIcon @default(CHORTEN)
+
+  destinations CultureOnDestination[]
+  posts        PostOnCulture[]
+  trips        CultureOnTrip[]
 
   imageId String?
   image   Media?  @relation("CultureImage", fields: [imageId], references: [id], onDelete: SetNull)
@@ -1287,17 +1421,18 @@ model Person {
 /// reaches every entry that used it — the rule at the top of this file about
 /// never storing a serialised image, kept.
 model Post {
-  id             String @id @default(cuid())
-  slug           String @unique
+  id             String          @id @default(cuid())
+  slug           String          @unique
   title          String
   /// The standfirst. Also the default meta description, and the sentence
   /// marked `speakable` in the structured data.
   standfirst     String
-  /// Where it is about. "Bumthang", "Paro".
-  region         String
-  body           String @default("")
+  /// Which of the four shelves of the journal it sits on. Not a place: where
+  /// an entry is *about* is `destinations` below, which links to a page.
+  category       JournalCategory @default(STORIES)
+  body           String          @default("")
   /// Computed on save so both apps print the same number.
-  readingMinutes Int    @default(1)
+  readingMinutes Int             @default(1)
 
   heroId String?
   hero   Media?  @relation("PostHero", fields: [heroId], references: [id], onDelete: SetNull)
@@ -1305,8 +1440,12 @@ model Post {
   authorId String?
   author   User?   @relation("PostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
-  tags      String[]     @default([])
-  tripLinks PostOnTrip[]
+  tags         String[]            @default([])
+  tripLinks    PostOnTrip[]
+  /// The places it is about, and the culture it explains. Both render as
+  /// links on the entry, and the entry is listed on each of those pages.
+  destinations PostOnDestination[]
+  culture      PostOnCulture[]
 
   status       ContentStatus @default(DRAFT)
   publishedAt  DateTime?
@@ -1336,6 +1475,7 @@ model Post {
   deletedAt DateTime?
 
   @@index([status, publishedAt])
+  @@index([category, status, publishedAt])
   @@index([slug])
   @@map("posts")
 }
@@ -1350,6 +1490,77 @@ model PostOnTrip {
   @@id([postId, tripId])
   @@index([tripId])
   @@map("post_on_trips")
+}
+
+/// The four shelves of the journal.
+///
+/// An enum and not a table: the design has four tabs, and a fifth is a design
+/// decision rather than a row somebody adds on a Tuesday. Where an entry is
+/// about is deliberately *not* one of these — see `PostOnDestination`.
+enum JournalCategory {
+  /// Travel stories and itineraries, told after the fact.
+  JOURNEYS
+  /// Practical, search-shaped: permits, seasons, what to pack, what it costs.
+  TRAVEL_GUIDES
+  /// Things a visitor can do.
+  EXPERIENCES
+  /// People, places and perspectives.
+  STORIES
+}
+
+/// An entry and a place it is about. Edited from the entry.
+model PostOnDestination {
+  postId        String
+  post          Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  sortOrder     Int         @default(0)
+
+  @@id([postId, destinationId])
+  @@index([destinationId])
+  @@map("post_on_destinations")
+}
+
+/// An entry and the culture it explains. Edited from the entry.
+model PostOnCulture {
+  postId    String
+  post      Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  cultureId String
+  culture   CultureArticle @relation(fields: [cultureId], references: [id], onDelete: Cascade)
+  sortOrder Int            @default(0)
+
+  @@id([postId, cultureId])
+  @@index([cultureId])
+  @@map("post_on_culture")
+}
+
+/// A piece of culture and a place to see it — dzongs and Punakha Dzong,
+/// tshechu and Paro. Edited from the culture piece, shown on both pages.
+model CultureOnDestination {
+  cultureId     String
+  culture       CultureArticle @relation(fields: [cultureId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination    @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  sortOrder     Int            @default(0)
+
+  @@id([cultureId, destinationId])
+  @@index([destinationId])
+  @@map("culture_on_destinations")
+}
+
+/// A piece of culture and a journey that shows it — tshechu and the festival
+/// journey. Edited from the journey, where the office chooses what its page
+/// offers; a journey with none chosen offers what is linked to its route.
+model CultureOnTrip {
+  cultureId String
+  culture   CultureArticle @relation(fields: [cultureId], references: [id], onDelete: Cascade)
+  tripId    String
+  trip      Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  sortOrder Int            @default(0)
+
+  @@id([cultureId, tripId])
+  @@index([tripId])
+  @@map("culture_on_trips")
 }
 
 // =============================================================================
@@ -1373,6 +1584,9 @@ model Page {
   title   String
   eyebrow String?
   lead    String?
+  /// A quiet line at the foot of a reference page: "Last revised for the
+  /// 2026 season." Terms and Travellers' information draw it.
+  note    String?
 
   sections Json @default("[]")
 
@@ -1515,8 +1729,46 @@ model CompanyProfile {
 
   // --- Site chrome the whole site reads ---
   strapline       String @default("")
+  /// What plays behind the strapline on the home page: `image` or `youtube`.
+  ///
+  /// A string rather than an enum, for the reason `twitterCard` is one: the
+  /// panel's Zod schema is already the allowlist, the website's hero has a
+  /// third route only a developer can fill (an MP4 under its own
+  /// `public/assets`), and adding the next one should be a value rather than a
+  /// migration on a table with one row in it.
+  heroMedia       String @default("image")
+  /// The hero's film on YouTube, as the office copied it — a watch link, a
+  /// `youtu.be` link or an embed address; `@lotuspeak/video` is what reads it.
+  /// Kept when `heroMedia` is `image`, so a film can be put back without being
+  /// retyped.
+  heroYoutubeUrl  String?
+  /// The short introduction under the name in the footer. It used to be the
+  /// line along the foot, beside the copyright — which the credit now holds.
   footerNote      String @default("")
   footerCopyright String @default("© {year} {name}")
+  /// The credit on the right of the copyright row: "{label} {name}", with the
+  /// name linked to `footerCreditUrl`. No name, no credit.
+  footerCreditLabel String @default("Website by")
+  footerCreditName  String @default("")
+  footerCreditUrl   String @default("")
+  /// Which parts of the footer draw. Columns rather than a `Setting` row for the
+  /// reason given on `Setting`: a typo in a key is a silently empty footer.
+  footerShowLinks    Boolean @default(true)
+  footerShowAddress  Boolean @default(true)
+  footerShowContacts Boolean @default(true)
+  footerShowSocials  Boolean @default(true)
+
+  /// The bands at the foot of every journey page: each one's heading, and the
+  /// words on the link to its whole section. An empty link text draws no link.
+  journeyPlacesTitle  String @default("Where you will go")
+  journeyPlacesMore   String @default("View more destinations")
+  journeyCultureTitle String @default("Culture on the way")
+  journeyCultureMore  String @default("Know more about the culture")
+  journeyJournalTitle String @default("From the journal")
+  journeyJournalMore  String @default("Read the whole journal")
+  journeyRelatedTitle String @default("Other journeys")
+  journeyRelatedMore  String @default("View more trips")
+
   replyPromise    String @default("")
 
   pledgePercent     Int?
@@ -2303,6 +2555,10 @@ model EmailMessage {
   toEmail   String
   toName    String?
   fromEmail String
+  /// Where the recipient's "Reply" goes. On the office's notification this is
+  /// the traveller, which is what makes replying to an enquiry one keystroke
+  /// rather than a copy-paste out of the body.
+  replyTo   String?
   subject   String
   /// What was actually sent, kept verbatim. A template edited afterwards must
   /// not change the record of what somebody received.
@@ -2313,11 +2569,18 @@ model EmailMessage {
   enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
 
   status      EmailStatus @default(QUEUED)
-  providerId  String?
+  /// The provider's own id, and the only thing a webhook carries that means
+  /// anything here. Unique because that is how an event is matched to a row.
+  providerId  String?     @unique
+  /// The last failure, in the provider's words. Cleared on a later success.
   error       String?
+  /// Counted on the handover, not the answer, so a send that hangs and is
+  /// tried again still reads as two attempts.
+  attempts    Int         @default(0)
   sentAt      DateTime?
   deliveredAt DateTime?
   openedAt    DateTime?
+  failedAt    DateTime?
 
   events EmailEvent[]
 
@@ -2333,11 +2596,23 @@ model EmailEvent {
   id        String       @id @default(cuid())
   messageId String
   message   EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  status    EmailStatus
-  payload   Json?
+
+  /// The provider's own event name, e.g. `email.delivered`. Stored as written
+  /// rather than mapped to an enum: a provider adding an event type should
+  /// show up in the log, not fail the webhook.
+  type       String
+  /// The status this event moved the message to, or null when it moved
+  /// nothing. `email.sent` is the common null: the send call already recorded
+  /// that, and an event arriving late must not walk DELIVERED backwards.
+  status     EmailStatus?
+  /// When it happened at the provider, which is not when we heard about it.
+  occurredAt DateTime     @default(now())
+  /// The event as it arrived, for the questions nobody has asked yet.
+  payload    Json?
 
   createdAt DateTime @default(now())
 
   @@index([messageId])
+  @@index([type])
   @@map("email_events")
 }

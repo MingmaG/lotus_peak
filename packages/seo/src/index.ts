@@ -11,6 +11,7 @@ import type {
   ApiTripFaq,
   ApiTripSummary,
 } from '@lotuspeak/api-contracts';
+import { journalCategoryLabel } from '@lotuspeak/api-contracts';
 
 /**
  * The structured data both apps publish.
@@ -448,7 +449,18 @@ export function articleNode(siteUrl: string, post: ApiPost): Json {
     isPartOf: { '@id': WEBSITE_ID(siteUrl) },
     inLanguage: 'en-GB',
     keywords: post.tags,
-    about: post.region ? { '@type': 'Place', name: `${post.region}, Bhutan` } : undefined,
+    /**
+     * What it is about, as the nodes those pages already publish.
+     *
+     * An `@id` reference rather than a copy: the place's own page describes
+     * it as a `TouristDestination` with coordinates, and pointing at that is
+     * how a crawler learns the entry and the place are about the same thing.
+     */
+    about: [
+      ...post.destinations.map((d) => ({ '@id': destinationId(siteUrl, d.path) })),
+      ...post.culture.map((c) => ({ '@id': `${abs(siteUrl, c.path)}#article` })),
+    ],
+    articleSection: journalCategoryLabel(post.category),
     timeRequired: `PT${Math.max(1, post.readingMinutes)}M`,
     /**
      * The standfirst, marked as the sentence worth reading aloud.
@@ -463,42 +475,90 @@ export function articleNode(siteUrl: string, post: ApiPost): Json {
   });
 }
 
+function destinationId(siteUrl: string, path: string): string {
+  return `${abs(siteUrl, path)}#place`;
+}
+
+/**
+ * A valley is a `TouristDestination`; a place inside one is a
+ * `TouristAttraction` that is `containedInPlace` its valley, and the valley
+ * lists it back under `includesAttraction`. That pair is what lets a search
+ * engine answer "what is there to see in Paro" from this site's own pages.
+ */
 export function destinationNode(siteUrl: string, destination: ApiDestination): Json {
-  const url = abs(siteUrl, `/destinations#${destination.slug}`);
+  const url = abs(siteUrl, destination.path);
   return clean({
-    '@type': 'TouristDestination',
-    '@id': `${url}`,
+    '@type': destination.parent ? ['TouristAttraction', 'Place'] : 'TouristDestination',
+    '@id': destinationId(siteUrl, destination.path),
     name: destination.name,
-    description: destination.detail || destination.blurb,
+    description: destination.standfirst || destination.blurb,
     url,
     image: imageNode(siteUrl, destination.image),
     geo:
       destination.latitude !== null && destination.longitude !== null
-        ? {
+        ? clean({
             '@type': 'GeoCoordinates',
             latitude: destination.latitude,
             longitude: destination.longitude,
-          }
+            elevation: destination.altitudeMetres ?? undefined,
+          })
         : undefined,
-    containedInPlace: { '@type': 'Country', name: 'Bhutan' },
-    includesAttraction: undefined,
-    touristType: undefined,
+    containedInPlace: destination.parent
+      ? { '@id': destinationId(siteUrl, destination.parent.path) }
+      : { '@type': 'Country', name: 'Bhutan' },
+    includesAttraction: destination.placeCards.length
+      ? destination.placeCards.map((place) => ({
+          '@id': destinationId(siteUrl, place.path),
+          '@type': 'TouristAttraction',
+          name: place.name,
+          url: abs(siteUrl, place.path),
+        }))
+      : undefined,
+    subjectOf: destination.posts.length
+      ? destination.posts.map((post) => ({ '@id': `${abs(siteUrl, post.path)}#article` }))
+      : undefined,
   });
 }
 
 export function cultureNode(siteUrl: string, article: ApiCultureArticle): Json {
-  const url = abs(siteUrl, `/culture#${article.slug}`);
+  const url = abs(siteUrl, article.path);
   return clean({
     '@type': 'Article',
-    '@id': url,
+    '@id': `${url}#article`,
     headline: article.title,
-    description: article.body.slice(0, 300),
+    description: article.standfirst,
     url,
     image: imageNode(siteUrl, article.image),
+    dateModified: article.seo.updatedAt,
+    author: { '@id': ORGANIZATION_ID(siteUrl) },
     publisher: { '@id': ORGANIZATION_ID(siteUrl) },
     isPartOf: { '@id': WEBSITE_ID(siteUrl) },
     inLanguage: 'en-GB',
+    about: { '@type': 'Thing', name: `${article.title}, Bhutan` },
+    contentLocation: article.destinations.length
+      ? article.destinations.map((d) => ({ '@id': destinationId(siteUrl, d.path) }))
+      : { '@type': 'Country', name: 'Bhutan' },
   });
+}
+
+/**
+ * An index page's cards, as a list.
+ *
+ * The journeys index has its own (`tripListNode`); this is the same idea for
+ * Where we go, Culture and a journal shelf, which list pages rather than
+ * products.
+ */
+export function pageListNode(siteUrl: string, items: { path: string; name: string }[]): Json {
+  return {
+    '@type': 'ItemList',
+    numberOfItems: items.length,
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: abs(siteUrl, item.path),
+      name: item.name,
+    })),
+  };
 }
 
 /** An index page's contents, so a crawler sees the set and not just the prose. */

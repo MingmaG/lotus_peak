@@ -14,6 +14,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx --conditions=react-server prisma/seed.ts",
+    "content:sections": "tsx --conditions=react-server prisma/load-sections.ts",
     "db:check": "tsx scripts/install-check.ts",
     "storage:verify": "tsx scripts/storage-verify.ts",
     "media:rebuild": "tsx --conditions=react-server scripts/media-rebuild.ts"

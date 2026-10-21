@@ -1,11 +1,16 @@
 import { renderStoredRichText } from '@/lib/rich-text'
 import type {
   ApiActivity,
+  ApiAddress,
+  ApiContactChannel,
   ApiPage,
   ApiPageSection,
   ApiPerson,
   ApiCultureArticle,
+  ApiCultureSummary,
   ApiDestination,
+  ApiDestinationSummary,
+  ApiSeo,
   ApiGalleryImage,
   ApiImage,
   ApiPost,
@@ -22,19 +27,27 @@ import { registerMedia } from '@/lib/assets'
 
 import type {
   Activity,
+  ContactLine,
   CultureArticle,
+  CulturePage,
   Destination,
+  DestinationPage,
+  EntitySeo,
   GalleryImage,
   PageBand,
   Person,
   Post,
+  PostPage,
   SitePage,
   Reflection,
   Season,
   SeasonKey,
   SiteSettings,
   Trip,
+  TripPhoto,
+  TripSections,
 } from '../../types'
+import { fillCopyright } from '../../types'
 
 /**
  * Wire shapes → this site's domain types.
@@ -88,6 +101,25 @@ function imagePath(image: ApiImage | null | undefined): string {
   return image.url
 }
 
+/**
+ * A photograph as the journey page's viewer reads it.
+ *
+ * One helper for the gallery strip and for an itinerary day's photographs,
+ * because the two draw the same thing from the same wire shape and the copy
+ * that drifted would be the one that stopped describing its pictures.
+ */
+function toTripPhoto(image: ApiImage): TripPhoto {
+  return {
+    src: imagePath(image),
+    alt: image.alt,
+    caption: image.caption,
+    credit: image.credit,
+    width: image.width || null,
+    height: image.height || null,
+    focal: image.focal,
+  }
+}
+
 const ICON_FALLBACK: SiteIconName = 'dzong'
 
 /* -------------------------------------------------------------------------- */
@@ -135,14 +167,31 @@ export function toTripSummary(row: ApiTripSummary, index: number): Trip {
     journeyLabel: row.journeyLabel,
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    overview: [],
+    overview: '',
+    overviewImage: imagePath(row.heroImage),
+    overviewInset: null,
+    trail: null,
     highlights: [],
     itinerary: [],
     included: [],
     excluded: [],
     faq: [],
     gallery: [],
+    sections: NO_SECTIONS,
+    destinations: [],
+    culture: [],
+    posts: [],
+    related: [],
   }
+}
+
+/** A card draws none of the bands; saying so keeps a summary from claiming any. */
+const NO_SECTIONS: TripSections = {
+  gallery: false,
+  destinations: false,
+  culture: false,
+  journal: false,
+  related: false,
 }
 
 export function toTrip(row: ApiTrip): Trip {
@@ -161,6 +210,17 @@ export function toTrip(row: ApiTrip): Trip {
     })),
     routeMap: row.routeMap ? imagePath(row.routeMap) : null,
     routeMapAlt: row.routeMap?.alt,
+    /* Already resolved: the panel sends null for a band that is switched off,
+       has no photograph or has no words. See `ApiTripTrail`. */
+    trail: row.trail
+      ? {
+          eyebrow: row.trail.eyebrow,
+          title: row.trail.title,
+          body: row.trail.body,
+          image: imagePath(row.trail.image),
+          imageAlt: row.trail.image.alt,
+        }
+      : null,
     videoUrl: row.videoUrl,
     stats: row.stats,
     elevationProfile: row.elevationProfile,
@@ -180,7 +240,23 @@ export function toTrip(row: ApiTrip): Trip {
     journeyLabel: row.journeyLabel,
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    overview: row.overview,
+    /* The large one falls back to the hero, which is what the page drew when
+       this pair was two paths written into a component. */
+    overviewImage: imagePath(row.overviewImage ?? row.heroImage),
+    overviewImageAlt: (row.overviewImage ?? row.heroImage)?.alt,
+    /**
+     * The inset falls back to the first photograph in the strip.
+     *
+     * The design's overview is an overlapping pair, and the corner held one
+     * stock photograph of somebody walking — written into the component, on
+     * every journey, including the ones that do no walking. A photograph the
+     * office already chose for *this* journey is a better guess than that, and
+     * choosing the inset explicitly overrides it. Null only where a journey
+     * has no photographs at all, and then the page draws the single one.
+     */
+    overviewInset: imagePath(row.overviewInsetImage ?? row.gallery[0]?.image) || null,
+    overviewInsetAlt: (row.overviewInsetImage ?? row.gallery[0]?.image)?.alt,
+    overview: renderStoredRichText(row.overview),
     highlights: row.highlights,
     itinerary: row.itinerary.map((day) => ({
       /* `day` is null on a rest day, and the domain type spells that as an
@@ -191,6 +267,7 @@ export function toTrip(row: ApiTrip): Trip {
       title: day.title,
       ...(day.meta ? { meta: day.meta } : {}),
       ...(day.body ? { body: renderStoredRichText(day.body) } : {}),
+      ...(day.images.length ? { images: day.images.map(toTripPhoto) } : {}),
     })),
     included: row.included,
     excluded: row.excluded,
@@ -198,13 +275,12 @@ export function toTrip(row: ApiTrip): Trip {
       question: item.question,
       answer: renderStoredRichText(item.answer),
     })),
-    gallery: row.gallery.map((item) => {
-      const cell: [string, string?, string?, string?] = [imagePath(item.image)]
-      if (item.ratio) cell[1] = item.ratio
-      if (item.width) cell[2] = item.width
-      cell[3] = item.image.alt
-      return cell
-    }),
+    gallery: row.gallery.map((item) => toTripPhoto(item.image)),
+    sections: row.sections,
+    destinations: row.destinations.map((d, i) => toDestination(d, i)),
+    culture: row.culture.map((c, i) => toCultureArticle(c, i)),
+    posts: row.posts.map((p, i) => toPostSummary(p, i)),
+    related: row.related.map((t, i) => toTripSummary(t, i)),
   }
 }
 
@@ -212,33 +288,59 @@ export function toTrip(row: ApiTrip): Trip {
 /*  Journal                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export function toPostSummary(row: ApiPostSummary, index: number): Post {
+/** A record's SEO tab, narrowed to what a page's metadata reads. */
+export function toSeo(seo: ApiSeo): EntitySeo {
+  return {
+    title: seo.metaTitle,
+    description: seo.metaDescription,
+    canonical: seo.canonicalUrl,
+    noIndex: seo.noIndex,
+    noFollow: seo.noFollow,
+    ogTitle: seo.ogTitle,
+    ogDescription: seo.ogDescription,
+    ogImage: seo.ogImage ? imagePath(seo.ogImage) : null,
+    keywords: seo.keywords,
+    schemaJson: seo.schemaJson ?? undefined,
+    updatedAt: seo.updatedAt,
+  }
+}
+
+export function toPostSummary(row: ApiPostSummary, index = 0): Post {
   return {
     slug: row.slug,
     title: row.title,
+    path: row.path,
     standfirst: row.standfirst,
     date: row.date.slice(0, 10),
-    region: row.region,
+    category: row.category,
+    places: row.places,
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    /* A summary carries no body; the index page prints the standfirst. */
-    body: '',
+    readingMinutes: row.readingMinutes,
     order: index,
   }
 }
 
-export function toPost(row: ApiPost): Post {
+export function toPost(row: ApiPost): PostPage {
   return {
-    schemaJson: row.seo?.schemaJson ?? undefined,
     slug: row.slug,
     title: row.title,
+    path: `/journal/${row.slug}`,
     standfirst: row.standfirst,
     date: row.date.slice(0, 10),
-    region: row.region,
+    category: row.category,
+    places: row.destinations.map((d) => ({ slug: d.slug, title: d.name, path: d.path })),
     heroImage: imagePath(row.heroImage),
     heroAlt: row.heroImage?.alt,
-    body: renderStoredRichText(row.body),
+    readingMinutes: row.readingMinutes,
     order: 0,
+    body: renderStoredRichText(row.body),
+    author: row.author ? { name: row.author.name, role: row.author.role } : null,
+    tags: row.tags,
+    relatedTripSlugs: row.relatedTripSlugs,
+    destinations: row.destinations.map((d, i) => toDestination(d, i)),
+    culture: row.culture.map((c, i) => toCultureArticle(c, i)),
+    seo: toSeo(row.seo),
   }
 }
 
@@ -246,17 +348,35 @@ export function toPost(row: ApiPost): Post {
 /*  The rest of the catalogue                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function toDestination(row: ApiDestination, index = 0): Destination {
+export function toDestination(row: ApiDestinationSummary, index = 0): Destination {
   return {
     slug: row.slug,
     name: row.name,
+    path: row.path,
+    parentSlug: row.parentSlug,
     icon: row.icon ?? ICON_FALLBACK,
     blurb: row.blurb,
-    detail: renderStoredRichText(row.detail),
+    standfirst: row.standfirst,
     image: imagePath(row.image),
     imageAlt: row.image?.alt,
     tripSlugs: row.tripSlugs,
+    places: row.places,
+    altitudeMetres: row.altitudeMetres,
+    latitude: row.latitude,
+    longitude: row.longitude,
     order: index,
+  }
+}
+
+export function toDestinationPage(row: ApiDestination): DestinationPage {
+  return {
+    ...toDestination(row),
+    body: renderStoredRichText(row.body),
+    parent: row.parent,
+    placeCards: row.placeCards.map((place, i) => toDestination(place, i)),
+    culture: row.culture.map((c, i) => toCultureArticle(c, i)),
+    posts: row.posts.map((p, i) => toPostSummary(p, i)),
+    seo: toSeo(row.seo),
   }
 }
 
@@ -304,15 +424,26 @@ export function toSeason(row: ApiSeason, index = 0): Season {
  * there was one. Both are what the office wrote, and both have to draw as
  * prose.
  */
-export function toCultureArticle(row: ApiCultureArticle, index = 0): CultureArticle {
+export function toCultureArticle(row: ApiCultureSummary, index = 0): CultureArticle {
   return {
     slug: row.slug,
     title: row.title,
-    body: renderStoredRichText(row.body),
+    path: row.path,
+    standfirst: row.standfirst,
     icon: row.icon ?? ICON_FALLBACK,
     image: imagePath(row.image),
     imageAlt: row.image?.alt,
     order: index,
+  }
+}
+
+export function toCulturePage(row: ApiCultureArticle): CulturePage {
+  return {
+    ...toCultureArticle(row),
+    body: renderStoredRichText(row.body),
+    destinations: row.destinations.map((d, i) => toDestination(d, i)),
+    posts: row.posts.map((p, i) => toPostSummary(p, i)),
+    seo: toSeo(row.seo),
   }
 }
 
@@ -350,26 +481,35 @@ export function toSettings(site: ApiSite): SiteSettings {
 
   return {
     brand: site.company.name,
+    legalName: site.company.legalName,
     line: site.company.tagline,
+    strapline: site.company.strapline || site.company.tagline,
+    hero: { media: site.company.heroMedia, youtubeUrl: site.company.heroYoutubeUrl },
     nav: site.nav.map((link) => ({ label: link.label, href: link.href })),
     navCta: site.navCta ?? { label: 'Explore trips', href: '/trips' },
     footer: {
-      columns: site.footer.columns.map((column) => ({
-        title: column.title,
-        links: column.links.map((link) => ({ label: link.label, href: link.href })),
-      })),
-      /**
-       * The footer note, with the company's own contact line appended.
-       *
-       * The design's note reads "Lotus Peak Tours & Travel · Thimphu, Bhutan ·
-       * +975 17984485" — three facts, two of which are the company record. The
-       * stored note holds the first two and the telephone number is joined on
-       * here, so changing the number in one screen changes it in the footer
-       * too. Typing it into the note as well is exactly what the Company
-       * screen exists to stop.
-       */
-      note: [site.footer.note, phone?.display].filter(Boolean).join(' · '),
+      columns: site.footer.columns
+        .map((column) => ({
+          title: column.title,
+          links: column.links.map((link) => ({ label: link.label, href: link.href })),
+        }))
+        .filter((column) => column.links.length > 0),
+      note: site.footer.note || site.company.tagline,
+      copyright: fillCopyright(site.footer.copyright, site.company.name),
+      credit: site.footer.credit,
+      show: site.footer.show,
     },
+    address: {
+      lines: addressLines(site.company.address),
+      mapUrl: site.company.address.mapUrl,
+    },
+    contacts: site.company.contacts.map(toContactLine),
+    socials: site.company.socials.map((social) => ({
+      platform: social.platform,
+      label: social.label,
+      url: social.url,
+    })),
+    journeyBands: site.journeyBands,
     contact: {
       phone: phone?.display ?? '',
       email: email?.value ?? '',
@@ -387,6 +527,54 @@ export function toSettings(site: ApiSite): SiteSettings {
   }
 }
 
+/**
+ * The address as the footer prints it: the street lines, then the town with
+ * its region and postcode, then the country.
+ *
+ * `line1` is often just the town — "Thimphu" — and printing the locality under
+ * it as well read "Thimphu / Thimphu, Bhutan". A part already said on an
+ * earlier line is not said again.
+ */
+export function addressLines(address: ApiAddress): string[] {
+  const said: string[] = []
+  const fresh = (part: string | null | undefined): part is string => {
+    const value = part?.trim()
+    if (!value) return false
+    const seen = said.some((line) => line.toLowerCase().includes(value.toLowerCase()))
+    said.push(value)
+    return !seen
+  }
+
+  const street = [address.line1, address.line2].filter(fresh)
+  const town = [address.locality, address.region, address.postalCode].filter(fresh).join(', ')
+  const country = fresh(address.country) ? address.country : ''
+  const last = [town, country].filter(Boolean).join(', ')
+
+  return [...street, last].filter(Boolean)
+}
+
+function toContactLine(contact: ApiContactChannel): ContactLine {
+  switch (contact.kind) {
+    case 'PHONE':
+    case 'MOBILE':
+      return { kind: 'phone', label: contact.label, display: contact.display, href: `tel:${contact.value}` }
+    case 'EMAIL':
+      return { kind: 'email', label: contact.label, display: contact.display, href: `mailto:${contact.value}` }
+    case 'WHATSAPP': {
+      /* wa.me takes digits only; `value` is stored as `+97517984485`. */
+      const text = contact.prefillMessage ? `?text=${encodeURIComponent(contact.prefillMessage)}` : ''
+      return {
+        kind: 'whatsapp',
+        label: contact.label,
+        display: contact.display,
+        href: `https://wa.me/${contact.value.replace(/\D/g, '')}${text}`,
+      }
+    }
+    case 'FAX':
+      return { kind: 'fax', label: contact.label, display: contact.display, href: null }
+  }
+}
+
 
 /* -------------------------------------------------------------------------- */
 /*  Pages                                                                      */
@@ -399,6 +587,7 @@ export function toPage(row: ApiPage): SitePage {
     title: row.title,
     eyebrow: row.eyebrow,
     lead: row.lead,
+    note: row.note ?? null,
     heroImage: row.heroImage ? imagePath(row.heroImage) : null,
     heroAlt: row.heroImage?.alt,
     bands: row.sections.map(toBand).filter((band): band is PageBand => band !== null),
@@ -484,6 +673,7 @@ function toBand(section: ApiPageSection): PageBand | null {
     case 'trips':
       return {
         kind: 'trips',
+        eyebrow: section.eyebrow ?? null,
         title: section.title,
         lead: renderStoredRichText(section.lead),
         tripSlugs: section.tripSlugs,

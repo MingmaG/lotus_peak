@@ -1,5 +1,3 @@
-import type { Post } from '../types'
-
 /**
  * The journal entries in this folder, and how they become a body.
  *
@@ -25,8 +23,23 @@ export type SeedPostBlock =
   | { kind: 'image'; src: string; ratio?: string }
   | { kind: 'facts'; title: string; rows: [label: string, value: string][] }
 
-/** An entry as this folder writes it: a `Post`, with the body still in blocks. */
-export type SeedPost = Omit<Post, 'body'> & { body: SeedPostBlock[] }
+/**
+ * A piece of writing as this folder holds it, with the body still in blocks.
+ *
+ * `region` is the line the old journal printed above the title. The five
+ * pieces here were places written up as journal entries; the file provider
+ * moves them under Where we go the way the migration moved the database's.
+ */
+export type SeedPost = {
+  slug: string
+  title: string
+  standfirst: string
+  date: string
+  region: string
+  heroImage: string
+  order: number
+  body: SeedPostBlock[]
+}
 
 function escapeHtml(text: string): string {
   return text

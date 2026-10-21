@@ -2,12 +2,14 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Mail } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 
 import { DataTable, type Column } from '@/components/shared/data-table';
 import { EmptyState } from '@/components/shared/empty-state';
 import { apiGet, query } from '@/lib/api-client';
+import { STATUS_MEANING, STATUS_TONE } from '@/lib/email-status';
 import { humanise, relativeTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -24,17 +26,7 @@ interface Row {
   enquiry: { id: string; reference: string } | null;
 }
 
-const TONE: Record<string, string> = {
-  FAILED: 'text-destructive',
-  BOUNCED: 'text-destructive',
-  COMPLAINED: 'text-destructive',
-  QUEUED: 'text-muted-foreground',
-  SENT: 'text-status-published',
-  DELIVERED: 'text-status-published',
-  OPENED: 'text-status-published',
-};
-
-export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
+export function EmailsScreen({ recordingConfigured }: { recordingConfigured: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -71,12 +63,12 @@ export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
       label: 'Message',
       primary: true,
       render: (row) => (
-        <span className="flex flex-col gap-0.5">
+        <Link href={`/emails/${row.id}`} className="flex flex-col gap-0.5 hover:underline">
           <span>{row.subject}</span>
           <span className="text-xs font-normal text-muted-foreground">
             to {row.toName ? `${row.toName} <${row.toEmail}>` : row.toEmail}
           </span>
-        </span>
+        </Link>
       ),
     },
     {
@@ -102,7 +94,10 @@ export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
       key: 'status',
       label: 'Status',
       render: (row) => (
-        <span className={cn('text-xs', TONE[row.status] ?? 'text-muted-foreground')}>
+        <span
+          className={cn('text-xs', STATUS_TONE[row.status] ?? 'text-muted-foreground')}
+          title={STATUS_MEANING[row.status]}
+        >
           {humanise(row.status)}
           {row.error && (
             <span className="mt-0.5 block max-w-60 truncate" title={row.error}>
@@ -126,14 +121,14 @@ export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
 
   return (
     <div className="space-y-4">
-      {!mailConfigured && (
+      {!recordingConfigured && (
         <div className="rounded-lg border border-status-attention/40 bg-status-attention/5 p-4 text-sm">
-          <p className="font-medium">Nothing is actually being sent.</p>
+          <p className="font-medium">This list cannot fill up.</p>
           <p className="mt-1 text-muted-foreground">
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">RESEND_API_KEY</code> is not
-            set, so every message below was written, recorded and logged rather than delivered.
-            That is the right default for a database full of test addresses — and it means the
-            wording can be checked before a key is ever added.
+            The website sends an enquiry’s email — that is deliberate, so a traveller still
+            reaches you on a day this panel is down — and then reports each message here. Without{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">MAIL_REPORT_SECRET</code> set on
+            both, that report is refused: mail is going out and none of it is written down.
           </p>
         </div>
       )}
@@ -157,9 +152,17 @@ export function EmailsScreen({ mailConfigured }: { mailConfigured: boolean }) {
           {
             key: 'status',
             label: 'Status',
-            options: ['QUEUED', 'SENT', 'DELIVERED', 'OPENED', 'BOUNCED', 'FAILED'].map(
-              (value) => ({ value, label: humanise(value) }),
-            ),
+            options: [
+              'QUEUED',
+              'PROCESSING',
+              'SENT',
+              'DELIVERED',
+              'OPENED',
+              'BOUNCED',
+              'COMPLAINED',
+              'FAILED',
+              'SKIPPED',
+            ].map((value) => ({ value, label: humanise(value) })),
           },
         ]}
         filterValues={{ status }}

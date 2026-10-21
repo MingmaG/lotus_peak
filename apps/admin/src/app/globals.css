@@ -287,6 +287,11 @@
    * are white by rule is a preview of a different website, and the one thing
    * a preview may not do is show something that will not be shipped.
    */
+  /** A rich-text body drawn read-only, on a preview: no box, no padding. */
+  .lp-rich-view .tiptap {
+    @apply text-[16px] leading-[1.7] text-[#3a3a36];
+  }
+
   .lp-preview-canvas {
     background: #ffffff;
     color: #1a1a18;

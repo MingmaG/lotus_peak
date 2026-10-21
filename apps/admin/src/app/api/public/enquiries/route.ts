@@ -2,9 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
+import { env } from '@/lib/env';
 import { enquiryReference } from '@/lib/reference';
 import { ok, publicRoute } from '@/lib/api/public';
-import { deliverEnquiry } from '@/server/services/enquiry-mail';
+import { checkQuota } from '@/server/services/mailer';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,7 +89,13 @@ export const POST = publicRoute(
      * generated and thrown away, and nothing is written.
      */
     if (input.honeypot && input.honeypot.trim().length > 0) {
-      return ok({ id: 'discarded', reference: enquiryReference() });
+      /* No allowance with it, so a caller that does send mail on this answer
+         sends none for a submission nothing was written for. */
+      return ok({
+        id: 'discarded',
+        reference: enquiryReference(),
+        mail: { cap: env.mail.dailyCap, remaining: 0 },
+      });
     }
 
     const ip =
@@ -141,18 +148,31 @@ export const POST = publicRoute(
     });
 
     /**
-     * The record is written first, and the mail is not awaited.
+     * The row is written; the mail is the website's to send.
      *
-     * An enquiry that was saved and whose email failed is a row the office
-     * sees. An enquiry rejected because a mail provider was slow is a customer
-     * who has gone elsewhere. The delivery logs its own failures into
-     * `email_messages`, where they are visible on the Email screen.
+     * It used to be sent from here, in the background, and that was the
+     * failure this endpoint could not survive: a panel that is down, migrating
+     * or half-deployed took the enquiry's mail down with it, so the office
+     * learned about a traveller only when somebody next opened the panel. The
+     * website now renders and hands over both messages and reports them back
+     * to `/api/public/emails`, which is the one arrangement where an
+     * unreachable panel still costs a row on a screen rather than a customer.
+     *
+     * What this answer adds is the one thing the website cannot work out for
+     * itself: how much of today's provider allowance is left, counted out of
+     * the table the messages are recorded in.
      */
-    void deliverEnquiry(enquiry.id).catch((error) => {
-      console.error('[enquiry] delivery failed for', enquiry.reference, error);
-    });
+    const quota = await checkQuota().catch(() => null);
 
-    return ok({ id: enquiry.id, reference: enquiry.reference });
+    return ok({
+      id: enquiry.id,
+      reference: enquiry.reference,
+      /* A count that could not be taken is not a cap of nought — that would
+         silence the mail for an enquiry we have just accepted. */
+      mail: quota
+        ? { cap: quota.cap, remaining: quota.remaining }
+        : { cap: env.mail.dailyCap, remaining: env.mail.dailyCap },
+    });
   },
 );
 

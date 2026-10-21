@@ -5,16 +5,17 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Badge, Button, Divider, Eyebrow, Reflection, SiteIcon, Tooltip } from '@/design-system'
 import { getContent } from '@/content'
-import { fmt } from '@/content/types'
-import { IMG, altFor } from '@/lib/assets'
+import { fmt, type TripPhoto } from '@/content/types'
 import { ogImage } from '@/lib/seo'
-import { Reveal, Strip } from '@/motion'
+import { Reveal } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
 import { EnquiryForm } from '@/sections/shared/EnquiryForm'
 import { Centered, Fact, KeraRule, Section } from '@/sections/shared/Section'
 import { SectionNav } from '@/sections/trip/SectionNav'
 import { TripFaq, TripItinerary } from '@/sections/trip/TripItinerary'
+import { TripGallery } from '@/sections/trip/TripGallery'
 import { TripHero } from '@/sections/trip/TripHero'
+import { TripRelated } from '@/sections/trip/TripRelated'
 import { TripOverviewImages } from '@/sections/trip/TripOverviewImages'
 import { JsonLd } from '@/seo/JsonLd'
 import { graphForTrip } from '@/seo/graph'
@@ -32,6 +33,24 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: trip.excerpt,
     openGraph: { title: trip.title, description: trip.excerpt, images: ogImage(trip.heroImage) },
   }
+}
+
+/**
+ * The same photograph twice is one photograph.
+ *
+ * A picture good enough for the gallery band is often also hung on the day it
+ * was taken, and the band would otherwise show it once for each — and count it
+ * twice in "view all N photographs".
+ */
+function uniqueBySrc(photos: TripPhoto[]): TripPhoto[] {
+  const seen = new Set<string>()
+  const out: TripPhoto[] = []
+  for (const photo of photos) {
+    if (seen.has(photo.src)) continue
+    seen.add(photo.src)
+    out.push(photo)
+  }
+  return out
 }
 
 function List({ items }: { items: string[] }) {
@@ -59,6 +78,22 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
     content.reflections.list({ featured: true, limit: 2 }),
     content.settings.get(),
   ])
+
+  /* The band draws the journey's own photographs and the ones hung on its
+     days. The office adds a day's pictures while writing that day, and the
+     band is titled "what the days look like" — a visitor asking exactly that
+     should not have to open eleven days to find them.
+     Composed here rather than in the provider: the record goes on saying which
+     photographs the office chose for the band and which belong to a day, and
+     both already travel on it. */
+  const galleryPhotos = uniqueBySrc([
+    ...trip.gallery,
+    ...trip.itinerary.flatMap((day) => day.images ?? []),
+  ])
+
+  /* Hidden by the office, or nothing to show: either way there is no band,
+     and the sub-nav must not offer a jump to it. */
+  const showGallery = trip.sections.gallery && galleryPhotos.length > 0
 
   const badges: [string, 'neutral' | 'pine' | 'saffron' | 'gold'][] = [
     [fmt.duration(trip), 'neutral'],
@@ -90,7 +125,7 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         regions={fmt.regions(trip)}
       />
 
-      <SectionNav />
+      <SectionNav hide={showGallery ? [] : ['gallery']} />
 
       <Section id="overview" num="01" eyebrow="Overview" style={{ paddingBottom: 0 }}>
         <div
@@ -103,29 +138,29 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
             marginTop: 'var(--space-8)',
           }}
         >
-          <TripOverviewImages main={trip.heroImage} inset={IMG.hike} insetAlt={altFor(IMG.hike)} />
+          {/* The main photograph carries a description only when it is not
+              the hero, which is already described at the top of this page. */}
+          <TripOverviewImages
+            main={trip.overviewImage}
+            mainAlt={
+              trip.overviewImage === trip.heroImage ? undefined : trip.overviewImageAlt
+            }
+            inset={trip.overviewInset}
+            insetAlt={trip.overviewInsetAlt}
+          />
 
           <div>
             <Reveal>
               <h2 style={{ fontSize: 'var(--text-h2)', maxWidth: '18ch' }}>{trip.excerpt}</h2>
             </Reveal>
             <Reveal delay={240}>
-              <div>
-                {trip.overview.map((p, i) => (
-                  <p
-                    key={i}
-                    style={{
-                      marginTop: i === 0 ? 28 : 20,
-                      color: 'var(--text-muted)',
-                      ...(i === 0
-                        ? { fontSize: 'var(--text-lead)', lineHeight: 'var(--leading-lead)' }
-                        : null),
-                    }}
-                  >
-                    {p}
-                  </p>
-                ))}
-              </div>
+              {/* Rich text now, so the first paragraph's lead type is a CSS
+                  rule rather than an index — see `.lp-prose-lead`. */}
+              <Prose
+                html={trip.overview}
+                className="lp-prose-lead"
+                style={{ marginTop: 28 }}
+              />
             </Reveal>
             <Reveal delay={480}>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 32 }}>
@@ -342,14 +377,29 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         </div>
       </Section>
 
-      <BandLink
-        href="/trips"
-        src={IMG.hike}
-        height="80vh"
-        eyebrow="On the trail"
-        title="Walked at a pace that leaves room to notice"
-        body="Two nights in most valleys. Drives of no more than five hours. A rest day written in. Your guide sets the pace to the slowest step in the group."
-      />
+      {/**
+        * The band above the itinerary, as the office wrote it.
+        *
+        * Was a photograph of four travellers on a ridge and a paragraph about
+        * pace, typed in here, on every journey — including the trek that walks
+        * for eight days and the festival journey that hardly walks at all.
+        *
+        * `trip.trail` is null when the office switched the band off, chose no
+        * photograph or wrote nothing; the provider decides that, so there is
+        * no emptiness test here. `height` stays in the page because it is the
+        * design's measurement of this band, not a thing to edit.
+        */}
+      {trip.trail && (
+        <BandLink
+          href="/trips"
+          src={trip.trail.image}
+          alt={trip.trail.imageAlt ?? ''}
+          height="80vh"
+          eyebrow={trip.trail.eyebrow ?? undefined}
+          title={trip.trail.title ?? undefined}
+          body={trip.trail.body ?? undefined}
+        />
+      )}
 
       <Section id="itinerary">
         <Reveal>
@@ -479,7 +529,16 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         </Section>
       )}
 
-      <Strip images={trip.gallery} />
+      {showGallery && (
+        <Section id="gallery" style={{ paddingTop: 0 }}>
+          <Reveal>
+            <Centered eyebrow="Photographs" title="What the days look like" />
+          </Reveal>
+          <div style={{ maxWidth: 'var(--container)', margin: 'var(--space-8) auto 0' }}>
+            <TripGallery photos={galleryPhotos} title={trip.title} />
+          </div>
+        </Section>
+      )}
 
       <Section id="essential" style={{ paddingTop: 0 }}>
         <Reveal>
@@ -527,6 +586,8 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
           </div>
         </Reveal>
       </Section>
+
+      <TripRelated trip={trip} copy={settings.journeyBands} />
     </main>
   )
 }

@@ -20,9 +20,9 @@ export type SlugEntity = 'destination' | 'activity' | 'culture';
 
 const PATH_PREFIX: Record<SlugEntity, string> = {
   /**
-   * Destinations and culture articles render as anchors on one index page
-   * rather than as pages of their own, so a renamed slug moves a fragment.
-   * The redirect still points at the index, which is where the link lands.
+   * A valley's page. A *place's* URL has its valley's slug in it as well, so
+   * the destination route works its redirects out itself and does not come
+   * through here — this is only right for a valley.
    */
   destination: '/destinations',
   culture: '/culture',

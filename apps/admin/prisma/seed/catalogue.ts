@@ -1,7 +1,10 @@
 import type { Difficulty, SeasonKey, SiteIcon, TripType } from '@prisma/client';
+import type { SiteIconName } from '@lotuspeak/api-contracts';
 
 import { db } from '@/lib/db';
+import { ICON_FROM_WIRE } from '@/server/services/content-paths';
 
+import { asParagraphs, blocksToHtml, type Block } from './blocks';
 import type { ImageMap } from './media';
 import activities from '../seed-data/activities.json';
 import culture from '../seed-data/culture.json';
@@ -51,15 +54,15 @@ const SEASON_KEY: Record<string, SeasonKey> = {
   winter: 'WINTER',
 };
 
-const ICON: Record<string, SiteIcon> = {
-  dzong: 'DZONG',
-  chorten: 'CHORTEN',
-  stupa: 'STUPA',
-  monastery: 'MONASTERY',
-  pavilion: 'PAVILION',
-  'dzong-long': 'DZONG_LONG',
-  buddha: 'BUDDHA',
-};
+/**
+ * The JSON spells a silhouette the way the website does; the column holds the
+ * enum. `content-paths` owns the mapping — this only has to cope with a name
+ * the export wrote that the design system no longer draws, which is what the
+ * fallback is for.
+ */
+function icon(name: string, fallback: SiteIcon): SiteIcon {
+  return name in ICON_FROM_WIRE ? ICON_FROM_WIRE[name as SiteIconName] : fallback;
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Shapes, as the export wrote them                                           */
@@ -90,15 +93,25 @@ interface TripJson {
   gallery: [string, string?, string?][];
 }
 
+/**
+ * A valley, or, with `parent`, a place inside one.
+ *
+ * The researched pages: six valleys and sixteen places, each a standfirst and
+ * a body of blocks. Sources for every page, and what was left out because
+ * they disagreed, are in `docs/CONTENT-SOURCES.md`.
+ */
 interface DestinationJson {
   slug: string;
   name: string;
+  parent?: string;
   icon: string;
   blurb: string;
-  detail: string;
+  standfirst: string;
+  body: Block[];
   image: string;
   tripSlugs: string[];
   order: number;
+  publishedAt?: string;
 }
 
 interface ActivityJson {
@@ -126,10 +139,14 @@ interface SeasonJson {
 interface CultureJson {
   slug: string;
   title: string;
-  body: string;
+  standfirst: string;
+  /** The page, as blocks. A plain paragraph is still accepted. */
+  body: string | Block[];
   icon: string;
   image: string;
   order: number;
+  /** Destination slugs: where to see it. */
+  destinations: string[];
 }
 
 interface GalleryJson {
@@ -157,10 +174,10 @@ export async function seedCatalogue(images: ImageMap): Promise<void> {
 
   await seedSeasons(media);
   const tripIds = await seedTrips(media);
-  const destinationIds = await seedDestinations(media);
+  const destinationIds = await seedDestinations(media, images);
   await linkTripsToDestinations(tripIds, destinationIds);
   await seedActivities(media, tripIds);
-  await seedCulture(media);
+  await seedCulture(media, destinationIds, images);
   await seedGallery(media);
   await seedReflections(tripIds);
 }
@@ -195,6 +212,29 @@ async function seedSeasons(media: (src?: string | null) => string | null): Promi
   console.log(`  seasons      ${seasons.length}`);
 }
 
+/**
+ * The band above the itinerary, as the website drew it.
+ *
+ * Not from the export, because it was never in the content: it was a
+ * photograph and a paragraph typed into the journey page's own source, the
+ * same two on all five journeys. The migration puts these words on the rows
+ * of a database that already exists; this puts them on a database being made
+ * from nothing, so the two agree about what the site said.
+ *
+ * Every journey gets the same band here, which is what a seed should do —
+ * reproduce the site. Telling them apart is the office's to do now that it
+ * can, and the trek is the first one worth doing it to.
+ */
+const TRAIL = {
+  trailEyebrow: 'On the trail',
+  trailTitle: 'Walked at a pace that leaves room to notice',
+  trailBody:
+    'Two nights in most valleys. Drives of no more than five hours. A rest day written in. ' +
+    'Your guide sets the pace to the slowest step in the group.',
+};
+
+const TRAIL_PHOTOGRAPH = '/assets/imagery/travellers-hike.webp';
+
 async function seedTrips(
   media: (src?: string | null) => string | null,
 ): Promise<Map<string, string>> {
@@ -218,8 +258,13 @@ async function seedTrips(
       seasonKeys: seasonKeysFrom(trip.seasonLabel),
       paceNote: trip.paceNote,
       regions: trip.regions,
-      overview: trip.overview,
+      /* The export holds one string per paragraph; the column holds one
+         rich-text document. `asParagraphs` is the same conversion the
+         migration made for the rows that were already there. */
+      overview: trip.overview.map(asParagraphs).join(''),
       heroId: media(trip.heroImage),
+      ...TRAIL,
+      trailImageId: media(TRAIL_PHOTOGRAPH),
       sortOrder: trip.order,
       status: 'PUBLISHED' as const,
       publishedAt: now,
@@ -343,22 +388,32 @@ function seasonKeysFrom(label: string): SeasonKey[] {
   return keys;
 }
 
-async function seedDestinations(
+export async function seedDestinations(
   media: (src?: string | null) => string | null,
+  images: ImageMap,
 ): Promise<Map<string, string>> {
   const ids = new Map<string, string>();
+  const rows = destinations as DestinationJson[];
 
-  for (const destination of destinations as DestinationJson[]) {
+  /* Valleys first, so every place has its parent's id to point at. */
+  for (const destination of [...rows.filter((d) => !d.parent), ...rows.filter((d) => d.parent)]) {
+    const parentId = destination.parent ? (ids.get(destination.parent) ?? null) : null;
+    const { html: body } = blocksToHtml(destination.body, images, destination.slug);
+
     const base = {
       name: destination.name,
-      icon: ICON[destination.icon] ?? 'DZONG',
+      parentId,
+      icon: icon(destination.icon, 'DZONG'),
       blurb: destination.blurb,
-      detail: destination.detail,
+      standfirst: destination.standfirst,
+      body,
       imageId: media(destination.image),
       sortOrder: destination.order,
       status: 'PUBLISHED' as const,
-      publishedAt: now,
-      metaDescription: destination.blurb,
+      publishedAt: destination.publishedAt ? new Date(destination.publishedAt) : now,
+      /* Null, so the search result follows the standfirst. A copy here would
+         read as an override on the SEO tab and pin the old words. */
+      metaDescription: null,
     };
 
     const row = await db.destination.upsert({
@@ -369,7 +424,9 @@ async function seedDestinations(
     ids.set(destination.slug, row.id);
   }
 
-  console.log(`  destinations ${destinations.length}`);
+  console.log(
+    `  destinations ${rows.filter((d) => !d.parent).length} valleys, ${rows.filter((d) => d.parent).length} places`,
+  );
   return ids;
 }
 
@@ -393,15 +450,19 @@ async function linkTripsToDestinations(
   tripIds: Map<string, string>,
   destinationIds: Map<string, string>,
 ): Promise<void> {
+  /* Valleys only. A journey's route is a line of valleys; a place inside one
+     is reached through it and has no route position of its own. */
+  const valleys = (destinations as DestinationJson[]).filter((d) => !d.parent);
+
   const byName = new Map<string, string>();
-  for (const destination of destinations as DestinationJson[]) {
+  for (const destination of valleys) {
     const id = destinationIds.get(destination.slug);
     if (id) byName.set(destination.name.toLowerCase(), id);
   }
 
   /* destinationId → the journeys that list it, for the append pass. */
   const visits = new Map<string, Set<string>>();
-  for (const destination of destinations as DestinationJson[]) {
+  for (const destination of valleys) {
     const id = destinationIds.get(destination.slug);
     if (!id) continue;
     for (const slug of destination.tripSlugs) {
@@ -461,7 +522,7 @@ async function linkTripsToDestinations(
    * order the office wants those journeys offered on that place's page, which
    * is an editorial decision and not a consequence of anybody's route.
    */
-  for (const destination of destinations as DestinationJson[]) {
+  for (const destination of valleys) {
     const destinationId = destinationIds.get(destination.slug);
     if (!destinationId) continue;
 
@@ -494,7 +555,7 @@ async function seedActivities(
     const base = {
       name: activity.name,
       blurb: activity.blurb,
-      icon: ICON[activity.icon] ?? 'PAVILION',
+      icon: icon(activity.icon, 'PAVILION'),
       imageId: media(activity.image),
       examples: activity.examples,
       sortOrder: activity.order,
@@ -523,23 +584,48 @@ async function seedActivities(
   console.log(`  activities   ${activities.length}`);
 }
 
-async function seedCulture(media: (src?: string | null) => string | null): Promise<void> {
+export async function seedCulture(
+  media: (src?: string | null) => string | null,
+  destinationIds: Map<string, string>,
+  images: ImageMap,
+): Promise<void> {
   for (const article of culture as CultureJson[]) {
+    const body =
+      typeof article.body === 'string'
+        ? article.body
+          ? asParagraphs(article.body)
+          : ''
+        : blocksToHtml(article.body, images, article.slug).html;
     const base = {
       title: article.title,
-      body: article.body,
-      icon: ICON[article.icon] ?? 'CHORTEN',
+      standfirst: article.standfirst,
+      body,
+      icon: icon(article.icon, 'CHORTEN'),
       imageId: media(article.image),
       sortOrder: article.order,
       status: 'PUBLISHED' as const,
       publishedAt: now,
-      metaDescription: article.body.slice(0, 155),
+      metaDescription: null,
     };
-    await db.cultureArticle.upsert({
+    const row = await db.cultureArticle.upsert({
       where: { slug: article.slug },
       create: { slug: article.slug, ...base },
       update: base,
     });
+
+    await db.cultureOnDestination.deleteMany({ where: { cultureId: row.id } });
+    const links = article.destinations
+      .map((slug) => destinationIds.get(slug))
+      .filter((id): id is string => Boolean(id));
+    if (links.length) {
+      await db.cultureOnDestination.createMany({
+        data: links.map((destinationId, index) => ({
+          cultureId: row.id,
+          destinationId,
+          sortOrder: index,
+        })),
+      });
+    }
   }
   console.log(`  culture      ${culture.length}`);
 }

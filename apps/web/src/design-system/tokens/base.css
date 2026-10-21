@@ -1,4 +1,9 @@
-html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+/* The gutter is reserved whether or not the page scrolls. Every overlay on
+   this site locks the body, and without this the scrollbar leaves with the
+   lock: the viewport widens, the whole page reflows a few pixels sideways
+   and every fixed element jumps. That jump is what reads as a flicker on
+   the click that opens the dignity plate, the inquiry drawer or the menu. */
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scrollbar-gutter:stable}
 body{margin:0;background-color:var(--surface-page);background-image:repeating-linear-gradient(0deg,rgba(31,29,26,.028) 0 1px,transparent 1px 7px),repeating-linear-gradient(90deg,rgba(31,29,26,.022) 0 1px,transparent 1px 7px),radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.55),transparent 65%);background-attachment:fixed;color:var(--text-body);font-family:var(--font-sans-body);font-size:var(--text-body-size);line-height:var(--leading-body);font-weight:var(--weight-body)}
 h1,h2,h3,h4{font-family:var(--font-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);margin:0;line-height:var(--leading-heading);text-wrap:pretty}
 p{margin:0;text-wrap:pretty}

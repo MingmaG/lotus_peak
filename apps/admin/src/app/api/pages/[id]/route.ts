@@ -71,6 +71,7 @@ export const PATCH = route<PagePatch, { id: string }>({
         title: body.title,
         eyebrow: body.eyebrow === undefined ? undefined : body.eyebrow || null,
         lead: body.lead === undefined ? undefined : body.lead || null,
+        note: body.note === undefined ? undefined : body.note || null,
         sections: body.sections === undefined ? undefined : (body.sections as never),
         heroId: body.heroId === undefined ? undefined : body.heroId,
         showInSitemap: body.showInSitemap,

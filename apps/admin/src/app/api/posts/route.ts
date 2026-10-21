@@ -21,7 +21,6 @@ export const GET = route({
             OR: [
               { title: { contains: q.search, mode: 'insensitive' } },
               { standfirst: { contains: q.search, mode: 'insensitive' } },
-              { region: { contains: q.search, mode: 'insensitive' } },
             ],
           }
         : {}),
@@ -39,7 +38,7 @@ export const GET = route({
           slug: true,
           title: true,
           standfirst: true,
-          region: true,
+          category: true,
           status: true,
           featured: true,
           readingMinutes: true,
@@ -64,7 +63,7 @@ export const POST = route<z.infer<typeof postSchema>>({
         slug: await freeSlug('post', body.slug || body.title),
         title: body.title,
         standfirst: body.standfirst,
-        region: body.region,
+        category: body.category,
         /* The URL inside each figure is derived from its media id and is put
            back on the way out, so it is taken out on the way in — a URL in the
            column is the thing that goes stale when the store moves. */
@@ -80,6 +79,12 @@ export const POST = route<z.infer<typeof postSchema>>({
         ...seoColumns(body.seo),
         tripLinks: {
           create: body.relatedTripIds.map((tripId, index) => ({ tripId, sortOrder: index })),
+        },
+        destinations: {
+          create: body.destinationIds.map((destinationId, index) => ({ destinationId, sortOrder: index })),
+        },
+        culture: {
+          create: body.cultureIds.map((cultureId, index) => ({ cultureId, sortOrder: index })),
         },
       },
     });

@@ -5,14 +5,22 @@ import { siteUrl } from '@/lib/env'
 import {
   articleNode,
   breadcrumbNode,
+  cultureNode,
+  destinationNode,
   pageGraph,
+  pageListNode,
   tripListNode,
   tripNode,
   type Crumb,
 } from '@lotuspeak/seo'
 import type {
+  ApiCultureArticle,
+  ApiCultureSummary,
+  ApiDestination,
+  ApiDestinationSummary,
   ApiImage,
   ApiPost,
+  ApiPostSummary,
   ApiSite,
   ApiTrip,
   ApiTripFaq,
@@ -20,7 +28,17 @@ import type {
 } from '@lotuspeak/api-contracts'
 
 import { getContent } from '@/content'
-import type { Post, SiteSettings, Trip } from '@/content/types'
+import type {
+  CultureArticle,
+  CulturePage,
+  Destination,
+  DestinationPage,
+  EntitySeo,
+  Post,
+  PostPage,
+  SiteSettings,
+  Trip,
+} from '@/content/types'
 
 /**
  * Builds a page's structured data.
@@ -108,6 +126,9 @@ function widenTrip(trip: Trip): ApiTrip {
     priceNote: null,
     pricingTiers: [],
     routeMap: null,
+    /* The band above the itinerary is the page's furniture, not a fact about
+       the journey, and its photograph is not one of the journey's own. */
+    trail: null,
     videoUrl: null,
     stats: [],
     elevationProfile: [],
@@ -119,6 +140,11 @@ function widenTrip(trip: Trip): ApiTrip {
     groupSizeMin: null,
     groupSizeMax: null,
     heroImage: image(trip.heroImage, trip.heroAlt),
+    /* The structured data describes the journey, not the page's furniture: the
+       pair beside the overview is the hero again or a photograph from the
+       strip, both of which are already in the graph. */
+    overviewImage: null,
+    overviewInsetImage: null,
     overview: trip.overview,
     highlights: trip.highlights,
     itinerary: trip.itinerary.map((day, index) => ({
@@ -134,26 +160,79 @@ function widenTrip(trip: Trip): ApiTrip {
     faq: trip.faq,
     gallery: [],
     departures: [],
-    relatedSlugs: [],
+    sections: { gallery: true, destinations: true, culture: true, journal: true, related: true },
+    destinations: [],
+    culture: [],
+    posts: [],
+    related: [],
     featured: false,
     seo: EMPTY_SEO,
   }
 }
 
-function widenPost(post: Post): ApiPost {
+function widenSeo(seo: EntitySeo) {
+  return { ...EMPTY_SEO, updatedAt: seo.updatedAt ?? EMPTY_SEO.updatedAt }
+}
+
+function widenDestination(row: Destination): ApiDestinationSummary {
+  return {
+    slug: row.slug,
+    name: row.name,
+    path: row.path,
+    parentSlug: row.parentSlug,
+    icon: row.icon,
+    blurb: row.blurb,
+    standfirst: row.standfirst,
+    image: image(row.image, row.imageAlt),
+    tripSlugs: row.tripSlugs,
+    altitudeMetres: row.altitudeMetres,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    places: row.places,
+  }
+}
+
+function widenCulture(row: CultureArticle): ApiCultureSummary {
+  return {
+    slug: row.slug,
+    title: row.title,
+    path: row.path,
+    standfirst: row.standfirst,
+    icon: row.icon,
+    image: image(row.image, row.imageAlt),
+  }
+}
+
+function widenPostSummary(row: Post): ApiPostSummary {
+  return {
+    slug: row.slug,
+    title: row.title,
+    path: row.path,
+    standfirst: row.standfirst,
+    date: `${row.date}T00:00:00.000Z`,
+    category: row.category,
+    places: row.places,
+    heroImage: image(row.heroImage, row.heroAlt),
+    readingMinutes: row.readingMinutes,
+  }
+}
+
+function widenPost(post: PostPage): ApiPost {
   return {
     slug: post.slug,
     title: post.title,
     standfirst: post.standfirst,
     date: `${post.date}T00:00:00.000Z`,
-    region: post.region,
+    category: post.category,
     heroImage: image(post.heroImage, post.heroAlt),
     body: '',
-    author: null,
-    tags: [],
-    relatedTripSlugs: [],
-    readingMinutes: 1,
-    seo: EMPTY_SEO,
+    author: post.author ? { ...post.author, avatar: null } : null,
+    tags: post.tags,
+    relatedTripSlugs: post.relatedTripSlugs,
+    destinations: post.destinations.map(widenDestination),
+    culture: post.culture.map(widenCulture),
+    readingMinutes: post.readingMinutes,
+    seo: widenSeo(post.seo),
   }
 }
 
@@ -164,9 +243,12 @@ async function base(settings: SiteSettings): Promise<ApiSite> {
   /* The file provider, or an unreachable API. Enough for a valid graph. */
   return {
     company: {
-      legalName: settings.brand,
+      legalName: settings.legalName,
       name: settings.brand,
       tagline: settings.line,
+      strapline: settings.strapline,
+      heroMedia: settings.hero.media,
+      heroYoutubeUrl: settings.hero.youtubeUrl,
       description: settings.defaultSeo.description,
       foundedYear: null,
       licenceNumber: null,
@@ -203,12 +285,19 @@ async function base(settings: SiteSettings): Promise<ApiSite> {
           prefillMessage: null,
         },
       ],
-      socials: [],
+      socials: settings.socials.map((social) => ({ ...social, handle: null })),
       officeHours: [],
     },
     nav: [],
     navCta: null,
-    footer: { columns: [], note: settings.footer.note, copyright: '' },
+    footer: {
+      columns: [],
+      note: settings.footer.note,
+      copyright: '',
+      credit: settings.footer.credit,
+      show: settings.footer.show,
+    },
+    journeyBands: settings.journeyBands,
     replyPromise: settings.contact.replyPromise,
     pledge: { percent: settings.pledge.percent, beneficiary: settings.pledge.beneficiary, note: null },
     sdfPerNightUsd: settings.sdfPerNightUsd,
@@ -289,8 +378,8 @@ export async function graphForTrip(trip: Trip) {
   })
 }
 
-/** A journal entry. */
-export async function graphForPost(post: Post) {
+/** A journal entry: the page graph, plus the `Article` and what it is about. */
+export async function graphForPost(post: PostPage) {
   const settings = await getContent().settings.get()
   const site = await base(settings)
   const widened = widenPost(post)
@@ -298,16 +387,107 @@ export async function graphForPost(post: Post) {
   return pageGraph({
     siteUrl: siteUrl(),
     site,
-    path: `/journal/${post.slug}`,
-    title: post.title,
-    description: post.standfirst,
+    path: post.path,
+    title: post.seo.title ?? post.title,
+    description: post.seo.description ?? post.standfirst,
     crumbs: [
       { name: 'Journal', path: '/journal' },
-      { name: post.title, path: `/journal/${post.slug}` },
+      { name: post.title, path: post.path },
     ],
     entity: articleNode(siteUrl(), widened),
     image: widened.heroImage,
-    extra: post.schemaJson,
+    extra: post.seo.schemaJson,
+  })
+}
+
+/**
+ * A valley or a place: `TouristDestination`, or `TouristAttraction` inside
+ * its valley, and a trail that goes through the valley.
+ */
+export async function graphForDestination(page: DestinationPage) {
+  const settings = await getContent().settings.get()
+  const site = await base(settings)
+
+  const widened: ApiDestination = {
+    ...widenDestination(page),
+    body: '',
+    parent: page.parent,
+    placeCards: page.placeCards.map(widenDestination),
+    culture: page.culture.map(widenCulture),
+    posts: page.posts.map(widenPostSummary),
+    seo: widenSeo(page.seo),
+  }
+
+  return pageGraph({
+    siteUrl: siteUrl(),
+    site,
+    path: page.path,
+    title: page.seo.title ?? page.name,
+    description: page.seo.description ?? (page.standfirst || page.blurb),
+    crumbs: [
+      { name: 'Where we go', path: '/destinations' },
+      ...(page.parent ? [{ name: page.parent.title, path: page.parent.path }] : []),
+      { name: page.name, path: page.path },
+    ],
+    entity: destinationNode(siteUrl(), widened),
+    image: widened.image,
+    extra: page.seo.schemaJson,
+  })
+}
+
+/** A culture piece: the page graph, plus its `Article` and where to see it. */
+export async function graphForCulture(page: CulturePage) {
+  const settings = await getContent().settings.get()
+  const site = await base(settings)
+
+  const widened: ApiCultureArticle = {
+    ...widenCulture(page),
+    body: '',
+    destinations: page.destinations.map(widenDestination),
+    posts: page.posts.map(widenPostSummary),
+    seo: widenSeo(page.seo),
+  }
+
+  return pageGraph({
+    siteUrl: siteUrl(),
+    site,
+    path: page.path,
+    title: page.seo.title ?? page.title,
+    description: page.seo.description ?? page.standfirst,
+    crumbs: [
+      { name: 'Culture', path: '/culture' },
+      { name: page.title, path: page.path },
+    ],
+    entity: cultureNode(siteUrl(), widened),
+    image: widened.image,
+    extra: page.seo.schemaJson,
+  })
+}
+
+/**
+ * An index of pages — Where we go, Culture, a journal shelf — with the set it
+ * lists as an `ItemList`, so a crawler sees the pages and not only the prose.
+ */
+export async function graphForIndex(args: {
+  path: string
+  title: string
+  description: string
+  crumbs: Crumb[]
+  items: { path: string; name: string }[]
+  extra?: unknown
+}) {
+  const settings = await getContent().settings.get()
+  const site = await base(settings)
+
+  return pageGraph({
+    siteUrl: siteUrl(),
+    site,
+    path: args.path,
+    title: args.title,
+    description: args.description,
+    crumbs: args.crumbs,
+    entity: args.items.length ? pageListNode(siteUrl(), args.items) : null,
+    extra: args.extra,
   })
 }
 

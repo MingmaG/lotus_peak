@@ -229,11 +229,41 @@ export interface ApiOfficeHours {
   closed: boolean;
 }
 
+/**
+ * What the office chose to play behind the home page's headline.
+ *
+ * Two values rather than three. The hero can also play an MP4 the website
+ * serves itself, but nothing the office can reach puts a file under the
+ * website's `public/assets`, so that route stays a developer's choice in
+ * `apps/web/src/lib/hero-media.ts`. A third value here would be one the panel
+ * could offer and never fulfil.
+ */
+export type HeroMediaChoice = 'image' | 'youtube';
+
 export interface ApiCompany {
   legalName: string;
   /** What the site calls itself. "Lotus Peak". */
   name: string;
   tagline: string;
+  /** The words over the home page's photograph. Empty: the tagline. */
+  strapline: string;
+  /**
+   * What plays behind those words: the photograph, or a film on YouTube.
+   *
+   * It travels beside `strapline` because it is the same decision about the
+   * same part of the same page, and the panel edits the two in one place.
+   */
+  heroMedia: HeroMediaChoice;
+  /**
+   * The film, as any address somebody might copy — a watch link, a `youtu.be`
+   * share link, an embed address. Parsed by `@lotuspeak/video` on both sides.
+   *
+   * It stays filled when `heroMedia` is `image`, so a film can be put back
+   * without being retyped, and the panel refuses `youtube` with nothing here.
+   * The website still treats an address naming no film as the photograph: a
+   * typo must cost the hero its motion, never its front door.
+   */
+  heroYoutubeUrl: string | null;
   description: string;
   foundedYear: number | null;
   /** Tourism Council of Bhutan licence, shown in the footer. */
@@ -275,10 +305,20 @@ export interface ApiSite {
   navCta: { label: string; href: string } | null;
   footer: {
     columns: ApiFooterColumn[];
+    /** The short introduction under the company's name. Empty: the tagline. */
     note: string;
     /** `© {year} {name}` — the tokens are substituted by the website. */
     copyright: string;
+    /** "Website by Trailma", the name linked. Null when the office named nobody. */
+    credit: { label: string; name: string; url: string | null } | null;
+    /** Which parts draw. Each is also left out when it has nothing in it. */
+    show: { links: boolean; address: boolean; contacts: boolean; socials: boolean };
   };
+  /**
+   * The bands at the foot of every journey page: a heading each, and the words
+   * on the link to that whole section. An empty `more` draws no link.
+   */
+  journeyBands: Record<'places' | 'culture' | 'journal' | 'related', { title: string; more: string }>;
   /** "Personally, within two days". Shown beside the enquiry form. */
   replyPromise: string;
   /** The monastery pledge the About and home pages state. */
@@ -320,11 +360,11 @@ export type SeasonKey = 'spring' | 'summer' | 'autumn' | 'winter';
 /**
  * The silhouettes the design system can draw.
  *
- * The first seven are building types, and the admin stores them as the
- * `SiteIcon` enum. The last three name a single place each — Taktsang, Punakha
- * and Jakar — because those three dzongs read as themselves rather than as a
- * generic dzong, and the destinations pages use them. They are not in the
- * admin's enum yet, so only the file provider can set them for now.
+ * The first seven are building types. The eight after them name a single place
+ * each — Taktsang, Punakha, Jakar, Trongsa, Mongar, Pemagatshel, Trashigang
+ * and Gasa — because those dzongs read as themselves rather than as a generic
+ * dzong, and the destinations pages and the menu map use them. All fifteen are
+ * in the admin's `SiteIcon` enum, so the office can pick any of them.
  */
 export type SiteIconName =
   | 'dzong'
@@ -336,7 +376,12 @@ export type SiteIconName =
   | 'buddha'
   | 'taktsang'
   | 'punakha'
-  | 'jakar';
+  | 'jakar'
+  | 'trongsa'
+  | 'mongar'
+  | 'pemagatshel'
+  | 'trashigang'
+  | 'gasa';
 
 export interface ApiItineraryDay {
   /**
@@ -452,11 +497,43 @@ export interface ApiTrip {
   groupSizeMin: number | null;
   groupSizeMax: number | null;
   heroImage: ApiImage | null;
+  /**
+   * The large photograph beside the overview, and the small one inset into its
+   * corner.
+   *
+   * Two fields rather than a list, because the design draws exactly two in
+   * fixed shapes — a 4/5 portrait with a 3/4 one offset into its bottom-right
+   * corner — and a list of unknown length would have to be truncated by
+   * whatever renders it. Either may be null: the main one falls back to the
+   * hero, and with no inset chosen the page draws the single photograph.
+   */
+  overviewImage: ApiImage | null;
+  overviewInsetImage: ApiImage | null;
   /** The route drawn on a map. A picture, not a live map. */
   routeMap: ApiImage | null;
+  /**
+   * The full-bleed band above the itinerary — "On the trail".
+   *
+   * Null where the office switched it off or left it empty, and that is the
+   * whole decision: unlike `sections` below, nothing else on the page reads
+   * this photograph or these words, so there is nothing for the website to do
+   * with a band it is not drawing. Resolving it here keeps the rule in one
+   * place rather than in two that have to agree.
+   */
+  trail: ApiTripTrail | null;
   /** A film, where there is one. Rendered as a façade, never as an iframe. */
   videoUrl: string | null;
-  overview: string[];
+  /**
+   * The opening paragraphs, as one rich-text document.
+   *
+   * An array of plain paragraphs until the office pointed out that a journey's
+   * opening was the only long-form field on the site that could not carry a
+   * link to the monastery it names, or a photograph, or a list. It is now the
+   * same column type and the same editor as an itinerary day, a page band and
+   * a journal entry — and the same `renderStoredRichText` on the way out, so a
+   * journey written before the change still renders as the paragraphs it was.
+   */
+  overview: string | null;
   /** Beyond the fixed five. Usually empty. */
   stats: ApiTripStat[];
   /** Empty for everything but the trekking journeys. */
@@ -477,10 +554,62 @@ export interface ApiTrip {
   faqGroups: ApiTripFaqGroup[];
   gallery: ApiTripGalleryItem[];
   departures: ApiDeparture[];
-  /** Other journeys to offer at the foot of this one, in the order chosen. */
-  relatedSlugs: string[];
+  /**
+   * Which of the optional bands the page draws, as the office set them.
+   *
+   * Sent as well as the lists below rather than instead of them, because the
+   * gallery is also the journey's pictures in its structured data — hiding the
+   * band is not the same as having no photographs.
+   */
+  sections: ApiTripSections;
+  /** The places on the route that have pages, in route order. */
+  destinations: ApiDestinationSummary[];
+  /**
+   * The culture seen on the way.
+   *
+   * The pieces the office chose on the journey, or — where it chose none —
+   * those linked to the places on its route. Empty when `sections.culture` is
+   * off, since nothing would draw them.
+   */
+  culture: ApiCultureSummary[];
+  /** Journal entries: the ones linked to the journey, or else about its route. */
+  posts: ApiPostSummary[];
+  /**
+   * Other journeys to offer at the foot of this one.
+   *
+   * The office's choice in its order, or the next few in catalogue order when
+   * it made none. Resolved here, not on the site, so that a hidden or deleted
+   * journey never reaches a card.
+   */
+  related: ApiTripSummary[];
   featured: boolean;
   seo: ApiSeo;
+}
+
+/**
+ * The band above the itinerary: a photograph, and the words over it.
+ *
+ * The photograph is not nullable, because a parallax band with no photograph
+ * is a scrim over nothing — so a journey with no picture chosen has no band,
+ * which is what a null `trail` says. The three pieces of copy are each
+ * optional: the design draws whichever of them is there, and an office that
+ * wants a photograph and a heading and no paragraph should get that rather
+ * than a sentence it was made to invent.
+ */
+export interface ApiTripTrail {
+  eyebrow: string | null;
+  title: string | null;
+  body: string | null;
+  image: ApiImage;
+}
+
+/** The journey page's optional bands. Each is drawn only when it has something in it. */
+export interface ApiTripSections {
+  gallery: boolean;
+  destinations: boolean;
+  culture: boolean;
+  journal: boolean;
+  related: boolean;
 }
 
 /** The list payload. Everything a `TrekCard` renders and nothing more. */
@@ -505,18 +634,126 @@ export interface ApiTripSummary {
 /*  The rest of the catalogue                                                  */
 /* -------------------------------------------------------------------------- */
 
-export interface ApiDestination {
+/* -------------------------------------------------------------------------- */
+/*  Where we go, Culture, Journal                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The three sections, and the one rule between them: nothing appears in two.
+ *
+ * - **Where we go** answers *where can I go?* A valley — Paro — or a place
+ *   inside one — Taktsang. One type at two scales; `parentSlug` says which.
+ * - **Culture** answers *what makes Bhutan Bhutan?* Tshechu, dzongs, the
+ *   thirteen arts. Not a place: a dzong in general is culture, Punakha Dzong
+ *   is a destination.
+ * - **The journal** answers *what should I read?* Dated editorial on one of
+ *   four shelves. An entry can be *about* Paro or about dzongs; it links to
+ *   those pages rather than describing them again.
+ *
+ * Every record carries its `path`, computed by the panel. A place's URL
+ * depends on its valley's slug, and the website working that out a second
+ * time is a second place for `/destinations/paro/taktsang` to be spelt.
+ */
+
+/** Just enough to link to a page: a breadcrumb, a chip, an entry's "about". */
+export interface ApiPageRef {
+  slug: string;
+  title: string;
+  path: string;
+}
+
+/** A valley or a place, as a card draws it. */
+export interface ApiDestinationSummary {
   slug: string;
   name: string;
+  path: string;
+  /** Null for a valley. A place names the valley it is in. */
+  parentSlug: string | null;
   icon: SiteIconName;
+  /** One line. "Taktsang, Kichu and Dungtse Lhakhang". */
   blurb: string;
-  detail: string;
+  /** The sentence under the title. */
+  standfirst: string;
   image: ApiImage | null;
+  /** Journeys offered there, in the order the destination offers them. */
   tripSlugs: string[];
   altitudeMetres: number | null;
   latitude: number | null;
   longitude: number | null;
+  /** A valley's places, in order. Always empty on a place. */
+  places: ApiPageRef[];
+}
+
+/** A destination's own page. */
+export interface ApiDestination extends ApiDestinationSummary {
+  /** Rich text. Sanitised by the website before it is rendered. */
+  body: string;
+  parent: ApiPageRef | null;
+  /** The places inside a valley, as cards. Empty on a place. */
+  placeCards: ApiDestinationSummary[];
+  /** The culture a traveller sees here. */
+  culture: ApiCultureSummary[];
+  /** Journal entries about this place. */
+  posts: ApiPostSummary[];
   seo: ApiSeo;
+}
+
+/** A culture piece, as a card draws it. */
+export interface ApiCultureSummary {
+  slug: string;
+  title: string;
+  path: string;
+  standfirst: string;
+  icon: SiteIconName;
+  image: ApiImage | null;
+}
+
+/** A culture piece's own page. */
+export interface ApiCultureArticle extends ApiCultureSummary {
+  /** Rich text. Sanitised by the website before it is rendered. */
+  body: string;
+  /** Where to see it. */
+  destinations: ApiDestinationSummary[];
+  /** Journal entries that explain more of it. */
+  posts: ApiPostSummary[];
+  seo: ApiSeo;
+}
+
+/**
+ * The four shelves of the journal, in the order the tabs show them.
+ *
+ * Keys are URL segments — `/journal/category/travel-guides` — and the labels
+ * are the tab names. They live here rather than in a row because a fifth shelf
+ * is a design decision, not something added on a Tuesday, and because both
+ * apps have to call them the same thing.
+ */
+export const JOURNAL_CATEGORIES = [
+  {
+    key: 'journeys',
+    label: 'Journeys',
+    description: 'Travel stories and itineraries, told after the fact.',
+  },
+  {
+    key: 'travel-guides',
+    label: 'Travel guides',
+    description: 'The practical side: permits, seasons, what it costs and what to bring.',
+  },
+  {
+    key: 'experiences',
+    label: 'Experiences',
+    description: 'Things to do in Bhutan, and what they are actually like.',
+  },
+  {
+    key: 'stories',
+    label: 'Stories',
+    description: 'People, places and perspectives.',
+  },
+] as const;
+
+export type JournalCategory = (typeof JOURNAL_CATEGORIES)[number]['key'];
+
+export function journalCategoryLabel(key: JournalCategory): string {
+  return JOURNAL_CATEGORIES.find((category) => category.key === key)?.label ?? key;
 }
 
 export interface ApiActivity {
@@ -538,15 +775,6 @@ export interface ApiSeason {
   summary: string;
   detail: string;
   image: ApiImage | null;
-}
-
-export interface ApiCultureArticle {
-  slug: string;
-  title: string;
-  body: string;
-  icon: SiteIconName;
-  image: ApiImage | null;
-  seo: ApiSeo;
 }
 
 export interface ApiGalleryImage {
@@ -602,13 +830,16 @@ export interface ApiPost {
   standfirst: string;
   /** ISO date. Sorting and `<time dateTime>` both read this. */
   date: string;
-  region: string;
+  category: JournalCategory;
   heroImage: ApiImage | null;
   /** Rich text. Sanitised by the website before it is rendered. */
   body: string;
   author: { name: string; role: string | null; avatar: ApiImage | null } | null;
   tags: string[];
   relatedTripSlugs: string[];
+  /** The places it is about, and the culture it explains. Links, not copies. */
+  destinations: ApiDestinationSummary[];
+  culture: ApiCultureSummary[];
   /** Minutes, computed by the admin so both apps say the same number. */
   readingMinutes: number;
   seo: ApiSeo;
@@ -617,9 +848,12 @@ export interface ApiPost {
 export interface ApiPostSummary {
   slug: string;
   title: string;
+  path: string;
   standfirst: string;
   date: string;
-  region: string;
+  category: JournalCategory;
+  /** The places it is about, for the line above the title. */
+  places: ApiPageRef[];
   heroImage: ApiImage | null;
   readingMinutes: number;
 }
@@ -681,6 +915,7 @@ export type ApiPageSection =
     }
   | {
       kind: 'trips';
+      eyebrow: string | null;
       title: string | null;
       lead: string | null;
       tripSlugs: string[];
@@ -707,6 +942,8 @@ export interface ApiPage {
   title: string;
   eyebrow: string | null;
   lead: string | null;
+  /** A quiet closing line on a reference page. "Last revised for the 2026 season." */
+  note: string | null;
   heroImage: ApiImage | null;
   sections: ApiPageSection[];
   seo: ApiSeo;
@@ -768,4 +1005,118 @@ export interface ApiEnquiryInput {
 export interface ApiEnquiryResult {
   id: string;
   reference: string;
+  /**
+   * What is left of today's provider allowance, answered by the panel because
+   * the panel is the only side that can count it — the messages are rows in
+   * its table. The website reads it to decide whether to hand anything over,
+   * and when the panel could not be reached there is no allowance to consult
+   * and the message goes: an unreachable panel is the one moment mail is the
+   * *only* way an enquiry reaches anybody.
+   */
+  mail: { cap: number; remaining: number };
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Email — rendered and sent by the website, recorded by the panel            */
+/* -------------------------------------------------------------------------- */
+
+export type ApiEmailKind =
+  | 'ENQUIRY_ACKNOWLEDGEMENT'
+  | 'ENQUIRY_NOTIFICATION'
+  | 'NEWSLETTER_WELCOME'
+  | 'NEWSLETTER_CONFIRM'
+  | 'PASSWORD_RESET';
+
+/**
+ * How a send ended, as the website reports it.
+ *
+ * Four of the panel's ten, and deliberately: everything after `SENT` —
+ * delivered, opened, bounced — is something only a provider webhook knows, and
+ * that webhook arrives at the panel. A website that could report `DELIVERED`
+ * would be a website claiming to know something it cannot.
+ */
+export type ApiEmailStatus = 'QUEUED' | 'SENT' | 'FAILED' | 'SKIPPED';
+
+/** The words one kind of message is made of, exactly as the office wrote them. */
+export interface ApiEmailTemplate {
+  kind: ApiEmailKind;
+  name: string;
+  isActive: boolean;
+  subject: string;
+  preheader: string;
+  eyebrow: string;
+  heading: string;
+  intro: string;
+  closing: string;
+  summaryLabel: string;
+  notesLabel: string;
+  buttonLabel: string;
+  buttonUrl: string;
+  signOff: string;
+  footNote: string;
+  /** The panel's row id, carried back on the report so the log can link them. */
+  id: string;
+}
+
+/** Who is sending, resolved from the one company record. */
+export interface ApiEmailIdentity {
+  name: string;
+  email: string;
+  phone: string;
+  siteUrl: string;
+  addressLine: string;
+  /** Absolute URL to a small logo, or blank. */
+  logoUrl: string;
+}
+
+/**
+ * Everything the website needs to write an enquiry's two messages itself.
+ *
+ * Read like any other content — tagged, cached for the hour, dropped when the
+ * office edits the wording — which is the whole point: the copy in this
+ * payload is the last copy the panel published, and it is still on the website
+ * when the panel is not there to be asked.
+ */
+export interface ApiEnquiryMail {
+  identity: ApiEmailIdentity;
+  /** "Personally, within two days." A token the templates may reference. */
+  replyPromise: string;
+  /** The office's two switches. Off means that message is not written at all. */
+  notifyOffice: boolean;
+  acknowledgeTraveller: boolean;
+  /** Active templates only, so an inactive one cannot be sent by accident. */
+  templates: ApiEmailTemplate[];
+}
+
+/**
+ * One message the website has already dealt with, on its way to the log.
+ *
+ * `html` and `text` are the rendered bodies verbatim rather than a template id
+ * and its inputs, because the record has to survive the template being edited
+ * next week — it is the answer to "what did this person actually receive".
+ */
+export interface ApiEmailRecord {
+  kind: ApiEmailKind;
+  templateId: string | null;
+  toEmail: string;
+  toName: string | null;
+  fromEmail: string;
+  replyTo: string | null;
+  subject: string;
+  html: string;
+  text: string;
+  enquiryId: string | null;
+  status: ApiEmailStatus;
+  /** The provider's own id. Null unless it accepted the message. */
+  providerId: string | null;
+  error: string | null;
+  sentAt: string | null;
+}
+
+export interface ApiEmailReport {
+  messages: ApiEmailRecord[];
+}
+
+export interface ApiEmailReportResult {
+  recorded: number;
 }

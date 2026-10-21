@@ -17,6 +17,7 @@ export default async function UsersPage() {
       />
       <AccountsScreen
         currentUserId={user.id}
+        canWriteUsers={can(user.permissions, 'users.write')}
         canSeeRoles={can(user.permissions, 'roles.read')}
         canManageRoles={can(user.permissions, 'roles.write')}
       />

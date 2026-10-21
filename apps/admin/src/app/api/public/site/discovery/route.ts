@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 import { buildLlmsFullTxt, buildLlmsTxt } from '@lotuspeak/seo';
 
 import {
+  getCulture,
+  getDestination,
   getSite,
   getTrip,
   listCulture,
@@ -40,10 +42,11 @@ export const GET = publicRoute('/api/public/site/discovery', async (request: Nex
   const site = await getSite();
 
   if (part === 'llms') {
-    const [trips, posts, destinations, pages] = await Promise.all([
+    const [trips, posts, destinations, culture, pages] = await Promise.all([
       listTrips(),
       listPosts(),
       listDestinations(),
+      listCulture(),
       listPages(),
     ]);
     return ok({
@@ -56,11 +59,8 @@ export const GET = publicRoute('/api/public/site/discovery', async (request: Nex
           title: post.title,
           standfirst: post.standfirst,
         })),
-        destinations: destinations.map((d) => ({
-          slug: d.slug,
-          name: d.name,
-          blurb: d.blurb,
-        })),
+        destinations,
+        culture,
         pages,
       }),
     });
@@ -76,7 +76,7 @@ export const GET = publicRoute('/api/public/site/discovery', async (request: Nex
      * their media joins is a spike Postgres feels for the sake of a file
      * nobody is waiting on.
      */
-    const [tripList, postList, destinations, culture] = await Promise.all([
+    const [tripList, postList, destinationList, cultureList] = await Promise.all([
       tripSlugs(),
       postSlugs(),
       listDestinations(),
@@ -93,6 +93,18 @@ export const GET = publicRoute('/api/public/site/discovery', async (request: Nex
     for (const slug of postList) {
       const post = await getPost(slug);
       if (post) posts.push(post);
+    }
+
+    const destinations = [];
+    for (const { slug } of destinationList) {
+      const destination = await getDestination(slug);
+      if (destination) destinations.push(destination);
+    }
+
+    const culture = [];
+    for (const { slug } of cultureList) {
+      const article = await getCulture(slug);
+      if (article) culture.push(article);
     }
 
     return ok({

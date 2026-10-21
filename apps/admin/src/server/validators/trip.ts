@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { richTextSchema } from '@/server/schema/rich-text';
+
 /**
  * What a journey may be saved as.
  *
@@ -42,14 +44,22 @@ const itineraryDaySchema = z.object({
   isRest: z.boolean().default(false),
   title: z.string().min(1, 'Give the day a title.').max(200),
   meta: z.string().max(200).nullable().optional(),
-  body: z.string().max(4_000).nullable().optional(),
+  /**
+   * Rich text, so the ceiling is the rich-text one.
+   *
+   * It was 4 kB of plain prose. A day that carries a photograph carries a
+   * `<figure>` with a description, a caption and a credit on it, and three of
+   * those pass 4 kB on their own — a 422 on the day somebody illustrated.
+   */
+  body: richTextSchema.nullable().optional(),
+  /** The day's own photographs, beside its prose. */
   mediaIds: z.array(z.string()).max(8).optional(),
 });
 
 const faqSchema = z.object({
   id: z.string().optional(),
   question: z.string().min(1, 'Write the question.').max(300),
-  answer: z.string().min(1, 'Write the answer.').max(4_000),
+  answer: richTextSchema.min(1, 'Write the answer.'),
   /**
    * The heading this question sits under, by the *client's* key.
    *
@@ -110,7 +120,7 @@ export const tripSchema = z.object({
   difficulty: z.enum(['GENTLE', 'MODERATE', 'DEMANDING']),
   priceFromUsd: z.number().int().min(0).max(1_000_000),
   priceCurrency: z.string().length(3).default('USD'),
-  priceNote: z.string().max(600).nullable().optional(),
+  priceNote: richTextSchema.nullable().optional(),
   pricingTiers: z.array(pricingTierSchema).max(12).default([]),
   seasonLabel: z.string().max(120).default(''),
   seasonKeys: z.array(z.enum(['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'])).default([]),
@@ -127,7 +137,14 @@ export const tripSchema = z.object({
    */
   regions: z.array(z.string().max(80)).max(20).default([]),
 
-  overview: z.array(z.string().max(4_000)).max(20).default([]),
+  /**
+   * One rich-text document, not twenty paragraphs.
+   *
+   * See the note on the column in `schema.prisma`: a journey's opening is
+   * long-form prose and is written in the same editor as everything else that
+   * is.
+   */
+  overview: richTextSchema.nullable().optional(),
   highlights: z.array(z.string().max(400)).max(30).default([]),
   included: z.array(z.string().max(400)).max(40).default([]),
   excluded: z.array(z.string().max(400)).max(40).default([]),
@@ -140,12 +157,42 @@ export const tripSchema = z.object({
   elevationProfile: z.array(elevationPointSchema).max(60).default([]),
 
   heroId: z.string().nullable().optional(),
+  /** The pair beside the overview. Null main falls back to the hero. */
+  overviewImageId: z.string().nullable().optional(),
+  overviewInsetId: z.string().nullable().optional(),
   routeMapId: z.string().nullable().optional(),
+  /**
+   * The band above the itinerary, as words and a photograph.
+   *
+   * The lengths are the design's: the heading is set at display size over a
+   * photograph and wraps at about fourteen characters a line, and the
+   * paragraph is held to `--measure-narrow`. A 2 kB heading is not a heading
+   * the design can draw, and refusing it here is kinder than letting the
+   * office find out on the page.
+   */
+  trailEyebrow: z.string().max(60).default(''),
+  trailTitle: z.string().max(120).default(''),
+  trailBody: z.string().max(400).default(''),
+  trailImageId: z.string().nullable().optional(),
   videoUrl: z.string().max(500).nullable().optional(),
   destinationIds: z.array(z.string()).max(30).default([]),
   /** Destinations that offer this journey, in the order they offer it. */
   offeredByDestinationIds: z.array(z.string()).max(30).default([]),
   relatedTripIds: z.array(z.string()).max(12).default([]),
+  /** Culture pieces the page offers. Empty offers what is linked to the route. */
+  cultureIds: z.array(z.string()).max(12).default([]),
+  /**
+   * Journal entries the page offers — the entry ↔ journey join, written from
+   * this side. Empty offers the newest entries about the route.
+   */
+  postIds: z.array(z.string()).max(12).default([]),
+  /** The optional bands on the journey's page. */
+  showTrail: z.boolean().default(true),
+  showGallery: z.boolean().default(true),
+  showDestinations: z.boolean().default(true),
+  showCulture: z.boolean().default(true),
+  showJournal: z.boolean().default(true),
+  showRelated: z.boolean().default(true),
 
   featured: z.boolean().default(false),
   status: statusSchema.default('DRAFT'),

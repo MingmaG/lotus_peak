@@ -9,6 +9,9 @@
 --dur-reveal:1.8s;
 --dur-breath:8s;
 --dur-mist:24s;
+/* The menu map's ease from its opening pose into its resting one. Long
+   enough that the country appears to settle rather than to be re-drawn. */
+--dur-map-settle:3.2s;
 /* The dignity rail and its dialog.
    The rail turns slowly — a medallion lighting up is a change of chapter, not a
    response to a click — so it has its own --dur-turn, matching the 1.2s the
@@ -25,4 +28,4 @@
 --delay-drift:.45s;
 --delay-veil-out:.65s;
 }
-@media (prefers-reduced-motion:reduce){:root{--dur-quick:0s;--dur-slow:0s;--dur-reveal:0s;--dur-breath:0s;--dur-mist:0s;--dur-turn:0s;--dur-veil:0s;--dur-rise:0s;--dur-drift:0s;--delay-rise:0s;--delay-drift:0s;--delay-veil-out:0s}}
+@media (prefers-reduced-motion:reduce){:root{--dur-quick:0s;--dur-slow:0s;--dur-reveal:0s;--dur-breath:0s;--dur-mist:0s;--dur-map-settle:0s;--dur-turn:0s;--dur-veil:0s;--dur-rise:0s;--dur-drift:0s;--delay-rise:0s;--delay-drift:0s;--delay-veil-out:0s}}

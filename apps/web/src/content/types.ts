@@ -1,4 +1,8 @@
-import type { SiteIconName } from '@/design-system'
+import type { JournalCategory } from '@lotuspeak/api-contracts'
+
+import type { SiteIconName, SocialPlatform } from '@/design-system'
+
+export type { JournalCategory, SocialPlatform }
 
 export type TripType = 'mindfulness' | 'meditation' | 'festival' | 'trekking'
 export type Difficulty = 'Gentle' | 'Moderate' | 'Demanding'
@@ -9,7 +13,16 @@ export type ItineraryDayData = {
   rest?: boolean
   title: string
   meta?: string
+  /** Rich text, already sanitised. Drawn by `Prose`, never as text. */
   body?: string
+  /**
+   * The day's own photographs, as a strip under its prose.
+   *
+   * Separate from a photograph the office put *inside* `body`: that one
+   * belongs to a sentence and arrives as a `<figure>` in the HTML. These
+   * belong to the day.
+   */
+  images?: TripPhoto[]
 }
 
 /**
@@ -54,7 +67,21 @@ export type Trip = {
   journeyLabel: string
   heroImage: string
   heroAlt?: ImageAlt
-  overview: string[]
+  /**
+   * The large photograph beside the overview, and the small one inset into its
+   * corner.
+   *
+   * The large one falls back to the hero in the mapper, so it is always a
+   * path. The inset is null where the office chose none, and the page then
+   * draws the single photograph — the corner used to hold one stock picture of
+   * somebody walking, on every journey.
+   */
+  overviewImage: string
+  overviewImageAlt?: ImageAlt
+  overviewInset: string | null
+  overviewInsetAlt?: ImageAlt
+  /** The opening, as sanitised rich text. Drawn by `Prose`. */
+  overview: string
   highlights: string[]
   itinerary: ItineraryDayData[]
   included: string[]
@@ -62,16 +89,87 @@ export type Trip = {
   /** The questions with no heading. They render first, above the groups. */
   faq: { question: string; answer: string }[]
   faqGroups: FaqGroup[]
-  gallery: [src: string, ratio?: string, width?: string, alt?: string][]
+  gallery: TripPhoto[]
   /** The route drawn on a map. Empty where the office has not made one. */
   routeMap: string | null
   routeMapAlt?: ImageAlt
+  /**
+   * The band above the itinerary — "On the trail".
+   *
+   * Null where the office switched it off, chose no photograph or wrote
+   * nothing, and the page then draws no band. The three rules are the
+   * provider's, not the page's: a page that had to decide for itself whether
+   * a band is empty is a page that will one day disagree with the panel about
+   * it.
+   */
+  trail: TripTrail | null
   /** A film. Rendered as a façade — see `VideoEmbed`. */
   videoUrl: string | null
   /** Beyond the fixed five under the title. Usually empty. */
   stats: { label: string; value: string; note: string | null }[]
   /** The walking profile. Empty for everything but the trekking journeys. */
   elevationProfile: { day: number; label: string; metres: number }[]
+  /** Which of the optional bands below the itinerary the office has switched on. */
+  sections: TripSections
+  /** The places on the route that have pages, in route order. */
+  destinations: Destination[]
+  /** The culture seen on the way — chosen, or else linked to the route. */
+  culture: CultureArticle[]
+  /** Journal entries — linked, or else about the route. */
+  posts: Post[]
+  /**
+   * Other journeys to offer, as cards.
+   *
+   * Summaries widened into `Trip`s, like every list — see `toTripSummary`.
+   * Nothing renders more of them than a `TrekCard` does.
+   */
+  related: Trip[]
+}
+
+/**
+ * The band above the itinerary: a photograph, and the words over it.
+ *
+ * The photograph is always there — a band without one is no band, which the
+ * provider spells as a null `trail` — and each piece of copy is optional,
+ * because the design draws whichever of the three it is given.
+ */
+export type TripTrail = {
+  eyebrow: string | null
+  title: string | null
+  body: string | null
+  image: string
+  /** Carried on the record, because the band is a client component. See `ImageAlt`. */
+  imageAlt?: ImageAlt
+}
+
+/** The journey page's optional bands. Each draws only when it has something in it. */
+export type TripSections = {
+  gallery: boolean
+  destinations: boolean
+  culture: boolean
+  journal: boolean
+  related: boolean
+}
+
+/**
+ * A photograph in a journey's gallery.
+ *
+ * An object rather than the strip's old `[src, ratio, width, alt]` tuple,
+ * because the viewer needs what the tuple had no room for: the caption and
+ * credit it prints under the picture, and the intrinsic size it letterboxes
+ * to. The mosaic crops, so the ratio and width hints the strip read are gone.
+ */
+export type TripPhoto = {
+  src: string
+  alt?: ImageAlt
+  /** Editorial, printed under the photograph in the viewer. Distinct from `alt`. */
+  caption: string | null
+  credit: string | null
+  /** Intrinsic pixels, where known. The viewer letterboxes to them. */
+  width: number | null
+  height: number | null
+  /** Where to hold the crop in the mosaic, as `object-position`. */
+  focal: [x: number, y: number]
 }
 
 /** What a journey costs at a party size. `maxPeople` null is "and above". */
@@ -92,18 +190,73 @@ export type FaqGroup = {
   items: { question: string; answer: string }[]
 }
 
+/* ---------------------------------------------------------------------------
+   Where we go, Culture, Journal
+
+   Three sections that do not overlap. A valley or a place inside one is a
+   destination; what makes Bhutan Bhutan is culture; a dated story is the
+   journal's. Each has a page, and each links to the other two rather than
+   describing them again. `path` travels on every record because a place's
+   address is made of two slugs and the panel is the one that spells it.
+   --------------------------------------------------------------------------- */
+
+/** Enough to link to a page. */
+export type PageRef = { slug: string; title: string; path: string }
+
+/**
+ * A record's SEO tab, as a page's metadata needs it.
+ *
+ * Every field is the office's override or null; `entityMetadata` in
+ * `src/lib/seo.ts` resolves each against the record's own title, standfirst
+ * and photograph.
+ */
+export type EntitySeo = {
+  title: string | null
+  description: string | null
+  canonical: string | null
+  noIndex: boolean
+  noFollow: boolean
+  ogTitle: string | null
+  ogDescription: string | null
+  ogImage: string | null
+  keywords: string[]
+  /** Hand-written JSON-LD from the SEO tab. See the note on `SitePage.seo`. */
+  schemaJson?: unknown
+  updatedAt: string | null
+}
+
+/** A valley, or — with `parentSlug` — a place inside one, as a card draws it. */
 export type Destination = {
   slug: string
   name: string
+  path: string
+  parentSlug: string | null
   icon: SiteIconName
+  /** One line. "Taktsang, Kichu and Dungtse Lhakhang". */
   blurb: string
-  /** A paragraph for the destinations index. The blurb is the one-line form. */
-  detail: string
+  /** The sentence under the title. */
+  standfirst: string
   image: string
   imageAlt?: ImageAlt
-  /** Journeys that go there, in the order they should be offered. */
+  /** Journeys that go there, in the order they should be offered. A place's are its valley's. */
   tripSlugs: string[]
+  /** A valley's places. Empty on a place. */
+  places: PageRef[]
+  altitudeMetres: number | null
+  latitude: number | null
+  longitude: number | null
   order: number
+}
+
+/** A destination's own page. */
+export type DestinationPage = Destination & {
+  /** Sanitised HTML. */
+  body: string
+  parent: PageRef | null
+  placeCards: Destination[]
+  culture: CultureArticle[]
+  posts: Post[]
+  seo: EntitySeo
 }
 
 export type Activity = {
@@ -120,37 +273,41 @@ export type Activity = {
 }
 
 /**
- * A journal entry.
+ * A journal entry, as a card draws it.
  *
- * The body is a list of typed blocks rather than a markdown string. The entries
- * came out of WordPress as markdown, but rendering markdown at runtime would
- * mean a parser, a sanitiser and a set of prose styles that drift from the
- * design system. Blocks are validated by the compiler, render through the same
- * components as the rest of the site, and map cleanly onto a CMS rich-text
- * field when one arrives (docs/specs/04-content-model.md).
+ * `category` is which of the four shelves it sits on; `places` is what it is
+ * about, as links. The old `region` string was both at once, and it was how
+ * the journal came to be a list of places.
  */
 export type Post = {
   slug: string
   title: string
+  path: string
   standfirst: string
-  /** See the note on `schemaJson` below. */
-  schemaJson?: unknown
   /** ISO date, for `dateTime` and for sorting. `order` is the editorial order. */
   date: string
-  region: string
+  category: JournalCategory
+  places: PageRef[]
   heroImage: string
   heroAlt?: ImageAlt
+  readingMinutes: number
+  order: number
+}
+
+/** A journal entry's own page. */
+export type PostPage = Post & {
   /**
-   * The entry, as sanitised HTML.
-   *
-   * Was an array of typed blocks the page drew as React. It is one rich-text
-   * document now — the same shape as every other long-form field on this site
-   * — and it arrives here already through `renderStoredRichText`, which is
-   * what makes it safe for `Prose` to set as inner HTML. See
+   * The entry, as sanitised HTML — already through `renderStoredRichText`,
+   * which is what makes it safe for `Prose` to set as inner HTML. See
    * `src/lib/rich-text.ts`.
    */
   body: string
-  order: number
+  author: { name: string; role: string | null } | null
+  tags: string[]
+  relatedTripSlugs: string[]
+  destinations: Destination[]
+  culture: CultureArticle[]
+  seo: EntitySeo
 }
 
 export type GalleryImage = {
@@ -174,14 +331,26 @@ export type Season = {
   order: number
 }
 
+/** A culture piece, as a card draws it. */
 export type CultureArticle = {
   slug: string
   title: string
-  body: string
+  path: string
+  standfirst: string
   icon: SiteIconName
   image: string
   imageAlt?: ImageAlt
   order: number
+}
+
+/** A culture piece's own page. */
+export type CulturePage = CultureArticle & {
+  /** Sanitised HTML. */
+  body: string
+  /** Where to see it. */
+  destinations: Destination[]
+  posts: Post[]
+  seo: EntitySeo
 }
 
 export type Reflection = {
@@ -194,12 +363,49 @@ export type Reflection = {
   order: number
 }
 
+/** One public way to reach the office, with the link it opens already built. */
+export type ContactLine = {
+  kind: 'phone' | 'whatsapp' | 'email' | 'fax'
+  label: string
+  display: string
+  /** `tel:`, `mailto:` or `wa.me`. Null for a fax, which is read, not followed. */
+  href: string | null
+}
+
+/** A band at the foot of a journey page: its heading and the words on its link. */
+export type JourneyBandCopy = { title: string; more: string }
+
 export type SiteSettings = {
   brand: string
+  /** The registered name. "Lotus Peak Tours & Travel". */
+  legalName: string
   line: string
+  /** The words over the home page's photograph; the tagline when the office left it empty. */
+  strapline: string
+  /**
+   * What the office chose to play behind those words.
+   *
+   * The choice and the address, not the picture: the hero's photograph is a
+   * brand asset in `lib/assets`, as it has been since the design was approved,
+   * and `lib/hero-media.ts` is what puts the two together.
+   */
+  hero: { media: 'image' | 'youtube'; youtubeUrl: string | null }
   nav: { label: string; href: string }[]
   navCta: { label: string; href: string }
-  footer: { columns: { title: string; links: { label: string; href: string }[] }[]; note: string }
+  footer: {
+    columns: { title: string; links: { label: string; href: string }[] }[]
+    /** The introduction under the name; the tagline when the office left it empty. */
+    note: string
+    /** The copyright line, `{year}` and `{name}` already substituted. */
+    copyright: string
+    credit: { label: string; name: string; url: string | null } | null
+    show: { links: boolean; address: boolean; contacts: boolean; socials: boolean }
+  }
+  /** The office's address, one printed line per entry. */
+  address: { lines: string[]; mapUrl: string | null }
+  contacts: ContactLine[]
+  socials: { platform: SocialPlatform; label: string; url: string }[]
+  journeyBands: Record<'places' | 'culture' | 'journal' | 'related', JourneyBandCopy>
   contact: { phone: string; email: string; replyPromise: string }
   pledge: { percent: number; beneficiary: string }
   sdfPerNightUsd: number
@@ -211,6 +417,16 @@ export type SiteSettings = {
    one place. The design project stores these pre-formatted, which makes the
    data unsortable — these are derived, never stored.
    --------------------------------------------------------------------------- */
+
+/**
+ * The copyright line with its tokens filled. `{year}` is resolved when the page
+ * is rendered, and the publish-or-hourly rebuild is what carries it into
+ * January — not a client-side clock, which would disagree with the server's
+ * HTML for the few hours either side of midnight on New Year's Eve.
+ */
+export function fillCopyright(template: string, name: string, year = new Date().getFullYear()) {
+  return template.replaceAll('{year}', String(year)).replaceAll('{name}', name)
+}
 
 export const fmt = {
   duration: (t: Trip) => `${t.durationDays} days`,
@@ -293,7 +509,13 @@ export type PageBand =
       items: [src: string, ratio?: string, width?: string, alt?: string][]
     }
   | { kind: 'reflections'; title: string | null; reflectionIds: string[] }
-  | { kind: 'trips'; title: string | null; lead: string | null; tripSlugs: string[] }
+  | {
+      kind: 'trips'
+      eyebrow: string | null
+      title: string | null
+      lead: string | null
+      tripSlugs: string[]
+    }
   | {
       kind: 'cta'
       title: string
@@ -310,6 +532,8 @@ export type SitePage = {
   title: string
   eyebrow: string | null
   lead: string | null
+  /** A quiet closing line on a reference page. */
+  note: string | null
   heroImage: string | null
   heroAlt: ImageAlt
   bands: PageBand[]

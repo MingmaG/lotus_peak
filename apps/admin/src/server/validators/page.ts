@@ -21,6 +21,7 @@ export const pageSchema = z.object({
     .refine((value) => value === undefined || value.startsWith('/'), 'It has to start with a /.'),
   eyebrow: z.string().max(80).nullable().optional(),
   lead: z.string().max(800).nullable().optional(),
+  note: z.string().max(300).nullable().optional(),
   sections: z.array(storedPageSectionSchema).max(60).default([]),
   heroId: z.string().nullable().optional(),
   tripIds: z.array(z.string()).max(12).default([]),

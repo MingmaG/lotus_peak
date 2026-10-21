@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { subscribe } from '@/motion'
 
 export const SECTIONS: [id: string, label: string][] = [
@@ -9,6 +9,7 @@ export const SECTIONS: [id: string, label: string][] = [
   ['enquiry', 'Enquiry'],
   ['itinerary', 'Itinerary'],
   ['included', 'Included'],
+  ['gallery', 'Photographs'],
   ['essential', 'Essential info'],
   ['reflections', 'Reflections'],
 ]
@@ -20,13 +21,18 @@ export const SECTIONS: [id: string, label: string][] = [
  * the two never drift apart as the nav changes height (audit B8). The spy rides
  * the shared scroll broker rather than adding a listener of its own (B10).
  */
-export function SectionNav() {
-  const [active, setActive] = useState(SECTIONS[0]![0])
+export function SectionNav({ hide = [] }: { hide?: string[] }) {
+  /* A band the office switched off has no anchor, and a tab that scrolls
+     nowhere is worse than no tab. */
+  const sections = SECTIONS.filter(([id]) => !hide.includes(id))
+  const [active, setActive] = useState(sections[0]![0])
+  const railRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // A hash arriving in the URL wins until the reader scrolls.
     const hash = window.location.hash.slice(1)
-    if (hash && SECTIONS.some(([id]) => id === hash)) setActive(hash)
+    if (hash && sections.some(([id]) => id === hash)) setActive(hash)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only on arrival
   }, [])
 
   useEffect(() => {
@@ -35,8 +41,8 @@ export function SectionNav() {
     return subscribe(
       el,
       () => {
-        let current = SECTIONS[0]![0]
-        for (const [id] of SECTIONS) {
+        let current = sections[0]![0]
+        for (const [id] of sections) {
           const node = document.getElementById(id)
           if (node && node.getBoundingClientRect().top < 220) current = id
         }
@@ -44,7 +50,18 @@ export function SectionNav() {
       },
       (_node, id: string) => setActive(id),
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `hide` is fixed for the page's life
   }, [])
+
+  /* Below 900px the rail is one line that scrolls sideways (see globals.css),
+     so the section being read can be off to the left of it. Nothing moves on a
+     wide screen, where the whole rail is already visible. */
+  useEffect(() => {
+    const rail = railRef.current
+    if (!rail || rail.scrollWidth <= rail.clientWidth) return
+    const current = rail.querySelector(`[data-section="${active}"]`)
+    current?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  }, [active])
 
   const jump = (id: string) => {
     const node = document.getElementById(id)
@@ -69,6 +86,8 @@ export function SectionNav() {
       }}
     >
       <div
+        ref={railRef}
+        className="lp-section-nav"
         style={{
           maxWidth: 'var(--container)',
           margin: '0 auto',
@@ -78,12 +97,13 @@ export function SectionNav() {
           flexWrap: 'wrap',
         }}
       >
-        {SECTIONS.map(([id, label]) => {
+        {sections.map(([id, label]) => {
           const on = active === id
           return (
             <button
               key={id}
               type="button"
+              data-section={id}
               aria-current={on ? 'true' : undefined}
               onClick={() => jump(id)}
               style={{

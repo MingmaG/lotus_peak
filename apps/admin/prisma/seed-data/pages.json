@@ -33,7 +33,8 @@
       },
       {
         "kind": "trips",
-        "title": "Our journeys",
+        "eyebrow": "Our trips",
+        "title": "Four journeys, each with time to spare",
         "lead": null,
         "tripSlugs": []
       }
@@ -140,6 +141,7 @@
     "title": "Terms & conditions",
     "eyebrow": "Terms",
     "lead": "The terms on which we sell and operate our journeys. The figures particular to your booking — deposit, balance date and the cancellation scale — are in the written confirmation we send you.",
+    "note": "Last revised for the 2026 season.",
     "heroSrc": null,
     "isSystem": false,
     "sections": [
@@ -252,6 +254,7 @@
     "title": "What to know before you come",
     "eyebrow": "Travellers",
     "lead": "Not a complete list — the things travellers ask us most. Anything specific to your journey is in the notes we send when it is booked.",
+    "note": "Last reviewed for the 2026 season. Ask us if you are reading this later than that.",
     "heroSrc": null,
     "isSystem": false,
     "sections": [
@@ -414,12 +417,12 @@
     "path": "/journal",
     "title": "Journal",
     "eyebrow": "Journal",
-    "lead": "Notes from the valleys — what we saw, and when it is worth coming to see it.",
+    "lead": "Journeys, travel guides, experiences and stories from Bhutan. Each entry is dated, so you can see how current it is.",
     "heroSrc": null,
     "isSystem": true,
     "sections": [],
     "metaTitle": "Journal",
-    "metaDescription": "Notes from the valleys — what we saw, and when it is worth coming to see it.",
+    "metaDescription": "Journeys, travel guides, experiences and stories from Bhutan. Each entry is dated, so you can see how current it is.",
     "sitemapPriority": 0.7
   }
 ]

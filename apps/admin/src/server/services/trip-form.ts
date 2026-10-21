@@ -3,6 +3,8 @@ import 'server-only';
 import { parseElevationProfile, parseTripStats } from '@/server/schema/blocks';
 import { db } from '@/lib/db';
 import { storage } from '@/lib/storage';
+import { resolveRichTextMedia } from '@/server/schema/rich-text';
+import { editorFigureMediaIn } from './content-editor';
 import { TRIP_DETAIL_INCLUDE, type TripDetail } from './trip';
 import type { TripFormData } from '@/components/treks/trip-editor';
 import type { PickedMedia } from '@/components/media/media-picker';
@@ -19,6 +21,37 @@ import type { Media, MediaRendition } from '@prisma/client';
 export async function tripFormData(id: string): Promise<TripFormData | null> {
   const trip = await db.trip.findUnique({ where: { id }, include: TRIP_DETAIL_INCLUDE });
   return trip ? toForm(trip) : null;
+}
+
+/**
+ * What the Links tab offers to choose from: every culture piece and every
+ * journal entry that has not been deleted.
+ *
+ * Drafts included, and marked, because an entry is often written alongside
+ * the journey it is about — it should be linkable before either is live. The
+ * site only ever draws the published ones.
+ */
+export async function tripLinkOptions() {
+  const [culture, posts] = await Promise.all([
+    db.cultureArticle.findMany({
+      where: { deletedAt: null },
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true, title: true },
+    }),
+    db.post.findMany({
+      where: { deletedAt: null },
+      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true, title: true, status: true },
+    }),
+  ]);
+  return {
+    culture,
+    posts: posts.map((row) => ({
+      id: row.id,
+      title: row.title,
+      published: row.status === 'PUBLISHED',
+    })),
+  };
 }
 
 export function emptyTripForm(): TripFormData {
@@ -43,7 +76,9 @@ export function emptyTripForm(): TripFormData {
     groupSizeMin: null,
     groupSizeMax: null,
     regions: [],
-    overview: [],
+    overview: '',
+    overviewImage: null,
+    overviewInset: null,
     highlights: [],
     included: [],
     excluded: [],
@@ -55,16 +90,30 @@ export function emptyTripForm(): TripFormData {
     elevationProfile: [],
     videoUrl: '',
     routeMap: null,
+    trail: { eyebrow: '', title: '', body: '', image: null },
     hero: null,
     ogImage: null,
     destinationIds: [],
     offeredByDestinationIds: [],
     relatedTripIds: [],
+    cultureIds: [],
+    postIds: [],
+    sections: { ...ALL_SECTIONS },
     featured: false,
     status: 'DRAFT',
     seo: emptySeo(),
   };
 }
+
+/** Every band on, which is what the columns default to. */
+const ALL_SECTIONS = {
+  trail: true,
+  gallery: true,
+  destinations: true,
+  culture: true,
+  journal: true,
+  related: true,
+};
 
 export function emptySeo() {
   return {
@@ -85,7 +134,24 @@ export function emptySeo() {
   };
 }
 
-function toForm(trip: TripDetail): TripFormData {
+/**
+ * A journey's four rich-text fields, as the editor reads them.
+ *
+ * Every figure in them is stored as a media id and nothing else, so the editor
+ * would otherwise open on a photograph with no `src`. This fills them in from
+ * the library — see `schema/rich-text.ts` — and `stripPatchMedia` in
+ * `trip.ts` takes the URLs back out on the way to the column.
+ */
+async function toForm(trip: TripDetail): Promise<TripFormData> {
+  const media = await editorFigureMediaIn([
+    trip.overview,
+    trip.priceNote,
+    ...trip.itinerary.map((day) => day.body),
+    ...trip.faqs.map((faq) => faq.answer),
+    ...trip.faqGroups.map((group) => group.blurb),
+  ]);
+  const resolve = (html: string | null) => resolveRichTextMedia(html, media);
+
   return {
     id: trip.id,
     slug: trip.slug,
@@ -99,7 +165,7 @@ function toForm(trip: TripDetail): TripFormData {
     difficulty: trip.difficulty,
     priceFromUsd: trip.priceFromUsd,
     priceCurrency: trip.priceCurrency,
-    priceNote: trip.priceNote ?? '',
+    priceNote: resolve(trip.priceNote),
     pricingTiers: trip.pricingTiers.map((tier) => ({
       key: tier.id,
       label: tier.label,
@@ -115,7 +181,7 @@ function toForm(trip: TripDetail): TripFormData {
     groupSizeMin: trip.groupSizeMin,
     groupSizeMax: trip.groupSizeMax,
     regions: trip.regions,
-    overview: trip.overview,
+    overview: resolve(trip.overview),
     highlights: trip.highlights.map((row) => row.text),
     included: trip.inclusions.filter((row) => row.isIncluded).map((row) => row.text),
     excluded: trip.inclusions.filter((row) => !row.isIncluded).map((row) => row.text),
@@ -127,7 +193,11 @@ function toForm(trip: TripDetail): TripFormData {
       isRest: day.isRest,
       title: day.title,
       meta: day.meta ?? '',
-      body: day.body ?? '',
+      body: resolve(day.body),
+      /* The day's own photographs, in the order the office put them in. */
+      images: day.images.map((row) => toPicked(row.media)).filter(
+        (picked): picked is PickedMedia => picked !== null,
+      ),
     })),
     /**
      * A question refers to its heading by title, not by id.
@@ -139,11 +209,11 @@ function toForm(trip: TripDetail): TripFormData {
     faqGroups: trip.faqGroups.map((group) => ({
       key: group.title,
       title: group.title,
-      blurb: group.blurb ?? '',
+      blurb: resolve(group.blurb),
     })),
     faqs: trip.faqs.map((faq) => ({
       question: faq.question,
-      answer: faq.answer,
+      answer: resolve(faq.answer),
       groupKey:
         trip.faqGroups.find((group) => group.id === faq.groupId)?.title ?? null,
     })),
@@ -158,6 +228,14 @@ function toForm(trip: TripDetail): TripFormData {
       width: item.width,
     })),
     hero: toPicked(trip.hero),
+    trail: {
+      eyebrow: trip.trailEyebrow,
+      title: trip.trailTitle,
+      body: trip.trailBody,
+      image: toPicked(trip.trailImage),
+    },
+    overviewImage: toPicked(trip.overviewImage),
+    overviewInset: toPicked(trip.overviewInset),
     routeMap: toPicked(trip.routeMap),
     ogImage: toPicked(trip.ogImage),
     destinationIds: trip.destinations.map((link) => link.destinationId),
@@ -166,6 +244,16 @@ function toForm(trip: TripDetail): TripFormData {
       .sort((a, b) => (a.offerOrder ?? 0) - (b.offerOrder ?? 0))
       .map((link) => link.destinationId),
     relatedTripIds: trip.relatedFrom.map((link) => link.targetId),
+    cultureIds: trip.cultureLinks.map((link) => link.cultureId),
+    postIds: trip.postLinks.map((link) => link.postId),
+    sections: {
+      trail: trip.showTrail,
+      gallery: trip.showGallery,
+      destinations: trip.showDestinations,
+      culture: trip.showCulture,
+      journal: trip.showJournal,
+      related: trip.showRelated,
+    },
     featured: trip.featured,
     status: trip.status,
     seo: {

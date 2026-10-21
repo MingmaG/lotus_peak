@@ -36,8 +36,31 @@ import { richTextSchema } from './rich-text';
 /*  Pages                                                                      */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * The silhouette a point may carry, as the design system names it.
+ *
+ * Lowercase and hyphenated, not the Prisma enum: a stored page section is JSON
+ * that goes out on the wire more or less as written, and `SiteIcon` on the
+ * website takes this spelling. The editor converts — see `ICON_TO_WIRE`.
+ */
 const siteIcon = z
-  .enum(['dzong', 'chorten', 'stupa', 'monastery', 'pavilion', 'dzong-long', 'buddha'])
+  .enum([
+    'dzong',
+    'chorten',
+    'stupa',
+    'monastery',
+    'pavilion',
+    'dzong-long',
+    'buddha',
+    'taktsang',
+    'punakha',
+    'jakar',
+    'trongsa',
+    'mongar',
+    'pemagatshel',
+    'trashigang',
+    'gasa',
+  ])
   .nullable()
   .default(null);
 
@@ -120,6 +143,7 @@ export const storedPageSectionSchema = z.discriminatedUnion('kind', [
   }),
   z.object({
     kind: z.literal('trips'),
+    eyebrow: z.string().max(80).nullable().default(null),
     title: z.string().max(200).nullable().default(null),
     lead: z.string().max(600).nullable().default(null),
     /* Empty means the current catalogue, in its own order. */

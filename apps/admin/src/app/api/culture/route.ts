@@ -3,9 +3,11 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { route } from '@/lib/api/handler';
 import { publishing, reorder, seoColumns } from '@/server/services/catalogue';
+import { culturePath } from '@/server/services/content-paths';
 import { MEDIA_THUMB, freeSlug } from '@/server/services/resource';
 import { serialiseMediaRow } from '@/server/services/media-serialise';
 import { revalidateFor } from '@/server/services/revalidate';
+import { stripRichTextMedia } from '@/server/schema/rich-text';
 import { cultureSchema, reorderSchema } from '@/server/validators/catalogue';
 
 export const GET = route({
@@ -14,13 +16,21 @@ export const GET = route({
     const rows = await db.cultureArticle.findMany({
       where: { deletedAt: null },
       orderBy: { sortOrder: 'asc' },
-      include: { image: MEDIA_THUMB, ogImage: MEDIA_THUMB },
+      include: {
+        image: MEDIA_THUMB,
+        _count: { select: { destinations: true } },
+      },
     });
     return {
       items: rows.map((row) => ({
-        ...row,
+        id: row.id,
+        slug: row.slug,
+        title: row.title,
+        standfirst: row.standfirst,
+        status: row.status,
+        path: culturePath(row.slug),
+        placeCount: row._count.destinations,
         image: row.image ? serialiseMediaRow(row.image) : null,
-        ogImage: row.ogImage ? serialiseMediaRow(row.ogImage) : null,
       })),
     };
   },
@@ -34,12 +44,19 @@ export const POST = route<z.infer<typeof cultureSchema>>({
       data: {
         slug: await freeSlug('cultureArticle', body.slug || body.title),
         title: body.title,
-        body: body.body,
+        standfirst: body.standfirst,
+        body: stripRichTextMedia(body.body),
         icon: body.icon,
         imageId: body.imageId ?? null,
         sortOrder: body.sortOrder ?? (await db.cultureArticle.count()),
         ...publishing({ next: body.status, currentStatus: 'DRAFT', currentPublishedAt: null }),
         ...seoColumns(body.seo),
+        destinations: {
+          create: body.destinationIds.map((destinationId, index) => ({
+            destinationId,
+            sortOrder: index,
+          })),
+        },
       },
     });
     audit({ action: 'CREATE', entity: 'culture', entityId: row.id, entityLabel: row.title });

@@ -71,6 +71,76 @@ button, a, img, [role=button] { transition-timing-function: var(--ease-inhale) !
 .strip::-webkit-scrollbar { display: none }
 
 /* ---------------------------------------------------------------------------
+   The home hero's film (sections/home/HeroFilm.tsx).
+
+   `display: none` is the default and `no-preference` is what shows it. The
+   negative default is the point: a visitor who has asked for less motion must
+   not be the one who depends on a media query being understood, and a film
+   that is not displayed is a film the browser declines to download. Under
+   `reduce` the hero is its photograph and nothing is fetched.
+
+   The layer takes no pointer events and is never the page's content — the
+   headline over it says in text whatever the film says.
+   --------------------------------------------------------------------------- */
+.lp-hero-film { display: none }
+
+@media (prefers-reduced-motion: no-preference) {
+  .lp-hero-film {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    /* The hero's own frame clips; this is the belt for the overscan below and
+       for a player that draws its furniture outside its box. */
+    overflow: hidden;
+    border: 0;
+    object-fit: cover;
+    /* The focal point the photograph is cropped to, passed down from the one
+       place that knows it (`FOCUS` in HomeHero). The film is cropped to the
+       same spot, or the moment it starts is a visible jump. */
+    object-position: var(--hero-focus, 50% 50%);
+    transform-origin: var(--hero-focus, 50% 50%);
+    /* The still beneath carries the same 1.14 overscan, so the two frame the
+       same part of the subject. It is not animated: `breathe` and `mist` keep
+       a still picture alive, and footage needs neither. */
+    transform: scale(1.14);
+  }
+
+  /* A YouTube film crosses over the still only once YouTube reports it
+     playing, at the pace of a reveal — so what a visitor sees while the player
+     connects is the photograph, never the player's black rectangle. */
+  .lp-hero-embed {
+    opacity: 0;
+    transition: opacity var(--dur-reveal) var(--ease-inhale);
+  }
+  .lp-hero-embed[data-playing="true"] { opacity: 1 }
+
+  /* `object-fit: cover` for an iframe, which does not have it: the box is grown
+     to whichever of the two dimensions is short for a 16:9 film and the hero
+     clips the rest. Top centre, which is where FOCUS puts the photograph. The
+     last few percent are overscan, where a player draws its own furniture in
+     the moment before it starts. */
+  .lp-hero-embed-crop {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: max(100%, 177.78svh);
+    height: max(100%, 56.25vw);
+    transform: translateX(-50%) scale(1.06);
+    transform-origin: 50% 0;
+  }
+  .lp-hero-embed-crop iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    The Four Dignities rail — the current dignity named in the bottom-right
    corner, on every route and at every scroll position, and clickable. Its own
    layout is inline; the only thing that changes with the viewport is the

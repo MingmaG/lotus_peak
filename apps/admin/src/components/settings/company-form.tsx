@@ -58,8 +58,26 @@ export interface CompanyFormValue {
   mark: PickedMedia | null;
   ogImage: PickedMedia | null;
   strapline: string;
+  /** What plays behind the strapline: the photograph, or a film on YouTube. */
+  heroMedia: 'image' | 'youtube';
+  heroYoutubeUrl: string;
   footerNote: string;
   footerCopyright: string;
+  footerCreditLabel: string;
+  footerCreditName: string;
+  footerCreditUrl: string;
+  footerShowLinks: boolean;
+  footerShowAddress: boolean;
+  footerShowContacts: boolean;
+  footerShowSocials: boolean;
+  journeyPlacesTitle: string;
+  journeyPlacesMore: string;
+  journeyCultureTitle: string;
+  journeyCultureMore: string;
+  journeyJournalTitle: string;
+  journeyJournalMore: string;
+  journeyRelatedTitle: string;
+  journeyRelatedMore: string;
   replyPromise: string;
   pledgePercent: number | null;
   pledgeBeneficiary: string | null;
@@ -158,6 +176,43 @@ const PLATFORMS: { value: SocialPlatform; label: string; icon: typeof Globe }[] 
   { value: 'WHATSAPP', label: 'WhatsApp', icon: MessageCircle },
   { value: 'THREADS', label: 'Threads', icon: Globe },
   { value: 'OTHER', label: 'Somewhere else', icon: Globe },
+];
+
+/**
+ * The parts of the footer the office can switch off. Each is also left out on
+ * the site when it has nothing in it, so an unticked box and an empty list
+ * look the same to a visitor.
+ */
+const FOOTER_PARTS: {
+  key: 'footerShowLinks' | 'footerShowAddress' | 'footerShowContacts' | 'footerShowSocials';
+  label: string;
+  hint: string;
+}[] = [
+  {
+    key: 'footerShowLinks',
+    label: 'Link columns',
+    hint: 'The three footer menus. Their links are edited under Navigation.',
+  },
+  { key: 'footerShowAddress', label: 'Address', hint: 'From “Where the office is”.' },
+  {
+    key: 'footerShowContacts',
+    label: 'Telephone and email',
+    hint: 'The public ways to reach us, from “Getting in touch”.',
+  },
+  { key: 'footerShowSocials', label: 'Social icons', hint: 'The active accounts on “Social”.' },
+];
+
+/** The four bands at the foot of a journey page, and where each one's link goes. */
+const JOURNEY_BANDS: {
+  label: string;
+  href: string;
+  title: 'journeyPlacesTitle' | 'journeyCultureTitle' | 'journeyJournalTitle' | 'journeyRelatedTitle';
+  more: 'journeyPlacesMore' | 'journeyCultureMore' | 'journeyJournalMore' | 'journeyRelatedMore';
+}[] = [
+  { label: 'Places', href: '/destinations', title: 'journeyPlacesTitle', more: 'journeyPlacesMore' },
+  { label: 'Culture', href: '/culture', title: 'journeyCultureTitle', more: 'journeyCultureMore' },
+  { label: 'Journal', href: '/journal', title: 'journeyJournalTitle', more: 'journeyJournalMore' },
+  { label: 'Other journeys', href: '/trips', title: 'journeyRelatedTitle', more: 'journeyRelatedMore' },
 ];
 
 const DAYS = [
@@ -775,25 +830,143 @@ export function CompanyForm({ initial }: { initial: CompanyFormValue }) {
 
         {tab === 'site' && (
           <>
-            <Section title="The footer">
+            <Section
+              title="The home page"
+              description="The top of the home page: the words laid over it, above the Explore trips button, and whether what is behind them is the photograph or a film."
+            >
               <Field
-                label="Footer note"
-                hint="The line along the foot of every page. The telephone number is added to it from the contact details — do not type it here as well."
+                label="Headline over the photograph"
+                hint="A few words. Left empty, the tagline is used."
               >
                 <Input
+                  value={form.strapline}
+                  maxLength={200}
+                  onChange={(event) => set('strapline', event.target.value)}
+                />
+              </Field>
+
+              <Field
+                label="What plays behind it"
+                hint="Whichever is chosen, the photograph is what loads first and what a visitor sees if the film never plays — a film lies over it and covers it once it is running. A visitor who has asked their computer for less movement is shown the photograph and never downloads the film."
+              >
+                <Select
+                  value={form.heroMedia}
+                  onValueChange={(value) =>
+                    set('heroMedia', value === 'youtube' ? 'youtube' : 'image')
+                  }
+                >
+                  <SelectTrigger className="h-8 w-60 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="image">The photograph</SelectItem>
+                    <SelectItem value="youtube">A film on YouTube</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field
+                label="The film on YouTube"
+                hint="The address from the browser's bar or from Share: https://www.youtube.com/watch?v=... , https://youtu.be/... or an embed address. It plays silently, on a loop, cropped to fill the screen, with none of YouTube's own titles, buttons or suggested films over it, so use footage with no words burnt into the picture — the headline sits on top of it. It is kept when the photograph is showing, so a film can be put back without being typed again."
+                error={errors.heroYoutubeUrl}
+              >
+                <Input
+                  value={form.heroYoutubeUrl}
+                  maxLength={300}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  onChange={(event) => set('heroYoutubeUrl', event.target.value)}
+                />
+              </Field>
+            </Section>
+
+            <Section
+              title="The footer"
+              description="The foot of every page. The address, the telephone numbers and the icons are the ones on the other tabs — they are not typed again here."
+            >
+              <Field
+                label="Short introduction"
+                hint="A sentence or two under the name. Left empty, the tagline is used."
+              >
+                <Textarea
+                  rows={2}
                   value={form.footerNote}
                   onChange={(event) => set('footerNote', event.target.value)}
                 />
               </Field>
+
+              <Field label="What the footer shows">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {FOOTER_PARTS.map((part) => (
+                    <label key={part.key} className="flex items-start gap-2 text-sm">
+                      <Checkbox
+                        checked={form[part.key]}
+                        onCheckedChange={(checked) => set(part.key, checked === true)}
+                      />
+                      <span>
+                        {part.label}
+                        <span className="mt-0.5 block text-xs text-muted-foreground">
+                          {part.hint}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </Field>
+
               <Field
                 label="Copyright line"
-                hint="{year} is this year and {name} is the company's name, so nobody has to remember January."
+                hint="On the left of the bottom row. {year} is this year and {name} is the company's name, so nobody has to remember January."
               >
                 <Input
                   value={form.footerCopyright}
                   onChange={(event) => set('footerCopyright', event.target.value)}
                 />
               </Field>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Field label="Credit" hint="On the right of the bottom row.">
+                  <Input
+                    value={form.footerCreditLabel}
+                    placeholder="Website by"
+                    onChange={(event) => set('footerCreditLabel', event.target.value)}
+                  />
+                </Field>
+                <Field label="Credited to" hint="Leave empty to show no credit.">
+                  <Input
+                    value={form.footerCreditName}
+                    onChange={(event) => set('footerCreditName', event.target.value)}
+                  />
+                </Field>
+                <Field label="Their website" error={errors.footerCreditUrl}>
+                  <Input
+                    value={form.footerCreditUrl}
+                    placeholder="https://"
+                    onChange={(event) => set('footerCreditUrl', event.target.value)}
+                  />
+                </Field>
+              </div>
+            </Section>
+
+            <Section
+              title="At the foot of a journey"
+              description="Every journey page ends with up to four bands. Each has a heading, and a link under it to the whole section. Leave a link's words empty to show no link. Which bands a journey shows is chosen on the journey itself."
+            >
+              {JOURNEY_BANDS.map((band) => (
+                <div key={band.title} className="grid gap-4 sm:grid-cols-2">
+                  <Field label={`${band.label}: heading`}>
+                    <Input
+                      value={form[band.title]}
+                      onChange={(event) => set(band.title, event.target.value)}
+                    />
+                  </Field>
+                  <Field label={`${band.label}: link`} hint={`Goes to ${band.href}.`}>
+                    <Input
+                      value={form[band.more]}
+                      onChange={(event) => set(band.more, event.target.value)}
+                    />
+                  </Field>
+                </div>
+              ))}
             </Section>
 
             <Section title="What the site promises">

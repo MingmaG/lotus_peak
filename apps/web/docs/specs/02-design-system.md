@@ -89,7 +89,7 @@ fetching, no domain types, no `process.env`. That is what keeps them testable an
 | `Badge` | `tone: neutral\|pine\|saffron\|maroon\|gold` | Quiet metadata only — difficulty, season, altitude. Never promotional |
 | `Divider` | `variant: hairline\|gold\|flags\|kera`, `width`, `height` | `kera` is a woven-textile rule, 6px default; `flags` at most once per page |
 | `Eyebrow` | `number`, `tone: accent\|muted\|inverse` | Tracked caps label above a heading, optionally numbered (`01 — Our purpose`) |
-| `SiteIcon` | `name: dzong\|chorten\|stupa\|monastery\|pavilion\|dzong-long\|buddha\|taktsang\|punakha\|jakar`, `size`, `color`, `framed`, `ring` | Flat single-colour mask of a Bhutanese silhouette. The first seven are building types; `taktsang`, `punakha` and `jakar` are place-specific. `framed` gives every icon the same square footprint inside a gold ring on a gold baseline — use it whenever several sit in a row. Wide silhouettes carry a framed-mode enlargement (`punakha` 1.32, `jakar` 1.25) so they do not read undersized against the square ones |
+| `SiteIcon` | `name: dzong\|chorten\|stupa\|monastery\|pavilion\|dzong-long\|buddha\|taktsang\|punakha\|jakar\|trongsa\|mongar\|pemagatshel\|trashigang\|gasa`, `size`, `color`, `framed`, `ring` | Flat single-colour mask of a Bhutanese silhouette. The first seven are building types; the other eight are place-specific, and a place that has its own drawing should use it. `framed` gives every icon the same square footprint inside a gold ring on a gold baseline — use it whenever several sit in a row. Wide silhouettes carry a framed-mode enlargement (`punakha` and `trongsa` 1.32, `jakar` and `trashigang` 1.25) so they do not read undersized against the square ones |
 | `Tooltip` | `label`, `children` | Hover/focus, for terse glosses (SDF, altitude) |
 | `WindowFrame` | `src`, `alt`, `aspectRatio`, `tone: ink\|paper` | Photo inside a traditional rabsel window — carved cornice above, timber base below. One hero-scale image per page, never in a grid |
 
@@ -110,7 +110,7 @@ the field in `--maroon`, and `aria-describedby` wiring for hint and error.
 
 | Component | API | Notes |
 | --- | --- | --- |
-| `NavBar` | `items`, `active`, `cta`, `onCta`, `onNavigate`, `inverse`, `scrolled`, `logoSrc`, `brand`, `menu`, `search`, `searchPlaceholder` | Transparent over a hero, frosted paper (`--blur-nav`) when scrolled or open. Default: wordmark + outlined search + a "Menu" toggle opening a paper panel in large display type. `menu={false}` puts items inline |
+| `NavBar` | `items`, `active`, `cta`, `onCta`, `onNavigate`, `inverse`, `scrolled`, `logoSrc`, `brand`, `menu`, `search`, `searchPlaceholder` | Transparent over a hero, frosted paper (`--blur-nav`) when scrolled or open. Default: wordmark + outlined search + a "Menu" toggle opening a paper panel in large display type. `menu={false}` puts items inline. Both search boxes are `SearchSuggest`: a real GET form to `/search` that answers as it is typed, ranking `/search-index.json` in the browser — see `src/components/site/SearchSuggest.tsx` |
 | `Footer` | `brand`, `logoSrc`, `onHome`, `line`, `columns`, `note` | Deep pine, three link columns, hairline legal row, short prayer-flag rule |
 | `Tabs` | `tabs`, `value`, `onChange` | Underline tabs |
 
@@ -123,7 +123,7 @@ router (`{'Our trips':'trips', 'Blog':'culture', …}` in `index.html`) goes awa
 | Component | API | Notes |
 | --- | --- | --- |
 | `TrekCard` | `image`, `region`, `title`, `days`, `altitude`, `difficulty`, `price`, `excerpt`, `href`, `size: md\|lg`, `kera` | Woven kera edge on top, portrait photo with region label, meta row, light display title. No border, no shadow. `size="lg"` + `kera={false}` is the trips-index variant |
-| `Itinerary` | `days: {day?, title, meta?, body?, rest?}[]`, `collapsible`, `expanded`, `onToggle` | Vertical timeline. Rest days get a hollow gold node and read "Rest" instead of a number. `collapsible` adds circled nodes on a dashed connector with a per-day toggle |
+| `Itinerary` | `days: {day?, title, meta?, body?, rest?, images?}[]`, `collapsible`, `expanded`, `onToggle` | Vertical timeline. Rest days get a hollow gold node and read "Rest" instead of a number. `collapsible` adds circled nodes on a dashed connector with a per-day toggle. `images` draws the day's own strip under its prose — eight tiles, the eighth counting the rest and opening `PhotoLightbox` on the first of them, so a day may hold any number |
 | `Reflection` | `quote`, `name`, `detail` | Testimonial as reflection: gold rule, quote, quiet attribution. **No stars, no ratings** |
 
 ### feedback
@@ -136,6 +136,17 @@ router (`{'Our trips':'trips', 'Blog':'culture', …}` in `index.html`) goes awa
 `InquiryDrawer` needs real dialog semantics in the port, which the prototype lacks:
 `role="dialog" aria-modal="true"`, focus trap, focus restore on close, `Escape` to close,
 `inert` on the rest of the page, and body scroll lock.
+
+### media (new)
+
+| Component | API | Notes |
+| --- | --- | --- |
+| `PhotoLightbox` | `photos: LightboxPhoto[]`, `index: number \| null`, `onIndex`, `onClose`, `label` | One photograph at a time over the page. `index` null is closed, and nothing inside renders until it opens. Arrow keys, `Home`/`End`, swipe past `SWIPE_PX`, a thumbnail rail, and the two neighbours prefetched. Letterboxed (`object-fit: contain`), never cropped |
+| `Layer` | `open`, `onClose`, `label`, `tone: light\|dark`, `children` | The native `<dialog>` the above sits in. `showModal()` gives the focus trap, the inert page, `Escape` and focus restore; each layer saves and restores the page's `overflow`, so layers stack and `Escape` in the viewer returns to the sheet under it rather than closing both |
+
+Both are shared: the journey gallery band and a day's strip in the itinerary open the same
+viewer. `LightboxPhoto` is declared structurally rather than imported from `src/content`,
+so the design system still knows nothing about a journey — a `TripPhoto` satisfies it.
 
 ### primitives (new)
 
@@ -172,7 +183,8 @@ project UI into `public/assets/`, preserving paths:
 ```
 assets/logo.webp
 assets/fonts/Commissioner-{Thin,ExtraLight,Regular,Medium,SemiBold,Bold,ExtraBold,Black}.ttf
-assets/icons/{buddha,chorten,dzong,dzong-long,jakar,monastery,pavilion,punakha,stupa,taktsang}.png
+assets/icons/{buddha,chorten,dzong,dzong-long,gasa,jakar,monastery,mongar,pavilion,
+              pemagatshel,punakha,stupa,taktsang,trashigang,trongsa}.png
 assets/illustrations/{bhutan-dragon.jpg, bhutan-silhouettes.png, druk-dragon-mural.jpg,
                       four-animals.jpg, four-harmonious-friends.jpg,
                       harmonious-friends-thangka.jpg,

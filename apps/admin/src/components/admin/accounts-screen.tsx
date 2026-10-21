@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { RolesScreen } from '@/components/admin/roles-screen';
 import { UsersScreen } from '@/components/admin/users-screen';
@@ -16,19 +16,29 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
  *
  * The Roles tab is absent, not disabled, for somebody without `roles.read`:
  * a tab that greets you with a refusal teaches nothing.
+ *
+ * The tab is in the address (`?tab=roles`) so that saving or cancelling a
+ * role's page comes back to the Roles tab, not to People.
  */
 export function AccountsScreen({
   currentUserId,
+  canWriteUsers,
   canSeeRoles,
   canManageRoles,
 }: {
   currentUserId: string;
+  canWriteUsers: boolean;
   canSeeRoles: boolean;
   canManageRoles: boolean;
 }) {
-  const [tab, setTab] = React.useState('people');
+  const router = useRouter();
+  const params = useSearchParams();
+  const tab = params.get('tab') === 'roles' ? 'roles' : 'people';
+  const setTab = (next: string) =>
+    router.replace(next === 'roles' ? '/users?tab=roles' : '/users', { scroll: false });
 
-  if (!canSeeRoles) return <UsersScreen currentUserId={currentUserId} />;
+  const people = <UsersScreen currentUserId={currentUserId} canWrite={canWriteUsers} />;
+  if (!canSeeRoles) return people;
 
   return (
     <div className="space-y-4">
@@ -40,7 +50,7 @@ export function AccountsScreen({
       </Tabs>
 
       {tab === 'people' ? (
-        <UsersScreen currentUserId={currentUserId} />
+        people
       ) : (
         <RolesScreen canManage={canManageRoles} />
       )}

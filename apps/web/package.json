@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@lotuspeak/api-contracts": "*",
+    "@lotuspeak/email": "*",
     "@lotuspeak/media": "*",
     "@lotuspeak/seo": "*",
     "@lotuspeak/video": "*",

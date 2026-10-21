@@ -76,6 +76,19 @@ export interface EmailEnquiry {
   message?: string;
   restDays?: boolean;
   source?: string;
+  /**
+   * An operational note to the office, drawn above everything else.
+   *
+   * Not copy, and deliberately not editable: it says something about this
+   * message that the office must not be able to switch off — at present, that
+   * the enquiry reached nobody's inbox but this one, because the panel could
+   * not be reached to record it. An enquiry that exists only as an email looks
+   * exactly like one that is safely in the system, and that is how a lead is
+   * lost twice.
+   *
+   * Ignored on the traveller's copy, which is not the place for it.
+   */
+  notice?: string;
   origin?: {
     pagePath?: string;
     utmSource?: string;
@@ -282,14 +295,29 @@ function shell(args: {
         <tr>
           <td style="padding:28px 32px 32px;border-top:1px solid ${C.line};font-family:${FONT};">
             <p style="margin:0 0 6px;font-size:13px;line-height:1.6;color:${C.muted};">
-              <strong style="color:${C.ink};font-weight:500;">${escapeHtml(identity.name)}</strong><br>
-              ${escapeHtml(identity.addressLine)}<br>
-              <a href="tel:${escapeHtml(identity.phone.replace(/\s+/g, ''))}" style="color:${C.muted};text-decoration:none;">${escapeHtml(
-                identity.phone,
-              )}</a> ·
-              <a href="mailto:${escapeHtml(identity.email)}" style="color:${C.muted};text-decoration:none;">${escapeHtml(
-                identity.email,
-              )}</a>
+              ${[
+                `<strong style="color:${C.ink};font-weight:500;">${escapeHtml(identity.name)}</strong>`,
+                escapeHtml(identity.addressLine),
+                /* Each line only when there is something on it, and the middle
+                   dot only when it has something on both sides. A blank field
+                   used to render as an empty line and a stranded "·" — which
+                   nobody saw until a message had to be written without the
+                   company record to hand. */
+                [
+                  identity.phone &&
+                    `<a href="tel:${escapeHtml(identity.phone.replace(/\s+/g, ''))}" style="color:${C.muted};text-decoration:none;">${escapeHtml(
+                      identity.phone,
+                    )}</a>`,
+                  identity.email &&
+                    `<a href="mailto:${escapeHtml(identity.email)}" style="color:${C.muted};text-decoration:none;">${escapeHtml(
+                      identity.email,
+                    )}</a>`,
+                ]
+                  .filter(Boolean)
+                  .join(' · '),
+              ]
+                .filter(Boolean)
+                .join('<br>')}
             </p>
             ${
               args.footNote
@@ -377,6 +405,7 @@ export function renderEnquiryEmail(args: RenderEnquiryArgs): RenderedEmail {
   const notesLabel = fill(template.notesLabel, values);
 
   const body = [
+    audience === 'office' && enquiry.notice ? banner(enquiry.notice) : '',
     paragraphs(fill(template.intro, values)),
     summaryLabel ? heading(summaryLabel) : '',
     summaryTable(rows),
@@ -396,7 +425,15 @@ export function renderEnquiryEmail(args: RenderEnquiryArgs): RenderedEmail {
   ].join('');
 
   return {
-    subject: fill(template.subject, values),
+    /**
+     * Whitespace closed up after substitution, not before.
+     *
+     * `Enquiry {{reference}} — {{name}}` with no reference is
+     * `Enquiry  — Anne Traveller`, and a subject line is the one place a
+     * doubled space is conspicuous. Only the subject is treated this way: the
+     * body's blank lines are paragraphs.
+     */
+    subject: fill(template.subject, values).replace(/\s+/g, ' ').trim(),
     html: shell({
       identity,
       preheader: fill(template.preheader, values),
@@ -406,6 +443,7 @@ export function renderEnquiryEmail(args: RenderEnquiryArgs): RenderedEmail {
       footNote: fill(template.footNote, values),
     }),
     text: plainText({
+      notice: audience === 'office' ? enquiry.notice : undefined,
       heading: fill(template.heading, values),
       intro: fill(template.intro, values),
       rows,
@@ -415,6 +453,18 @@ export function renderEnquiryEmail(args: RenderEnquiryArgs): RenderedEmail {
       identity,
     }),
   };
+}
+
+/**
+ * The one thing in the message that is louder than the message.
+ *
+ * Saffron rather than gold, and a solid rule rather than a tint, because it is
+ * read by somebody scanning a familiar email for what is new in it.
+ */
+function banner(text: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;"><tr><td style="padding:14px 18px;background:#FDF4E7;border-left:4px solid ${C.saffron};"><p style="margin:0;font-size:15px;line-height:1.55;font-weight:500;color:${C.ink};">${escapeHtml(
+    text,
+  )}</p></td></tr></table>`;
 }
 
 function heading(text: string): string {
@@ -433,6 +483,7 @@ function resolveUrl(identity: EmailIdentity, url: string): string {
 
 /** Written from the same inputs as the HTML, never derived from it. */
 function plainText(args: {
+  notice?: string;
   heading: string;
   intro: string;
   rows: [string, string][];
@@ -441,7 +492,11 @@ function plainText(args: {
   signOff: string;
   identity: EmailIdentity;
 }): string {
-  const lines: string[] = [args.heading, '='.repeat(args.heading.length), ''];
+  const lines: string[] = [];
+  /* Before the heading, not after it: the plain-text part is what a phone
+     notification and every screen reader quote first. */
+  if (args.notice) lines.push(`** ${args.notice} **`, '');
+  lines.push(args.heading, '='.repeat(args.heading.length), '');
   if (args.intro) lines.push(args.intro, '');
   for (const [label, value] of args.rows) {
     if (value && value.trim()) lines.push(`${label}: ${value}`);
@@ -452,10 +507,12 @@ function plainText(args: {
   if (args.signOff) lines.push(args.signOff, '');
   lines.push(
     '--',
-    args.identity.name,
-    args.identity.addressLine,
-    `${args.identity.phone} · ${args.identity.email}`,
-    args.identity.siteUrl,
+    ...[
+      args.identity.name,
+      args.identity.addressLine,
+      [args.identity.phone, args.identity.email].filter(Boolean).join(' · '),
+      args.identity.siteUrl,
+    ].filter(Boolean),
   );
   return lines.join('\n');
 }

@@ -37,16 +37,7 @@ export type { RevalidateTag as ContentTag } from '@lotuspeak/api-contracts'
 
 import { REVALIDATE_TAGS, type RevalidateTag } from '@lotuspeak/api-contracts'
 
-function baseUrl(): string {
-  const url = process.env.CONTENT_API_URL
-  if (!url) {
-    throw new Error(
-      'CONTENT_API_URL is not set. This site reads its content from the admin ' +
-        "panel's public API — see apps/web/.env.example.",
-    )
-  }
-  return url.replace(/\/$/, '')
-}
+import { contentApiUrl as baseUrl } from '@/lib/env'
 
 /**
  * How long a fetched payload may be served before it is refetched.

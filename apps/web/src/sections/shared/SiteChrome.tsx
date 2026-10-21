@@ -16,31 +16,46 @@ import {
 } from '@/design-system'
 import { Dignities, Halo } from '@/motion'
 import { sendEnquiry } from '@/lib/send-enquiry'
-import type { SiteSettings, Trip } from '@/content/types'
+import type { Destination, SiteSettings, Trip } from '@/content/types'
 
-type DrawerCtx = { open: (tripSlug?: string) => void; notify: (message: string) => void }
-const Ctx = createContext<DrawerCtx>({ open: () => {}, notify: () => {} })
+type DrawerCtx = {
+  open: (tripSlug?: string) => void
+  notify: (message: string) => void
+  /** The company's email, for a form to offer when its enquiry did not arrive. */
+  email: string
+}
+const Ctx = createContext<DrawerCtx>({ open: () => {}, notify: () => {}, email: '' })
 
 /** Any CTA anywhere can open the enquiry drawer or raise the toast. */
 export function useInquiry() {
   return useContext(Ctx)
 }
 
-/** Routes that open with a full-bleed hero and need white-on-image nav. */
+/**
+ * Routes that open with a full-bleed photograph and need white-on-image nav.
+ *
+ * Culture pieces, valleys and places open with the same `CoverImage` as a
+ * journal entry, and were missing here — an ink nav on a photograph.
+ */
 const INVERSE = (path: string) =>
   path === '/' ||
   path === '/culture' ||
   path === '/destinations' ||
   /^\/trips\/[^/]+$/.test(path) ||
+  /^\/culture\/[^/]+$/.test(path) ||
+  /^\/destinations\/[^/]+(\/[^/]+)?$/.test(path) ||
   /^\/journal\/[^/]+$/.test(path)
 
 export function SiteChrome({
   settings,
   trips,
+  destinations,
   children,
 }: {
   settings: SiteSettings
   trips: Pick<Trip, 'slug' | 'title' | 'durationDays'>[]
+  /** The valleys, for the menu map's places to lead to. */
+  destinations: Pick<Destination, 'name' | 'path'>[]
   children: ReactNode
 }) {
   const pathname = usePathname()
@@ -58,7 +73,8 @@ export function SiteChrome({
     setDrawerOpen(true)
   }, [])
 
-  const ctx = useMemo(() => ({ open, notify }), [open, notify])
+  const email = settings.contact.email
+  const ctx = useMemo(() => ({ open, notify, email }), [open, notify, email])
 
   // Close the drawer on navigation.
   useEffect(() => setDrawerOpen(false), [pathname])
@@ -71,7 +87,8 @@ export function SiteChrome({
     { label: 'Not sure yet', value: 'unsure' },
   ]
 
-  const columns: FooterColumn[] = settings.footer.columns
+  const { footer } = settings
+  const columns: FooterColumn[] = footer.show.links ? footer.columns : []
 
   return (
     <Ctx.Provider value={ctx}>
@@ -83,6 +100,8 @@ export function SiteChrome({
         active={active}
         cta={settings.navCta}
         inverse={INVERSE(pathname)}
+        mapDestinations={destinations}
+        pathname={pathname}
       />
 
       <div
@@ -93,7 +112,17 @@ export function SiteChrome({
         {children}
       </div>
 
-      <Footer brand={settings.brand} line={settings.line} columns={columns} note={settings.footer.note} />
+      <Footer
+        brand={settings.brand}
+        line={footer.note}
+        columns={columns}
+        address={footer.show.address ? settings.address.lines : []}
+        mapUrl={settings.address.mapUrl}
+        contacts={footer.show.contacts ? settings.contacts : []}
+        socials={footer.show.socials ? settings.socials : []}
+        copyright={footer.copyright}
+        credit={footer.credit}
+      />
 
       <InquiryDrawer
         open={drawerOpen}
@@ -101,6 +130,7 @@ export function SiteChrome({
         footer="No deposit, no obligation. Just a reply."
       >
         <DrawerForm
+          email={email}
           options={journeyOptions}
           preselect={preselect}
           onSent={() => {
@@ -111,7 +141,10 @@ export function SiteChrome({
         />
       </InquiryDrawer>
 
-      <div style={{ position: 'fixed', left: 32, bottom: 32, zIndex: 200, pointerEvents: 'none' }}>
+      {/* Bounded on the right as well as the left: the toast is inline-flex, so
+          on a phone the sentence wraps inside the screen instead of running off
+          it. On a wide screen it still hugs its text in the bottom corner. */}
+      <div style={{ position: 'fixed', left: 32, right: 32, bottom: 32, zIndex: 200, pointerEvents: 'none' }}>
         <Toast open={!!toast} message={toast ?? ''} />
       </div>
     </Ctx.Provider>
@@ -119,11 +152,13 @@ export function SiteChrome({
 }
 
 function DrawerForm({
+  email,
   options,
   preselect,
   onSent,
   onFailed,
 }: {
+  email: string
   options: { label: string; value: string }[]
   preselect?: string
   onSent: () => void
@@ -138,7 +173,7 @@ function DrawerForm({
         e.preventDefault()
         setPending(true)
         const data = Object.fromEntries(new FormData(e.currentTarget))
-        const outcome = await sendEnquiry({ ...data, source: 'drawer' })
+        const outcome = await sendEnquiry({ ...data, source: 'drawer' }, email)
         setPending(false)
         /* A refused enquiry leaves the drawer open with the words still in it,
            so there is something to try again with. */

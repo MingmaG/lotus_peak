@@ -113,12 +113,6 @@ export const NAVIGATION: NavGroup[] = [
         badge: 'scheduled',
       },
       {
-        label: 'Destinations',
-        href: '/destinations',
-        icon: MapPin,
-        permission: 'destinations.read',
-      },
-      {
         label: 'What you can do',
         href: '/activities',
         icon: Footprints,
@@ -148,11 +142,30 @@ export const NAVIGATION: NavGroup[] = [
   {
     label: 'Words and pictures',
     items: [
+      /* The website's three sections, in the order its menu gives them, and
+         kept together so where a thing belongs is decided in one place:
+         somewhere to go, something Bhutanese to understand, or a dated
+         story. */
+      {
+        label: 'Where we go',
+        href: '/destinations',
+        icon: MapPin,
+        permission: 'destinations.read',
+        hint: 'Valleys, and the places inside them — each a page',
+      },
+      {
+        label: 'Culture',
+        href: '/culture',
+        icon: Compass,
+        permission: 'culture.read',
+        hint: 'Tshechu, dzongs, the thirteen arts — each a page',
+      },
       {
         label: 'Journal',
         href: '/journal',
         icon: BookOpen,
         permission: 'journal.read',
+        hint: 'Journeys, travel guides, experiences and stories',
       },
       {
         label: 'Pages',
@@ -160,12 +173,6 @@ export const NAVIGATION: NavGroup[] = [
         icon: FileText,
         permission: 'pages.read',
         hint: 'About, Contact, Terms, and the words around each index route',
-      },
-      {
-        label: 'Culture',
-        href: '/culture',
-        icon: Compass,
-        permission: 'culture.read',
       },
       {
         label: 'Gallery',

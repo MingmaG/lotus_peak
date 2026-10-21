@@ -43,7 +43,7 @@ export default async function TravellersInformationPage() {
         title={page.title}
         lead={page.lead ?? ''}
         bands={page.bands}
-        note="Last reviewed for the 2026 season. Ask us if you are reading this later than that."
+        note={page.note ?? undefined}
       />
     </>
   )
