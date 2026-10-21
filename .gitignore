@@ -23,3 +23,10 @@ apps/web/public/assets/**/PLACEHOLDER
 # Browser snapshots from Playwright MCP — scratch output of a debugging
 # session, not a fixture. Regenerated every run.
 .playwright-mcp/
+
+# PM2 writes the two apps' stdout and stderr here (deploy/ecosystem.config.js).
+deploy/logs/
+
+# The media library on its way between two S3 stores (deploy/media-sync.mjs).
+# A full copy of every photograph: it belongs in a bucket, not in git.
+deploy/media-export/

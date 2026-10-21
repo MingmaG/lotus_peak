@@ -33,6 +33,176 @@ npm run build:admin
 npm run build:web
 ```
 
+## One VM, with PM2
+
+No nginx. Two Node processes under PM2, bound to loopback, with TLS and the
+public hostname terminated by whatever sits in front — a Cloudflare tunnel, a
+load balancer, an Apache you already run. Postgres and RustFS are yours and
+are not started by any of this.
+
+```
+          ┌─────────────────────────── your VM ───────────────────────────┐
+  TLS ───▶│ :6010  lotuspeak-web ──▶ :6011 lotuspeak-admin ──▶ Postgres   │
+          │                                      └─────────▶ RustFS :9000 │
+          └───────────────────────────────────────────────────────────────┘
+                                   ▲
+            a browser fetches photographs from RustFS directly,
+            over its own public URL — never through these two
+```
+
+### Once, to set the box up
+
+```bash
+# Node 20+ and PM2
+node -v                                   # >= 20.9
+npm i -g pm2
+
+git clone <repo> /srv/lotuspeak && cd /srv/lotuspeak
+npm ci
+
+cp deploy/env/admin.env.example apps/admin/.env
+cp deploy/env/web.env.example   apps/web/.env
+bash scripts/generate-secrets.sh          # paste into both; the pairs must match
+$EDITOR apps/admin/.env apps/web/.env
+```
+
+Every variable is commented in those two files. The four that fail quietly
+rather than loudly are worth checking twice:
+
+| admin | web | if they differ |
+| --- | --- | --- |
+| `SITE_REVALIDATE_SECRET` | `REVALIDATE_SECRET` | publishing stops reaching the site; nothing says so for an hour |
+| `PREVIEW_SECRET` | `PREVIEW_SECRET` | every preview link is refused |
+| `MAIL_REPORT_SECRET` | `MAIL_REPORT_SECRET` | mail goes out, the Email screen stays empty |
+| `MEDIA_PUBLIC_URL` | `MEDIA_PUBLIC_URL` | prose figures vanish from journal entries |
+
+### The database
+
+You have the URL and a dump. Restore it — the dump carries the schema, the
+content and Prisma's own ledger of which migrations have run, so there is
+nothing to migrate afterwards:
+
+```bash
+# on the machine holding the dump
+pg_dump --no-owner --no-privileges -Fc "$DEV_DATABASE_URL" -f lotuspeak.dump
+
+# on the VM
+pg_restore --no-owner --no-privileges -d "$DATABASE_URL" lotuspeak.dump
+npx prisma migrate status --schema apps/admin/prisma/schema.prisma   # expect: up to date
+```
+
+Starting from empty instead is `npm run db:deploy && npm run db:seed` — the
+checked-in migrations reproduce the schema exactly, so both routes land in the
+same place. Either way **never `db:push`** at a database the office uses.
+
+### The media library
+
+The dump and the bucket are two halves of one thing: a `media` row names its
+renditions, the bytes live under `media/<id>/<width>.webp`. Restore one
+without the other and every page renders perfectly with a broken image in
+every frame — nothing errors, because nothing on the server fetches them.
+
+See *Moving the media library* below.
+
+### Start it
+
+```bash
+./deploy/deploy.sh --migrate      # first run; drop --migrate if you restored a dump
+pm2 save && pm2 startup           # survive a reboot — run the line it prints
+```
+
+`deploy/deploy.sh` exists for one reason: it builds the panel, *restarts* it,
+waits for `/api/health`, and only then builds the website. The website asks the
+panel for its slugs while it builds, so building it against a panel that is
+down or still running the last release gives you a site with missing pages,
+successfully and without complaint.
+
+### Day to day
+
+```bash
+pm2 status
+pm2 logs lotuspeak-web --lines 100
+pm2 reload lotuspeak-admin          # restart and re-read .env (see below)
+./deploy/deploy.sh                  # deploy a new release
+```
+
+`reload` rather than `restart` because it re-reads the environment, but in
+`fork` mode it is still a restart with a second or two of refused connections
+in the middle — PM2's zero-downtime reload only exists in `cluster` mode, which
+this deployment deliberately does not use.
+
+One process each, `fork` mode, and that is deliberate — see the comment in
+`deploy/ecosystem.config.js`. The website's rendered pages and the tags they
+were cached under live in that process, so a publish clears the worker that
+answered it; with two workers the office corrects a price, reloads, sees it
+change, reloads again and watches it change back. Scaling this site means a
+second box and a shared cache, not a second worker.
+
+Set `LOTUSPEAK_BIND=0.0.0.0` only if the thing forwarding to these is on
+another machine, and know that the panel is then on the internet on 6011 with
+only its own sign-in in front of it.
+
+## Moving the media library
+
+`deploy/media-sync.mjs` moves objects between any two S3-compatible stores —
+MinIO here, RustFS there, identical calls. It never touches the database.
+
+```bash
+# 1. pull every object out of the current store into a folder
+node deploy/media-sync.mjs export
+#    → deploy/media-export/media/<id>/400.webp, 800.webp, …
+
+# 2a. push the folder into the RustFS bucket
+node deploy/media-sync.mjs upload \
+  --endpoint http://127.0.0.1:9000 --bucket lotuspeak-media \
+  --access-key KEY --secret-key SECRET
+
+# 2b. or upload deploy/media-export/ by hand, through the RustFS console or mc.
+#     Keep the paths: the website asks for <bucket>/media/<id>/<width>.webp
+#     exactly, and a folder dropped one level deep is a bucket full of
+#     unreachable objects.
+mc mirror deploy/media-export/ rustfs/lotuspeak-media/
+
+# 3. check it
+node deploy/media-sync.mjs verify \
+  --endpoint http://127.0.0.1:9000 --bucket lotuspeak-media \
+  --access-key KEY --secret-key SECRET \
+  --public-url https://s3.example.com/lotuspeak-media
+```
+
+`export` is resumable — it skips what is already on disk, so an export that
+died at object 800 of 900 does not refetch the first 800. `upload` takes
+`--dry-run`. Nothing about the target is defaulted, on purpose: inheriting
+`S3_ENDPOINT` from a developer's `.env` would point the upload at the
+development MinIO and report complete success having moved nothing.
+
+**The bucket needs anonymous read on objects.** Every call the script makes is
+authenticated; a visitor's browser is not, and a private bucket answers 403 to
+it while every one of those calls succeeds. The symptom is every photograph on
+the site broken with nothing in any log to explain it, which is why `verify`
+fetches one object with no credentials at all and fails if it cannot:
+
+```bash
+mc anonymous set download rustfs/lotuspeak-media
+```
+
+Uploads write `Cache-Control: public, max-age=31536000, immutable`, the same
+header the panel writes, which is safe because a rendition key is never
+reused — replacing the photograph behind a media row writes new keys.
+
+### Renditions
+
+The panel builds five WebP renditions per photograph at upload, and the site
+fetches them straight from the bucket: nothing is resized on the VM and
+`/_next/image` is never requested. If a photograph is missing its smaller
+sizes — an upload made while a worker was down, or a library seeded with
+`db:seed`, which skips them — rebuild them after the objects are in place:
+
+```bash
+npm run media:rebuild -w @lotuspeak/admin
+```
+
+
 ## Environment
 
 Both apps read `.env`. `.env.example` in each is the list, with a note on every
@@ -56,9 +226,11 @@ Set for real, per environment:
   origin, no trailing slash. Canonicals, the sitemap, the feed, every JSON-LD
   `@id`, and the panel's "View on site" links are built from these.
 - `CONTENT_API_URL` (web) — where the panel is, from the build machine.
-- `MEDIA_PUBLIC_URL` (both) — where photographs are served from. The website's
-  `next.config.mjs` builds `images.remotePatterns` from it; get it wrong and
-  every image is a 500 whose message names the hostname rather than the config.
+- `MEDIA_PUBLIC_URL` (both) — where photographs are served from. The panel
+  builds every image URL from its copy, so that is the one that decides what a
+  browser fetches; the website's copy only allowlists the hosts an `<img>`
+  inside prose may point at. The bucket behind it has to allow anonymous read,
+  which `deploy/media-sync.mjs verify` is the quickest way to find out.
 - `DATABASE_URL` (admin only, and never on the website).
 - `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_REPLY_TO`, `MAIL_OFFICE_TO` — **on the
   website, not the panel.** The website sends an enquiry's two messages itself,
@@ -92,8 +264,15 @@ Set for real, per environment:
 ## Storage
 
 `STORAGE_DRIVER=s3` is what MinIO is for in development: the driver is
-identical, so what works locally works against Supabase Storage, Cloudflare R2
-or AWS. The bucket needs public read on objects; uploads go through the panel.
+identical, so what works locally works against RustFS, Supabase Storage,
+Cloudflare R2 or AWS. The bucket needs public read on objects; uploads go
+through the panel. RustFS and MinIO address a bucket by path rather than by
+subdomain, so keep `S3_FORCE_PATH_STYLE=true` for both — false against either
+produces a 301 to a hostname that does not resolve, and the error reads as a
+network failure rather than a configuration one.
+
+Getting the objects from one store to another is *Moving the media library*
+above.
 
 `STORAGE_DRIVER=local` writes to `apps/admin/storage` and serves through
 `/api/storage`, which is fine on a single box — but then `ADMIN_PUBLIC_URL`
