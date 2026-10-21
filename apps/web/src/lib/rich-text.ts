@@ -1,6 +1,8 @@
 import "server-only";
+import { RENDITION_WIDTHS } from "@lotuspeak/media";
 import { parseVideoSource, thumbnailUrl, watchUrl } from "@lotuspeak/video";
 import { siteUrl } from "@/lib/env";
+import mediaLoader from "@/lib/image-loader";
 
 /**
  * Turns the admin panel's rich text into HTML this site is willing to render.
@@ -21,10 +23,10 @@ import { siteUrl } from "@/lib/env";
  * and this is a list of the fourteen elements a journal article needs.
  *
  * **Images are checked twice.** `isAllowedImageSrc` refuses a host that is not
- * the media store named by `MEDIA_PUBLIC_URL` — the same origin
- * `next.config.mjs` puts in `images.remotePatterns` — and then the URL is
- * rewritten through Next's optimizer, so a photograph inside a paragraph gets
- * the AVIF and WebP treatment every other photograph on the site gets.
+ * the media store named by `MEDIA_PUBLIC_URL`, and then the URL is put through
+ * the same loader `next/image` uses, so a photograph inside a paragraph is
+ * offered the renditions every other photograph on the site is offered — and is
+ * fetched from the media store rather than through this box.
  *
  * **It assumes the producer is the admin panel.** The office writes this copy,
  * signed in, and this is defence in depth rather than a boundary with an
@@ -38,13 +40,13 @@ import { siteUrl } from "@/lib/env";
  * The hosts a photograph in a body may be served from.
  *
  * One origin: the media store the admin panel uploads to, named by
- * `MEDIA_PUBLIC_URL` and already the only thing in `images.remotePatterns` in
- * `next.config.mjs`. An `<img>` pointing anywhere else — a hotlink somebody
+ * `MEDIA_PUBLIC_URL`. An `<img>` pointing anywhere else — a hotlink somebody
  * pasted, a tracking pixel, a `data:` URI — is refused, because an untrusted
  * image URL is a request the visitor's browser makes on our say-so.
  *
- * Read once at module scope. It is a deployment fact, not a per-request one,
- * and `next.config.mjs` has already refused to build without it.
+ * Read once at module scope: it is a deployment fact, not a per-request one.
+ * Unset, the list is empty and every absolute URL is refused — which is the
+ * safe direction, and loud enough in the log to be found.
  */
 const ALLOWED_IMAGE_HOSTS: readonly string[] = (() => {
   const hosts = new Set<string>();
@@ -224,28 +226,43 @@ function videoFacade(attrs: Map<string, string>): string | null {
 }
 
 /**
- * The widths the article images are served at.
+ * The widths an article photograph is offered at.
  *
- * Every one is in Next's default `deviceSizes`, because the optimizer answers
- * 400 for a width that is not — an in-article photograph would then be the one
- * broken image on an otherwise fine page.
+ * The rendition ladder itself, because those are the files that exist. It used
+ * to be four of Next's `deviceSizes`, which made sense while the optimizer was
+ * resizing on demand and makes none now: a width with no rendition behind it is
+ * a URL the media store answers 404 to.
  */
-const IMAGE_WIDTHS = [640, 828, 1080, 1920] as const;
+const IMAGE_WIDTHS = RENDITION_WIDTHS;
 const IMAGE_FALLBACK_WIDTH = 1200;
 
 /** The body column is 700px at full width; below that the photo is the page. */
 const IMAGE_SIZES = "(max-width: 900px) 100vw, 700px";
 
-function optimizedUrl(src: string, width: number): string {
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
+/**
+ * A URL safe to put in a `srcset`, where a comma separates candidates and
+ * whitespace separates a candidate from its descriptor.
+ *
+ * A rendition key cannot contain either, but `isAllowedImageSrc` also admits a
+ * site-relative path, and the office can name a file anything. The optimizer
+ * URL this replaced percent-encoded the whole thing as a query parameter and
+ * could not have the problem; a bare URL can, and one comma would silently
+ * turn one photograph into two broken candidates.
+ */
+function srcsetSafe(url: string): string {
+  return url.replace(/,/g, "%2C").replace(/\s/g, "%20");
 }
 
 /**
  * An in-article photograph, or null when its host is not allowlisted.
  *
- * Built rather than patched: the optimizer URL, a srcset and the loading hints
- * are written here, so an `<img>` from the editor arrives with the same
+ * Built rather than patched: the media-store URL, a srcset and the loading
+ * hints are written here, so an `<img>` from the editor arrives with the same
  * treatment `next/image` gives every other photograph on the site.
+ *
+ * `mediaLoader` rather than a URL written out again: prose figures and every
+ * other image on the site have to agree about which rendition a width means,
+ * and two copies of that rule is one copy that goes stale.
  */
 function imageTag(attrs: Map<string, string>): string | null {
   const src = attrs.get("src")?.trim();
@@ -256,11 +273,26 @@ function imageTag(attrs: Map<string, string>): string | null {
 
   const alt = attrs.get("alt") ?? "";
   const title = attrs.get("title")?.trim();
-  const srcset = IMAGE_WIDTHS.map((w) => `${optimizedUrl(src, w)} ${w}w`).join(", ");
+  /**
+   * Deduplicated, and the first width for a URL wins.
+   *
+   * The loader caps a photograph at the largest rendition that exists of it, so
+   * a picture uploaded at 900 px answers `800.webp` for 800, 1200 and 2400
+   * alike. Keeping the first keeps the descriptor honest — it is the width the
+   * file actually is — and keeps the attribute from naming it three times.
+   */
+  const candidates = new Map<string, number>();
+  for (const w of IMAGE_WIDTHS) {
+    const url = srcsetSafe(mediaLoader({ src, width: w }));
+    if (!candidates.has(url)) candidates.set(url, w);
+  }
+  const srcset = [...candidates]
+    .map(([url, w]) => `${escapeAttr(url)} ${w}w`)
+    .join(", ");
 
   return (
-    `<img src="${escapeAttr(optimizedUrl(src, IMAGE_FALLBACK_WIDTH))}"` +
-    ` srcset="${escapeAttr(srcset)}"` +
+    `<img src="${escapeAttr(mediaLoader({ src, width: IMAGE_FALLBACK_WIDTH }))}"` +
+    ` srcset="${srcset}"` +
     ` sizes="${IMAGE_SIZES}"` +
     ` alt="${escapeAttr(alt)}"` +
     (title ? ` title="${escapeAttr(title)}"` : "") +

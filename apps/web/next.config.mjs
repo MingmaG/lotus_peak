@@ -1,36 +1,6 @@
 /** @type {import('next').NextConfig} */
 const YEAR = 60 * 60 * 24 * 365
 
-/**
- * Where the photographs come from.
- *
- * `MEDIA_PUBLIC_URL` is the admin panel's media store — MinIO in development,
- * Supabase or a CDN in production — and it is the same variable the admin sets
- * on its storage driver, so the two cannot be pointed at different buckets.
- *
- * Without an entry here every photograph on the site is a 500: `next/image`
- * refuses a remote host it was not told about, and the error names the
- * hostname rather than this file.
- */
-function mediaPattern() {
-  const raw = process.env.MEDIA_PUBLIC_URL
-  if (!raw) return []
-  try {
-    const url = new URL(raw)
-    return [
-      {
-        protocol: url.protocol.replace(':', ''),
-        hostname: url.hostname,
-        port: url.port || undefined,
-        pathname: '/**',
-      },
-    ]
-  } catch {
-    console.warn(`[next.config] MEDIA_PUBLIC_URL is not a URL: ${raw}`)
-    return []
-  }
-}
-
 const nextConfig = {
   reactStrictMode: true,
 
@@ -47,13 +17,30 @@ const nextConfig = {
   ],
 
   images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 828, 1080, 1200, 1600, 1920, 2400],
-    // The originals under public/assets are immutable between deploys, so a
-    // derivative never needs re-encoding within one. Without this the optimiser
-    // re-encodes on a 60s cycle and the first visitor after each one pays for it.
-    minimumCacheTTL: YEAR,
-    remotePatterns: mediaPattern(),
+    /**
+     * Photographs come from the media store, not from this box.
+     *
+     * `src/lib/image-loader.ts` turns a width into the rendition the panel
+     * already built at that width, so `next/image` emits media-store URLs and
+     * `/_next/image` is never requested. What used to be here went with it:
+     * `formats`, because nothing re-encodes any more; `minimumCacheTTL`,
+     * because there is no optimiser cache to keep warm; and `remotePatterns`,
+     * which only ever guarded the built-in optimiser and is not consulted once
+     * a loader is set — leaving it would suggest this box still fetches the
+     * photographs, and it does not.
+     */
+    loaderFile: './src/lib/image-loader.ts',
+
+    /**
+     * The rendition ladder, exactly — `RENDITION_WIDTHS` in `@lotuspeak/media`.
+     *
+     * Not a detail. `next/image` builds `srcset` from these widths and the
+     * loader snaps each one to the nearest rendition at or below it, so a list
+     * that disagrees with the ladder produces a `srcset` naming the same file
+     * three times: 828, 1080 and 1200 all snap to 1200. Kept in step by hand
+     * because this file cannot import from a workspace package.
+     */
+    deviceSizes: [400, 800, 1200, 1600, 2400],
   },
   eslint: { ignoreDuringBuilds: false },
   typescript: { ignoreBuildErrors: false },
@@ -67,6 +54,9 @@ const nextConfig = {
    * behind one. Images are not — the filenames are editorial, so a photo can be
    * replaced under the same name. They get a day, then a week of
    * stale-while-revalidate, which is invisible to visitors and still correct.
+   *
+   * This is now the whole of what the box serves image-shaped: the brand
+   * chrome. Every photograph a visitor sees is fetched from the media store.
    */
   async headers() {
     // Every matching entry is applied in order and the last one wins, so the

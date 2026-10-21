@@ -163,6 +163,9 @@ export function ShadowArt({
           // length, so approximate it here. This only steers which srcset entry
           // the browser picks — the CSS width below is what lays the motif out.
           sizes="(max-width: 900px) 90vw, 60vw"
+          // A file in public/: the loader has no renditions to choose between,
+          // and without this every width in `srcSet` names the same URL.
+          unoptimized
           style={{
             position: 'absolute',
             width: size,

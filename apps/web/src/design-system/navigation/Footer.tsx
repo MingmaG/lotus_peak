@@ -80,7 +80,7 @@ export function Footer({
           the deep sky below. */}
       {sceneSrc && (
         <div className="lp-footer-scene" aria-hidden="true">
-          <Image src={sceneSrc} alt="" width={1800} height={470} sizes="100vw" />
+          <Image src={sceneSrc} alt="" width={1800} height={470} sizes="100vw" unoptimized={sceneSrc.startsWith('/')} />
         </div>
       )}
 
@@ -117,6 +117,8 @@ export function Footer({
                   width={198}
                   height={145}
                   sizes="60px"
+                  /* Local by default; a media-library logo keeps its renditions. */
+                  unoptimized={logoSrc.startsWith('/')}
                   style={{ height: 44, width: 'auto' }}
                 />
               )}
