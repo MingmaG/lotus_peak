@@ -1,17 +1,6 @@
-import { z } from 'zod';
-
 import { db } from '@/lib/db';
 import { notFound, route } from '@/lib/api/handler';
-
-const patchSchema = z.object({
-  status: z
-    .enum(['NEW', 'READ', 'REPLIED', 'QUOTED', 'CONVERTED', 'CLOSED', 'SPAM'])
-    .optional(),
-  priority: z.enum(['LOW', 'NORMAL', 'HIGH']).optional(),
-  assigneeId: z.string().nullable().optional(),
-  /** Adding a note, which is the commonest write on this screen. */
-  note: z.string().max(4_000).optional(),
-});
+import { enquiryPatchSchema, updateEnquiry, type EnquiryPatch } from '@/server/services/enquiry';
 
 export const GET = route<undefined, { id: string }>({
   permission: 'enquiries.read',
@@ -67,41 +56,11 @@ export const GET = route<undefined, { id: string }>({
   },
 });
 
-export const PATCH = route<z.infer<typeof patchSchema>, { id: string }>({
+export const PATCH = route<EnquiryPatch, { id: string }>({
   permission: 'enquiries.write',
-  schema: patchSchema,
+  schema: enquiryPatchSchema,
   handler: async ({ params, body, user, audit }) => {
-    const before = await db.enquiry.findUnique({ where: { id: params.id } });
-    if (!before) throw notFound('That enquiry');
-
-    if (body.note?.trim()) {
-      await db.note.create({
-        data: { enquiryId: params.id, body: body.note.trim(), authorId: user.id },
-      });
-    }
-
-    const enquiry = await db.enquiry.update({
-      where: { id: params.id },
-      data: {
-        status: body.status,
-        priority: body.priority,
-        assigneeId: body.assigneeId === undefined ? undefined : body.assigneeId,
-        /* The first time it is marked replied is when it was replied to. */
-        respondedAt:
-          body.status === 'REPLIED' && !before.respondedAt ? new Date() : undefined,
-        closedAt:
-          body.status === 'CLOSED' || body.status === 'CONVERTED'
-            ? (before.closedAt ?? new Date())
-            : undefined,
-      },
-      include: {
-        assignee: { select: { id: true, name: true } },
-        notes: {
-          orderBy: { createdAt: 'desc' },
-          include: { author: { select: { name: true } } },
-        },
-      },
-    });
+    const { before, enquiry } = await updateEnquiry(params.id, body, user.id);
 
     audit({
       action: 'UPDATE',
