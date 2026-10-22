@@ -32,6 +32,12 @@ import { limitSchema, pushToSite, recordAiActivity } from './shared';
 
 const mediaSearch = defineRead({
   name: 'media_search',
+  discovery: {
+    section: 'content.media',
+    operation: 'list',
+    tags: ['photographs', 'images', 'alt text', 'missing description'],
+    aliases: ['media_list', 'images_search', 'photos_search'],
+  },
   title: 'Find photographs in the library',
   description:
     'Searches the media library by filename, description, caption or credit, newest first. ' +
@@ -89,6 +95,12 @@ const mediaSearch = defineRead({
 
 const mediaUpdate = defineWrite({
   name: 'media_update',
+  discovery: {
+    section: 'content.media',
+    operation: 'update',
+    tags: ['alt text', 'description', 'caption', 'credit', 'focal point'],
+    aliases: ['media_alt_update', 'image_describe', 'alt_text_update'],
+  },
   title: 'Describe a photograph',
   description:
     'Edits a photograph’s description (alt text), caption, credit or focal point. The ' +
@@ -163,6 +175,12 @@ const mediaUpdate = defineWrite({
 
 const mediaUpload = defineWrite({
   name: 'media_upload',
+  discovery: {
+    section: 'content.media',
+    operation: 'upload',
+    tags: ['photograph', 'image', 'pdf', 'from url', 'base64'],
+    aliases: ['image_upload', 'photo_upload', 'media_add'],
+  },
   title: 'Add a photograph to the library',
   description:
     'Puts a photograph (JPEG, PNG, WebP, AVIF, GIF) or a PDF in the media library and returns ' +
@@ -232,6 +250,12 @@ const mediaUpload = defineWrite({
 
 const mediaUsage = defineRead({
   name: 'media_usage',
+  discovery: {
+    section: 'content.media',
+    operation: 'read',
+    tags: ['where used', 'usage', 'references'],
+    aliases: ['media_uses', 'media_where_used'],
+  },
   title: 'Where a photograph is used',
   description: 'Counts the places one photograph is used, before replacing or describing it.',
   permission: 'media.read',
@@ -278,6 +302,12 @@ const ENQUIRY_STATUS = z.enum(['NEW', 'READ', 'REPLIED', 'QUOTED', 'CONVERTED', 
 
 const enquiriesList = defineRead({
   name: 'enquiries_list',
+  discovery: {
+    section: 'desk.enquiries',
+    operation: 'list',
+    tags: ['leads', 'unanswered', 'new enquiries', 'inbox'],
+    aliases: ['inquiries_list', 'leads_list'],
+  },
   title: 'List enquiries',
   description:
     'Lists enquiries from travellers, newest first, with the journey asked about, status and ' +
@@ -312,6 +342,12 @@ const enquiriesList = defineRead({
 
 const enquiriesGet = defineRead({
   name: 'enquiries_get',
+  discovery: {
+    section: 'desk.enquiries',
+    operation: 'read',
+    tags: ['message', 'traveller', 'notes'],
+    aliases: ['inquiries_get', 'lead_get'],
+  },
   title: 'Read an enquiry',
   description:
     'Reads one enquiry: what the traveller wrote, the journey, dates, party and the desk’s ' +
@@ -344,6 +380,12 @@ const enquiriesGet = defineRead({
 
 const enquiriesUpdate = defineWrite({
   name: 'enquiries_update',
+  discovery: {
+    section: 'desk.enquiries',
+    operation: 'update',
+    tags: ['status', 'assign', 'priority', 'note', 'replied'],
+    aliases: ['inquiries_update', 'enquiry_assign', 'enquiry_note_add'],
+  },
   title: 'Work an enquiry',
   description:
     'Moves an enquiry along the desk: its status, its priority, who has it (`assigneeId`, a ' +
@@ -420,6 +462,12 @@ const enquiriesUpdate = defineWrite({
  */
 const seoAudit = defineRead({
   name: 'seo_audit',
+  discovery: {
+    section: 'search.seo',
+    operation: 'check',
+    tags: ['meta description', 'meta title', 'noindex', 'missing alt', 'seo gaps'],
+    aliases: ['seo_report', 'seo_check'],
+  },
   title: 'Find SEO gaps across the site',
   description:
     'Checks everything published — journeys, journal entries, pages, places — for a ' +
@@ -476,6 +524,12 @@ const seoAudit = defineRead({
 
 const redirectsList = defineRead({
   name: 'redirects_list',
+  discovery: {
+    section: 'search.redirects',
+    operation: 'list',
+    tags: ['301', 'old urls'],
+    aliases: ['redirect_list'],
+  },
   title: 'List redirects',
   description:
     'Lists the redirects from old addresses to new ones, most used first. Automatic ones were ' +
@@ -498,6 +552,12 @@ const redirectsList = defineRead({
 
 const redirectsCreate = defineWrite({
   name: 'redirects_create',
+  discovery: {
+    section: 'search.redirects',
+    operation: 'create',
+    tags: ['301', '302', 'old url', 'forward'],
+    aliases: ['redirect_add', 'redirect_create'],
+  },
   title: 'Add a redirect',
   description:
     'Sends an old address on this site somewhere else, permanently (301) or for now (302). ' +
@@ -555,6 +615,12 @@ const redirectsCreate = defineWrite({
 
 const companyGet = defineRead({
   name: 'company_get',
+  discovery: {
+    section: 'company.profile',
+    operation: 'read',
+    tags: ['company', 'tagline', 'site url', 'brand'],
+    aliases: ['company_profile', 'settings_get'],
+  },
   title: 'Who the company is',
   description:
     'The company as the website presents it: name, tagline, description, the site’s ' +

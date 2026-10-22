@@ -5,14 +5,15 @@ import type { z } from 'zod';
 
 import type { Permission } from '@/lib/auth/permissions';
 
+import type { Operation, Section } from './capabilities/taxonomy';
 import type { Actor } from './context';
 import { McpToolError } from './errors';
 
 /**
  * What a tool is, declared once.
  *
- * Everything the server, the approval queue, the policy screen and `whoami`
- * need to know about a tool lives on its definition, beside the code that
+ * Everything the server, the approval queue, discovery and `whoami` need
+ * to know about a tool lives on its definition, beside the code that
  * runs it — so adding one is one object in one file, and there is no second
  * list of names to forget to update.
  *
@@ -24,6 +25,24 @@ import { McpToolError } from './errors';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObject = z.ZodObject<any>;
+
+/**
+ * Where a tool lives and what somebody would call it.
+ *
+ * Compulsory, because no tool is in a client's tool list: every one is found
+ * with `admin_search`, read with `admin_describe` and run with `admin_call`.
+ * A tool with no section and no words for it is a tool nobody will find, and
+ * a model that cannot find the right tool does not say so — it improvises with
+ * a wrong one.
+ */
+export interface Discovery {
+  section: Section;
+  operation: Operation;
+  /** Nouns and phrases the description does not already contain. */
+  tags?: string[];
+  /** Other names a model might reach for: `trip_faq_create`, `blog_update`. */
+  aliases?: string[];
+}
 
 interface ToolBase<S extends AnyObject> {
   name: string;
@@ -39,6 +58,7 @@ interface ToolBase<S extends AnyObject> {
   /** `trip`, `post`, `page` — the noun the activity log already uses. */
   entityType: string;
   schema: S;
+  discovery: Discovery;
 }
 
 export interface ReadTool<S extends AnyObject = AnyObject> extends ToolBase<S> {
@@ -57,6 +77,12 @@ export interface WriteTool<S extends AnyObject = AnyObject> extends ToolBase<S> 
    * is `PreparedOperation.escalation`, and can only add to this.
    */
   requiresApproval: boolean;
+  /**
+   * Whether `prepare` may add an approval for a particular record — a live
+   * page, a moving price. Only what discovery tells a model in advance; the
+   * decision itself is always `prepare`'s.
+   */
+  escalates?: boolean;
   prepare(input: z.infer<S>, actor: Actor): Promise<PreparedOperation>;
   execute(input: z.infer<S>, prepared: PreparedOperation, actor: Actor): Promise<OperationResult>;
 }

@@ -136,32 +136,72 @@ async function rpc(method, params) {
   const body = await res.json();
   return body;
 }
+/* The published core is called by name; every capability goes through
+   admin_call, which is the only way a real client can reach one. */
+const CORE = ['admin_sections', 'admin_search', 'admin_describe', 'admin_call', 'whoami', 'approval_status', 'approvals_list_mine'];
 const call = async (name, args = {}) => {
-  const body = await rpc('tools/call', { name, arguments: args });
+  const body = CORE.includes(name)
+    ? await rpc('tools/call', { name, arguments: args })
+    : await rpc('tools/call', { name: 'admin_call', arguments: { capability: name, arguments: args } });
   return body.result?.structuredContent ?? body;
 };
 
 const init = await rpc('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'e2e', version: '1' } });
 expect(init.result?.serverInfo?.name === 'lotuspeak-admin', 'initialize');
+
+// The published surface is the discovery core and nothing else.
 const list = await rpc('tools/list', {});
-const names = list.result.tools.map((t) => t.name);
-log('tool count', names.length);
-log('tools/list bytes', JSON.stringify(list.result.tools).length);
-expect(names.includes('trips_update_itinerary') && names.includes('whoami'), 'tools listed');
-const emptySchema = list.result.tools.filter((t) => !t.inputSchema || (t.inputSchema.type === 'object' && !t.inputSchema.properties && !['whoami', 'seo_audit', 'company_get'].includes(t.name)));
-expect(emptySchema.length === 0, `every tool publishes a schema ${emptySchema.map((t) => t.name)}`);
+const names = list.result.tools.map((t) => t.name).sort();
+const bytes = JSON.stringify(list.result.tools).length;
+expect(JSON.stringify(names) === JSON.stringify([...CORE].sort()), `tools/list is the core only: ${names.join(', ')}`);
+expect(bytes < 15_000, `tools/list is ${bytes} bytes`);
+
+// Discovery.
+const map = await call('admin_sections');
+log('capabilities behind the core', map.result.totalCapabilities);
+expect(map.success && map.result.totalCapabilities > 40, 'admin_sections maps the panel');
+const inSection = await call('admin_sections', { section: 'catalogue.journeys' });
+expect(inSection.result.capabilities.some((c) => c.capability === 'trips_update_faqs'), 'a section lists its capabilities');
+
+const searches = [
+  ['add an faq to a journey', 'trips_update_faqs'],
+  ['rewrite day 3 of the itinerary', 'trips_update_itinerary'],
+  ['change the price of a tour', 'trips_update_pricing'],
+  ['unanswered enquiries', 'enquiries_list'],
+  ['edit a blog post', 'journal_update'],
+  ['describe a photo alt text', 'media_update'],
+  ['meta descriptions missing across the site', 'seo_audit'],
+  ['add a departure date', 'departures_create'],
+  ['upload an image from a url', 'media_upload'],
+  ['publish the journal article', 'journal_publish'],
+];
+for (const [query, wanted] of searches) {
+  const found = await call('admin_search', { query, limit: 3 });
+  const top = found.result.results.map((r) => r.capability);
+  expect(top.includes(wanted), `search "${query}" → ${top.join(', ')}`);
+}
+
+const described = await call('admin_describe', { capability: 'trips_update_itinerary' });
+expect(
+  described.result.inputSchema?.properties?.days && described.result.inputSchema.properties.dryRun && described.result.approval,
+  `admin_describe gives the schema (approval: ${described.result.approval})`,
+);
+const aliased = await call('admin_describe', { capability: 'blog_update' });
+expect(aliased.result.capability === 'journal_update', 'an alias describes the real capability');
+const invented = await call('trip_faq_add_new_one', {});
+expect(invented.errorCode === 'CAPABILITY_NOT_FOUND' && invented.closest?.length > 0, `an invented name → ${invented.errorCode}, nearest ${invented.closest?.slice(0, 3)}`);
 
 const who = await call('whoami');
-expect(who.success && who.result.tools.every((t) => t.allowed), `whoami (${who.result?.role})`);
+expect(who.success && who.result.capabilities.every((s) => s.youMayUse === s.capabilities), `whoami (${who.result?.role})`);
 
 const trips = await call('trips_list', { limit: 5 });
-expect(trips.success && trips.result.journeys.length > 0, `trips_list (${trips.result?.total})`);
+expect(trips.success && trips.result.journeys.length > 0, `trips_list through admin_call (${trips.result?.total})`);
 const tripId = trips.result.journeys[0].id;
 const trip = await call('trips_get', { tripId });
 expect(trip.success && trip.result.itinerary.length >= 0, `trips_get "${trip.result?.title}" ${trip.result?.status}, ${trip.result?.itinerary.length} days, ${trip.result?.faqs.length} faqs`);
 
-const bad = await rpc('tools/call', { name: 'trips_update', arguments: { tripId, role: 'owner' } });
-expect(bad.result?.isError === true && /Unrecognized key/.test(JSON.stringify(bad)), 'an argument the tool does not have is refused');
+const bad = await call('trips_update', { tripId, role: 'owner' });
+expect(bad.errorCode === 'VALIDATION_ERROR' && /role|Unrecognized/.test(JSON.stringify(bad)), 'an argument the capability does not have is refused');
 
 // SEO: happens at once even when published.
 const oldDescription = trip.result.seo.metaDescription;

@@ -104,11 +104,13 @@ apps/admin/src/server/mcp/
   operation.ts      defineRead / defineWrite, PreparedOperation, assertUnchanged
   policy.ts         what waits for a person, from Setting(ai, policy)
   approvals.ts      request, approve, reject, expire
-  server.ts         builds the server per request; the gate, reads, writes
+  server.ts         builds the server per request: the discovery core,
+                    admin_call, and the gate every capability goes through
   registry.ts       every tool, by name
   list-merge.ts     patch / append / remove / replace for a list
   incoming-file.ts  the guarded fetcher behind media_upload
   audit.ts          AI clients → Activity
+  capabilities/     taxonomy (domains, sections, verbs); the map, search, describe
   tools/            trips, departures, content (journal, pages, places), desk
 apps/admin/src/app/
   api/mcp/                     the endpoint
@@ -124,17 +126,63 @@ token, and `/.well-known/` through without a cookie; the consent screen and
 the POST that answers it stay behind the sign-in, because that is where the
 person proves who they are. There is no second user system.
 
-### Why every tool is published
+### The surface: a door, not the catalogue
 
-A client reads `tools/list` once, when a conversation starts, and never
-again. A tool missing from that list cannot be called in that conversation,
-however it is discovered later — so partial publishing schemes trade a smaller
-list for a capability that silently does not exist. At 51 tools the whole list
-is about 63 KB, roughly 16,000 tokens. If it grows past a hundred or so, that
-trade needs looking at again.
+`tools/list` holds seven tools, however many capabilities exist:
 
-Publishing is not authorising. Every call goes through the gate, and `whoami`
-tells a model in advance which tools its person may use.
+```
+admin_sections   the map: domains → sections, with counts and what you may use
+admin_search     plain words → ranked capabilities, each saying allowed / approval
+admin_describe   one capability in full, with the JSON Schema admin_call checks
+admin_call       { capability, arguments } → runs it, this turn
+whoami           who this connection acts as, per section
+approval_status  how a request ended
+approvals_list_mine
+```
+
+Every business capability — 48 today, and meant to be several hundred — is
+reached through those. The reasoning, in order:
+
+- **A client reads `tools/list` once per conversation and carries all of it
+  for the whole conversation.** Every definition published is paid for in
+  every chat, used or not. Seven cost about 5.5 KB; the 51 that used to be
+  published directly cost 63 KB (about 16,000 tokens), and that number grows
+  with every capability added.
+- **Publishing sections on request does not work.** A tool added to the list
+  mid-conversation is not visible to the client until the next conversation,
+  so the first ask always fails. `admin_call` makes a capability found
+  mid-conversation runnable in the same turn.
+- **Nothing is hidden.** Search returns capabilities the caller may not use,
+  with the permission that is missing. A model told "this exists and you lack
+  `trips.publish`" says so; a model that finds nothing decides the panel
+  cannot do it and improvises with a tool that can.
+- **`admin_call` is not a second way in.** It resolves the name and hands the
+  call to `performRead` / `performWrite` — the same gate, the capability's own
+  schema, the same approval policy — and the audit line is written under the
+  capability's name, not the dispatcher's. Its own annotations describe the
+  worst it can be asked to do (`destructiveHint: true`).
+
+The same map is readable as MCP resources — `lotuspeak://sections` and
+`lotuspeak://capability/<name>` — for hosts where a person attaches context
+before the conversation (an `@`-mention in Claude Code). They call the same
+functions as the tools; a second description of the panel is the one that
+goes stale.
+
+**Search** (`capabilities/index.ts`) is a weighted keyword match built when
+the module loads, not embeddings: name 6, alias 5, title 4, tags 3, the
+operation's verbs 3, the section's keywords 2, description 1, with a small
+synonym table (trip/tour/trek → journey, blog/post → journal, photo →
+photograph). The vocabulary is ours, so a result that surprises somebody is
+fixed by adding a word to a capability, and the fix is visible in review.
+The smoke script asserts ten plain-English searches land on the right
+capability; add one when you add a capability.
+
+**Discovery metadata is compulsory.** `discovery: { section, operation, tags,
+aliases }` is a required field of every definition, `section` must be a key of
+`capabilities/taxonomy.ts` and `operation` one of its verbs. The registry
+refuses to load on a duplicate name, a non-snake_case name, an alias shared by
+two capabilities or an alias that is another capability's name — because an
+alias resolves in `admin_call`, and an ambiguous one would run the wrong thing.
 
 ### Things that are not obvious from the code
 
@@ -170,19 +218,28 @@ place and an enquiry lived in route handlers. They are now
 and the tool, so the rules — publish checks, slug redirects, "a fixed page
 keeps its address" — exist once.
 
-### Adding a tool
+### Adding a capability
 
 1. A `defineRead` or `defineWrite` in the right file under `tools/`, added to
-   that file's exported list. The schema is a `.strict()` `ZodObject` with no
-   `.refine()` on the outside — the SDK publishes a refined object as an empty
-   schema and the model then calls the tool with nothing.
-2. Its `permission` from the panel's own catalogue. There is no second list.
-3. For a write: `prepare` reads and describes, never writes; `execute` re-reads,
-   calls `assertUnchanged`, then the same service the panel calls. Record the
-   change with `recordAiActivity` and tell the site with `pushToSite`.
-4. Write the description's first sentence so it stands alone, and say what the
-   tool will *not* do and which tool does — a model that cannot find the right
-   tool improvises with a wrong one.
+   that file's exported list. Nothing else to register: it is searchable,
+   describable and callable as soon as it is in the registry.
+2. `discovery`: its section (add one to `taxonomy.ts` if none fits), the verb,
+   and the tags and aliases somebody would actually type or a model would
+   guess. A capability nobody can find does not exist as far as a model is
+   concerned.
+3. The schema is a `.strict()` `ZodObject` with no `.refine()` on the outside;
+   `admin_describe` turns it into JSON Schema and a refined object becomes an
+   empty one.
+4. Its `permission` from the panel's own catalogue. There is no second list.
+5. For a write: `prepare` reads and describes, never writes; `execute`
+   re-reads, calls `assertUnchanged`, then the same service the panel calls.
+   Record the change with `recordAiActivity` and tell the site with
+   `pushToSite`. Set `escalates` if `prepare` can add an approval for a live
+   record.
+6. Write the description's first sentence so it stands alone — it is the
+   search result — and say what the capability will *not* do and which one
+   does.
+7. Add a search to `scripts/mcp-smoke.mjs` that should find it.
 
 ### Configuration
 
@@ -209,6 +266,9 @@ the tunnel's origin.
   support varies.
 - **Idempotency keys.** A model that repeats a call that needed approval files
   a second card. `approvals_list_mine` lets it see what it already asked for.
+- **Pinned "daily driver" capabilities in `tools/list`.** Everything goes
+  through discovery, by decision: a list that grows by request is a list
+  whose cost grows with it.
 - **Bookings, payments, customers, coupons, culture, gallery, menus,
   company settings** — not exposed. The bookings side holds passport numbers
   and money; it wants its own design rather than an afterthought.
@@ -226,7 +286,10 @@ MCP_SMOKE_EMAIL=owner@lotuspeak.local MCP_SMOKE_PASSWORD=… \
   npm run mcp:smoke --workspace=@lotuspeak/admin
 ```
 
-It covers OAuth with PKCE, a replayed code tearing down its tokens, refresh
+It covers `tools/list` holding the discovery core and nothing else, ten
+plain-English searches landing on the right capability, an alias resolving
+and an invented name refused with the nearest real ones, OAuth with PKCE, a
+replayed code tearing down its tokens, refresh
 rotation and reuse, consent refused while access is off, an argument a tool
 does not have, a patch touching one day of twelve and nothing else, a stale
 `expectedVersion`, a published edit waiting and being approved, a second

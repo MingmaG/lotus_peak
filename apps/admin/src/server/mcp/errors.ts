@@ -18,6 +18,14 @@ import { ForbiddenError } from '@/lib/auth/session';
 export type McpErrorCode =
   | 'NOT_AUTHORIZED'
   | 'ENTITY_NOT_FOUND'
+  /**
+   * The capability named does not exist. Separate from ENTITY_NOT_FOUND
+   * because the next step is the opposite: a missing *record* means look for
+   * the right one; a missing *capability* usually means the name was
+   * invented, and the next step is `admin_search` — never the nearest tool
+   * that sounds similar. It carries the closest real names.
+   */
+  | 'CAPABILITY_NOT_FOUND'
   | 'VALIDATION_ERROR'
   | 'NOT_READY'
   | 'CONFLICT'

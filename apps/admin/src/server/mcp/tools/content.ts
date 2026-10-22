@@ -17,6 +17,7 @@ import type { PagePatch } from '@/server/validators/page';
 import { postSchema, type PostPatch } from '@/server/validators/post';
 import { seoSchema } from '@/server/validators/trip';
 
+import type { Section } from '../capabilities/taxonomy';
 import type { Actor } from '../context';
 import { McpToolError } from '../errors';
 import {
@@ -27,6 +28,7 @@ import {
   liveRecordEscalation,
   nothingToChange,
   stamp,
+  type Discovery,
   type ToolDefinition,
 } from '../operation';
 import {
@@ -60,6 +62,9 @@ import {
 interface Kind<Row extends { id: string; status: string; updatedAt: Date }> {
   entity: 'post' | 'page' | 'destination';
   noun: string;
+  section: Section;
+  /** What else a person calls this kind, for search. */
+  aliasNoun: string;
   idField: string;
   permissions: { read: Permission; write: Permission; publish: Permission };
   load(id: string): Promise<Row>;
@@ -97,6 +102,8 @@ function findPlace(id: string) {
 const POST: Kind<PostRow> = {
   entity: 'post',
   noun: 'journal entry',
+  section: 'content.journal',
+  aliasNoun: 'blog',
   idField: 'postId',
   permissions: { read: 'journal.read', write: 'journal.write', publish: 'journal.publish' },
   async load(id) {
@@ -120,6 +127,8 @@ const POST: Kind<PostRow> = {
 const PAGE: Kind<PageRow> = {
   entity: 'page',
   noun: 'page',
+  section: 'content.pages',
+  aliasNoun: 'site_page',
   idField: 'pageId',
   permissions: { read: 'pages.read', write: 'pages.write', publish: 'pages.publish' },
   async load(id) {
@@ -139,6 +148,8 @@ const PAGE: Kind<PageRow> = {
 const PLACE: Kind<PlaceRow> = {
   entity: 'destination',
   noun: 'place',
+  section: 'content.places',
+  aliasNoun: 'destination',
   idField: 'placeId',
   permissions: {
     read: 'destinations.read',
@@ -175,6 +186,7 @@ function editTool<Row extends { id: string; status: string; updatedAt: Date }>(d
   title: string;
   description: string;
   section: string;
+  discovery: Discovery;
   risk: McpRisk;
   escalateWhenLive: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -195,9 +207,11 @@ function editTool<Row extends { id: string; status: string; updatedAt: Date }>(d
     description: def.description,
     permission: kind.permissions.write,
     entityType: kind.entity,
+    discovery: def.discovery,
     schema: def.schema,
     risk: def.risk,
     requiresApproval: false,
+    escalates: def.escalateWhenLive,
     async prepare(input) {
       const row = await kind.load(idOf(input));
       await assertMediaExists(def.mediaIds?.(input) ?? []);
@@ -255,6 +269,12 @@ function seoTool<Row extends { id: string; status: string; updatedAt: Date } & P
       'description, canonical URL, noindex, Open Graph title, description and image, ' +
       'keywords. Happens at once even when it is published — no visible word on the page ' +
       'changes. Send only what changes.',
+    discovery: {
+      section: kind.section,
+      operation: 'update',
+      tags: ['seo', 'meta title', 'meta description', 'open graph', 'keywords', 'noindex'],
+      aliases: [`${kind.aliasNoun}_seo_update`],
+    },
     risk: 'LOW',
     escalateWhenLive: false,
     schema: z
@@ -293,6 +313,12 @@ function statusTool<Row extends { id: string; status: string; updatedAt: Date }>
       : `Takes a ${kind.noun} off the website, back to draft. Always waits for an administrator.`,
     permission: kind.permissions.publish,
     entityType: kind.entity,
+    discovery: {
+      section: kind.section,
+      operation: publish ? 'publish' : 'unpublish',
+      tags: publish ? ['go live', 'make public'] : ['take down', 'hide', 'back to draft'],
+      aliases: [`${kind.aliasNoun}_${publish ? 'publish' : 'unpublish'}`],
+    },
     risk: 'HIGH',
     requiresApproval: true,
     schema: z.object({ [kind.idField]: z.string().min(1) }).strict(),
@@ -352,6 +378,12 @@ const CATEGORY = z.enum(['JOURNEYS', 'TRAVEL_GUIDES', 'EXPERIENCES', 'STORIES'])
 
 const journalList = defineRead({
   name: 'journal_list',
+  discovery: {
+    section: 'content.journal',
+    operation: 'list',
+    tags: ['articles', 'posts', 'blog'],
+    aliases: ['blog_list', 'posts_list', 'articles_list'],
+  },
   title: 'List journal entries',
   description:
     'Lists journal entries, newest first, drafts included, with status, category, reading ' +
@@ -401,6 +433,12 @@ const journalList = defineRead({
 
 const journalGet = defineRead({
   name: 'journal_get',
+  discovery: {
+    section: 'content.journal',
+    operation: 'read',
+    tags: ['article', 'post', 'body'],
+    aliases: ['blog_get', 'post_get', 'article_get'],
+  },
   title: 'Read a journal entry',
   description:
     'Reads one journal entry: title, standfirst, the body as stored HTML (keep the markup ' +
@@ -436,6 +474,12 @@ const journalGet = defineRead({
 
 const journalCreate = defineWrite({
   name: 'journal_create',
+  discovery: {
+    section: 'content.journal',
+    operation: 'create',
+    tags: ['new article', 'draft', 'write a post'],
+    aliases: ['blog_create', 'post_create', 'article_create'],
+  },
   title: 'Start a journal entry',
   description:
     'Creates a journal entry as a draft, with you as its author unless the person names ' +
@@ -481,6 +525,12 @@ const journalCreate = defineWrite({
 const journalUpdate = editTool({
   kind: POST,
   name: 'journal_update',
+  discovery: {
+    section: 'content.journal',
+    operation: 'update',
+    tags: ['article', 'body', 'standfirst', 'tags', 'category', 'hero'],
+    aliases: ['blog_update', 'post_update', 'article_update'],
+  },
   title: 'Edit a journal entry',
   section: 'words',
   description:
@@ -511,6 +561,12 @@ const journalUpdate = editTool({
 
 const journalDelete = defineWrite({
   name: 'journal_delete',
+  discovery: {
+    section: 'content.journal',
+    operation: 'delete',
+    tags: ['remove article'],
+    aliases: ['blog_delete', 'post_delete'],
+  },
   title: 'Delete a journal entry',
   description:
     'Deletes a journal entry — recoverably, but it leaves the website at once. Always waits ' +
@@ -549,6 +605,12 @@ const pageId = z.string().min(1).describe('The page’s id, from pages_list.');
 
 const pagesList = defineRead({
   name: 'pages_list',
+  discovery: {
+    section: 'content.pages',
+    operation: 'list',
+    tags: ['about', 'contact', 'static pages'],
+    aliases: ['site_pages_list'],
+  },
   title: 'List the site’s pages',
   description:
     'Lists the editorial pages — About, Contact, the home page’s own copy and the rest — ' +
@@ -575,6 +637,12 @@ const pagesList = defineRead({
 
 const pagesGet = defineRead({
   name: 'pages_get',
+  discovery: {
+    section: 'content.pages',
+    operation: 'read',
+    tags: ['sections', 'bands', 'lead'],
+    aliases: ['site_page_get', 'page_get'],
+  },
   title: 'Read a page',
   description:
     'Reads one page: its heading copy (eyebrow, lead, note), its `sections` — the typed ' +
@@ -604,6 +672,12 @@ const pagesGet = defineRead({
 const pagesUpdate = editTool({
   kind: PAGE,
   name: 'pages_update',
+  discovery: {
+    section: 'content.pages',
+    operation: 'update',
+    tags: ['sections', 'lead', 'eyebrow', 'hero', 'address'],
+    aliases: ['site_page_update', 'page_update', 'page_edit'],
+  },
   title: 'Edit a page',
   section: 'words',
   description:
@@ -638,6 +712,12 @@ const placeId = z.string().min(1).describe('The place’s id, from places_list.'
 
 const placesList = defineRead({
   name: 'places_list',
+  discovery: {
+    section: 'content.places',
+    operation: 'list',
+    tags: ['destinations', 'valleys', 'where we go'],
+    aliases: ['destinations_list', 'regions_list'],
+  },
   title: 'List the places',
   description:
     'Lists the places on “Where we go” — valleys, and the places inside each — with their ' +
@@ -676,6 +756,12 @@ const placesList = defineRead({
 
 const placesGet = defineRead({
   name: 'places_get',
+  discovery: {
+    section: 'content.places',
+    operation: 'read',
+    tags: ['destination', 'valley', 'body'],
+    aliases: ['destination_get', 'region_get'],
+  },
   title: 'Read a place',
   description: 'Reads one place: its card line, standfirst, body (stored HTML), photograph, altitude and SEO.',
   permission: 'destinations.read',
@@ -703,6 +789,12 @@ const placesGet = defineRead({
 const placesUpdate = editTool({
   kind: PLACE,
   name: 'places_update',
+  discovery: {
+    section: 'content.places',
+    operation: 'update',
+    tags: ['destination', 'blurb', 'standfirst', 'body', 'altitude', 'photograph'],
+    aliases: ['destination_update', 'region_update'],
+  },
   title: 'Edit a place',
   section: 'words',
   description:

@@ -71,6 +71,12 @@ function view(row: WithTrip) {
 
 const departuresList = defineRead({
   name: 'departures_list',
+  discovery: {
+    section: 'catalogue.departures',
+    operation: 'list',
+    tags: ['dates', 'upcoming', 'availability', 'places left'],
+    aliases: ['dates_list', 'schedule_list'],
+  },
   title: 'List departures',
   description:
     'Lists departure dates, soonest first — upcoming ones unless `past` is true — with price, ' +
@@ -100,6 +106,12 @@ const departuresList = defineRead({
 
 const departuresCreate = defineWrite({
   name: 'departures_create',
+  discovery: {
+    section: 'catalogue.departures',
+    operation: 'create',
+    tags: ['new date', 'fixed departure', 'price'],
+    aliases: ['departure_add', 'date_add'],
+  },
   title: 'Add a departure date',
   description:
     'Adds a date a journey runs, with its price. Always waits for an administrator to ' +
@@ -181,6 +193,12 @@ function checkDates(
 
 const departuresUpdate = defineWrite({
   name: 'departures_update',
+  discovery: {
+    section: 'catalogue.departures',
+    operation: 'update',
+    tags: ['places left', 'seats', 'status', 'note', 'price', 'dates'],
+    aliases: ['departure_edit', 'departure_reprice'],
+  },
   title: 'Edit a departure',
   description:
     'Edits a departure: dates, places, status, note, whether it shows on the site, or its ' +
@@ -190,6 +208,7 @@ const departuresUpdate = defineWrite({
   entityType: 'departure',
   risk: 'MEDIUM',
   requiresApproval: false,
+  escalates: true,
   schema: z
     .object({
       departureId,
@@ -270,6 +289,12 @@ const departuresUpdate = defineWrite({
 
 const departuresCancel = defineWrite({
   name: 'departures_cancel',
+  discovery: {
+    section: 'catalogue.departures',
+    operation: 'cancel',
+    tags: ['cancelled date'],
+    aliases: ['departure_cancel'],
+  },
   title: 'Cancel a departure',
   description:
     'Marks a departure cancelled. Always waits for an administrator. It does not touch the ' +
@@ -319,6 +344,12 @@ const departuresCancel = defineWrite({
 
 const departuresDelete = defineWrite({
   name: 'departures_delete',
+  discovery: {
+    section: 'catalogue.departures',
+    operation: 'delete',
+    tags: ['remove date'],
+    aliases: ['departure_remove'],
+  },
   title: 'Delete a departure',
   description:
     'Deletes a departure date outright. Always waits for an administrator. Refused if any ' +

@@ -27,6 +27,7 @@ import {
   nothingToChange,
   stamp,
   type FieldChange,
+  type Discovery,
   type ToolDefinition,
 } from '../operation';
 import {
@@ -153,6 +154,12 @@ function listChanges<T>(
 
 const tripsList = defineRead({
   name: 'trips_list',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'list',
+    tags: ['catalogue', 'journeys', 'status'],
+    aliases: ['tours_list', 'treks_list', 'packages_list'],
+  },
   title: 'List journeys',
   description:
     'Lists the journeys in the catalogue — drafts as well as published — with their status, ' +
@@ -220,6 +227,12 @@ const tripsList = defineRead({
 
 const tripsGet = defineRead({
   name: 'trips_get',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'read',
+    tags: ['itinerary', 'faqs', 'price', 'photographs'],
+    aliases: ['tour_get', 'trek_get', 'trip_read'],
+  },
   title: 'Read a journey',
   description:
     'Reads one journey in full: every field, the itinerary, FAQs, price tiers, photographs, ' +
@@ -313,6 +326,12 @@ const tripsGet = defineRead({
 
 const tripsPublishCheck = defineRead({
   name: 'trips_publish_check',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'check',
+    tags: ['publish readiness', 'blockers', 'missing'],
+    aliases: ['trip_readiness', 'trip_validate'],
+  },
   title: 'What stops a journey going live',
   description:
     'Says what stops a journey being published, each with the field to fix and why — the ' +
@@ -347,6 +366,7 @@ function tripSection<S extends z.ZodObject<{ tripId: typeof tripId } & z.ZodRawS
   title: string;
   section: string;
   description: string;
+  discovery: Discovery;
   schema: S;
   risk: McpRisk;
   requiresApproval?: boolean;
@@ -363,9 +383,11 @@ function tripSection<S extends z.ZodObject<{ tripId: typeof tripId } & z.ZodRawS
     description: def.description,
     permission: 'trips.write',
     entityType: 'trip',
+    discovery: def.discovery,
     schema: def.schema,
     risk: def.risk,
     requiresApproval: def.requiresApproval ?? false,
+    escalates: def.escalateWhenLive !== false,
 
     async prepare(input) {
       const trip = await loadTrip((input as { tripId: string }).tripId);
@@ -421,6 +443,12 @@ function tripSection<S extends z.ZodObject<{ tripId: typeof tripId } & z.ZodRawS
 
 const tripsUpdate = tripSection({
   name: 'trips_update',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'update',
+    tags: ['title', 'overview', 'excerpt', 'slug', 'duration', 'difficulty', 'season', 'region', 'group size', 'trail band'],
+    aliases: ['trip_edit', 'tour_update'],
+  },
   title: 'Edit a journey’s details and overview',
   section: 'details',
   description:
@@ -501,6 +529,12 @@ const tierRow = z
 
 const tripsUpdatePricing = tripSection({
   name: 'trips_update_pricing',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'update',
+    tags: ['price', 'cost', 'from price', 'tiers', 'group price', 'currency'],
+    aliases: ['trip_reprice', 'trip_price_update', 'trip_change_price'],
+  },
   title: 'Change a journey’s prices',
   section: 'prices',
   description:
@@ -561,6 +595,12 @@ const dayRow = z
 
 const tripsUpdateItinerary = tripSection({
   name: 'trips_update_itinerary',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'update',
+    tags: ['itinerary', 'day', 'day by day', 'schedule', 'programme'],
+    aliases: ['itinerary_update', 'itinerary_add_day', 'trip_day_update'],
+  },
   title: 'Edit a journey’s day-by-day',
   section: 'itinerary',
   description:
@@ -612,6 +652,12 @@ const faqRow = z
 
 const tripsUpdateFaqs = tripSection({
   name: 'trips_update_faqs',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'update',
+    tags: ['faq', 'question', 'answer', 'questions and answers'],
+    aliases: ['trip_faq_create', 'trip_faq_update', 'faqs_update'],
+  },
   title: 'Edit a journey’s questions and answers',
   section: 'FAQs',
   description:
@@ -661,6 +707,12 @@ const textList = z
 
 const tripsUpdateInclusions = tripSection({
   name: 'trips_update_inclusions',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'update',
+    tags: ['highlights', 'included', 'excluded', 'what is included', 'inclusions'],
+    aliases: ['trip_highlights_update', 'inclusions_update'],
+  },
   title: 'Edit highlights and what is included',
   section: 'highlights and inclusions',
   description:
@@ -719,6 +771,12 @@ const imageId = z.string().nullable().optional();
 
 const tripsUpdateMedia = tripSection({
   name: 'trips_update_media',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'update',
+    tags: ['photograph', 'hero', 'gallery', 'image', 'route map', 'cover'],
+    aliases: ['trip_media_update', 'trip_cover_set', 'trip_gallery_update'],
+  },
   title: 'Set a journey’s photographs',
   section: 'photographs',
   description:
@@ -766,6 +824,12 @@ const tripsUpdateMedia = tripSection({
 
 const tripsUpdateSeo = tripSection({
   name: 'trips_update_seo',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'update',
+    tags: ['seo', 'meta title', 'meta description', 'open graph', 'keywords', 'noindex'],
+    aliases: ['trip_seo_update'],
+  },
   title: 'Edit a journey’s SEO',
   section: 'SEO',
   description:
@@ -791,6 +855,12 @@ const tripsUpdateSeo = tripSection({
 
 const tripsCreate = defineWrite({
   name: 'trips_create',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'create',
+    tags: ['draft', 'new journey'],
+    aliases: ['tour_create', 'trek_create'],
+  },
   title: 'Start a new journey',
   description:
     'Creates a new journey as a draft, which nobody outside the office can see. Give it a ' +
@@ -839,6 +909,7 @@ function statusChange(def: {
   name: string;
   title: string;
   description: string;
+  discovery: Discovery;
   permission: Permission;
   risk: McpRisk;
   verb: string;
@@ -852,6 +923,7 @@ function statusChange(def: {
     description: def.description,
     permission: def.permission,
     entityType: 'trip',
+    discovery: def.discovery,
     risk: def.risk,
     requiresApproval: true,
     schema: z.object({ tripId }).strict(),
@@ -908,6 +980,12 @@ async function refuseIfNotReady(id: string, title: string): Promise<void> {
 
 const tripsPublish = statusChange({
   name: 'trips_publish',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'publish',
+    tags: ['go live', 'make public'],
+    aliases: ['trip_go_live'],
+  },
   title: 'Publish a journey',
   description:
     'Puts a journey on the website. Always waits for an administrator to approve it, and is ' +
@@ -922,6 +1000,12 @@ const tripsPublish = statusChange({
 
 const tripsUnpublish = statusChange({
   name: 'trips_unpublish',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'unpublish',
+    tags: ['take offline', 'hide'],
+    aliases: ['trip_hide'],
+  },
   title: 'Take a journey off the website',
   description:
     'Returns a published journey to draft, taking its page off the website. Always waits ' +
@@ -937,6 +1021,12 @@ const tripsUnpublish = statusChange({
 
 const tripsDelete = defineWrite({
   name: 'trips_delete',
+  discovery: {
+    section: 'catalogue.journeys',
+    operation: 'delete',
+    tags: ['remove journey'],
+    aliases: ['trip_remove'],
+  },
   title: 'Delete a journey',
   description:
     'Deletes a journey — recoverably, from the Journeys screen, but it leaves the website ' +
