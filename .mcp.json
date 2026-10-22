@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "lotuspeak": {
+      "type": "http",
+      "url": "http://localhost:6011/api/mcp"
+    }
+  }
+}
