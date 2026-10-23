@@ -315,16 +315,17 @@ journal and the pages from the JSON in the repository, over whatever the dump
 brought. `db:seed:owner` sets the owner and touches nothing else:
 
 ```bash
-# on your own machine — the plain password never reaches the server
-cd apps/admin
-printf 'Password: '; read -rs PW; echo
-PW="$PW" node -e "require('bcryptjs').hash(process.env.PW,12).then(console.log)"; unset PW
-
-# on the VM, from the repo root. Single quotes: the hash is full of $ signs.
+# on the VM, from the repo root. Read, not typed on the command line, so the
+# password stays out of the shell history.
+printf 'Password: '; read -rs SEED_OWNER_PASSWORD; echo
 SEED_OWNER_EMAIL='you@example.com' SEED_OWNER_NAME='Your Name' \
-SEED_OWNER_PASSWORD_HASH='$2a$12$…' \
+SEED_OWNER_PASSWORD="$SEED_OWNER_PASSWORD" \
 npm run db:seed:owner
+unset SEED_OWNER_PASSWORD
 ```
+
+`SEED_OWNER_PASSWORD_HASH='$2a$12$…'` in place of the password takes a bcrypt
+hash made elsewhere, if the plain text should never reach the server.
 
 It writes to the user with that email if there is one, otherwise takes over
 the development dump's `owner@lotuspeak.local` (whose password is the
