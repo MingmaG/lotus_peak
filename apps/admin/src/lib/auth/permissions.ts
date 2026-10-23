@@ -34,6 +34,18 @@ export const RESOURCES = [
   'users',
   'roles',
   'activity',
+  /**
+   * Driving the panel from an AI client, over MCP.
+   *
+   * The four actions mean something particular here, so they are spelled out
+   * on the Roles screen: *see* the AI activity log and the approval queue,
+   * *change* — connect an AI client and work through it, *publish* — approve
+   * what an AI asked for, *remove* — disconnect and block clients and set the
+   * approval policy. Approving is the publish action because it is the one
+   * that makes an AI's request real, and an approver must also hold whatever
+   * the request itself needs.
+   */
+  'ai',
 
   'bookings',
   'payments',
@@ -208,6 +220,12 @@ export const RESOURCE_META: Record<Resource, ResourceMeta> = {
   documents: { label: 'Documents', group: 'The company', hint: 'Licences and certificates' },
   users: { label: 'Accounts', group: 'The company', hint: 'Who may sign in' },
   roles: { label: 'Roles', group: 'The company', hint: 'What each role is allowed to do — the keys to this screen' },
+  ai: {
+    label: 'AI clients',
+    group: 'The company',
+    hint: 'Change: work through Claude or ChatGPT. Publish: approve what an AI asks for. Remove: disconnect clients, set the policy',
+    publishable: true,
+  },
 };
 
 export const ACTION_META: Record<Action, { label: string; hint: string }> = {
@@ -328,6 +346,10 @@ export const SYSTEM_ROLES: {
       'media.delete',
       'seo.write',
       'activity.read',
+      /* May work through an AI client, and may not approve what one asks
+         for: an Editor's AI waits for somebody else to say yes to a publish,
+         which is the arrangement the approval queue exists for. */
+      'ai.write',
     ],
   },
   {

@@ -3,11 +3,9 @@ import { z } from 'zod';
 
 import { db } from '@/lib/db';
 import { listQuery, paginated, route } from '@/lib/api/handler';
-import { publishing, seoColumns } from '@/server/services/catalogue';
-import { freeSlug } from '@/server/services/resource';
+import { createPost } from '@/server/services/post';
 import { revalidateFor } from '@/server/services/revalidate';
-import { stripRichTextMedia } from '@/server/schema/rich-text';
-import { postSchema, readingMinutes } from '@/server/validators/post';
+import { postSchema } from '@/server/validators/post';
 
 export const GET = route({
   permission: 'journal.read',
@@ -58,36 +56,7 @@ export const POST = route<z.infer<typeof postSchema>>({
   permission: 'journal.write',
   schema: postSchema,
   handler: async ({ body, user, audit }) => {
-    const row = await db.post.create({
-      data: {
-        slug: await freeSlug('post', body.slug || body.title),
-        title: body.title,
-        standfirst: body.standfirst,
-        category: body.category,
-        /* The URL inside each figure is derived from its media id and is put
-           back on the way out, so it is taken out on the way in — a URL in the
-           column is the thing that goes stale when the store moves. */
-        body: stripRichTextMedia(body.body),
-        readingMinutes: readingMinutes(body.body, body.standfirst),
-        heroId: body.heroId ?? null,
-        /* Whoever wrote it, unless somebody else is named. */
-        authorId: body.authorId ?? user.id,
-        tags: body.tags,
-        featured: body.featured,
-        sortOrder: body.sortOrder ?? (await db.post.count()),
-        ...publishing({ next: body.status, currentStatus: 'DRAFT', currentPublishedAt: null }),
-        ...seoColumns(body.seo),
-        tripLinks: {
-          create: body.relatedTripIds.map((tripId, index) => ({ tripId, sortOrder: index })),
-        },
-        destinations: {
-          create: body.destinationIds.map((destinationId, index) => ({ destinationId, sortOrder: index })),
-        },
-        culture: {
-          create: body.cultureIds.map((cultureId, index) => ({ cultureId, sortOrder: index })),
-        },
-      },
-    });
+    const row = await createPost(body, user.id);
 
     audit({ action: 'CREATE', entity: 'post', entityId: row.id, entityLabel: row.title });
     if (row.status === 'PUBLISHED') void revalidateFor('post', [`/journal/${row.slug}`]);
