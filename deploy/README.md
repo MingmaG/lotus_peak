@@ -308,6 +308,31 @@ npm run media:rebuild -w @lotuspeak/admin  # AVIF and JPEG renditions
 Then sign in as the seeded owner and change the password — it is
 `SEED_OWNER_PASSWORD`, and its default is in the repository.
 
+### Setting the owner's sign-in
+
+After restoring a dump, **not** `db:seed` — that replaces the catalogue, the
+journal and the pages from the JSON in the repository, over whatever the dump
+brought. `db:seed:owner` sets the owner and touches nothing else:
+
+```bash
+# on your own machine — the plain password never reaches the server
+cd apps/admin
+printf 'Password: '; read -rs PW; echo
+PW="$PW" node -e "require('bcryptjs').hash(process.env.PW,12).then(console.log)"; unset PW
+
+# on the VM, from the repo root. Single quotes: the hash is full of $ signs.
+SEED_OWNER_EMAIL='you@example.com' SEED_OWNER_NAME='Your Name' \
+SEED_OWNER_PASSWORD_HASH='$2a$12$…' \
+npm run db:seed:owner
+```
+
+It writes to the user with that email if there is one, otherwise takes over
+the development dump's `owner@lotuspeak.local` (whose password is the
+published default), otherwise creates a new owner. Either way that account's
+sessions are revoked. Run it again with a new hash to reset a forgotten
+password. Pass the variables on the command line rather than leaving them in
+`.env`, where they would sit beside the secrets for no reason.
+
 ## Checks that are worth doing once, on the real thing
 
 - `curl -s https://<site>/ | head` — does the homepage carry its content in the
