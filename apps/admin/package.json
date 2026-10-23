@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 6011",
     "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start --port 6011",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
