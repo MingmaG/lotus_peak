@@ -34,6 +34,22 @@ const config: NextConfig = {
     ],
   },
 
+  /**
+   * OAuth discovery for AI clients, at the well-known addresses they fetch
+   * before they hold any credential. Rewrites rather than an `app/.well-known`
+   * folder, because a dot-directory in the app router is an argument with the
+   * bundler nobody needs. The `/api/mcp`-suffixed forms are what the MCP
+   * specification tells a client to try first when the resource has a path.
+   */
+  async rewrites() {
+    return [
+      { source: '/.well-known/oauth-protected-resource', destination: '/api/oauth/well-known/protected-resource' },
+      { source: '/.well-known/oauth-protected-resource/api/mcp', destination: '/api/oauth/well-known/protected-resource' },
+      { source: '/.well-known/oauth-authorization-server', destination: '/api/oauth/well-known/authorization-server' },
+      { source: '/.well-known/oauth-authorization-server/api/mcp', destination: '/api/oauth/well-known/authorization-server' },
+    ];
+  },
+
   /** Nothing here is for a search engine, and some of it is personal data. */
   async headers() {
     return [

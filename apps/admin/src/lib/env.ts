@@ -170,6 +170,39 @@ export const env = {
      */
     dailyCap: number('MAIL_DAILY_CAP', 100),
   },
+
+  /**
+   * The MCP endpoint an AI client connects to. See docs/AI-MCP.md.
+   *
+   * No API key and no model key: the office uses its own Claude or ChatGPT
+   * subscription, and this panel is the tool server, not a model caller.
+   */
+  mcp: {
+    /**
+     * The origin OAuth discovery advertises, without `/api/mcp`.
+     *
+     * Falls back to `ADMIN_PUBLIC_URL`, which is right in production. Set it
+     * only when a client reaches the panel somewhere else — a tunnel to a
+     * development machine — because a client told the wrong origin loops on
+     * the sign-in screen rather than failing.
+     */
+    baseUrl: optional(
+      'MCP_BASE_URL',
+      optional('ADMIN_PUBLIC_URL', 'http://localhost:6011'),
+    ).replace(/\/$/, ''),
+    /**
+     * Further origins this same panel answers at, comma-separated.
+     *
+     * A token names the server it was minted for (RFC 8707) and is refused
+     * anywhere else. The panel is often reached at two addresses at once —
+     * `localhost` for Claude Code, a tunnel for the Claude app — and both are
+     * this server, so both are accepted.
+     */
+    extraOrigins: optional('MCP_EXTRA_ORIGINS')
+      .split(',')
+      .map((origin) => origin.trim().replace(/\/$/, ''))
+      .filter(Boolean),
+  },
 } as const;
 
 /** True when publishing will actually reach the website. */

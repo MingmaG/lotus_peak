@@ -43,7 +43,25 @@ const PUBLIC_PATHS = [
  * answers 401 to every delivery notice and a log that never learns what
  * arrived.
  */
-const UNAUTHENTICATED_API = ['/api/public', '/api/storage', '/api/webhooks'];
+const UNAUTHENTICATED_API = [
+  '/api/public',
+  '/api/storage',
+  '/api/webhooks',
+  /**
+   * An AI client, over MCP. It carries a bearer token rather than a cookie,
+   * and `/api/mcp` checks that token itself on every call — sending it to the
+   * login page instead would hide the `WWW-Authenticate` challenge that tells
+   * the client how to sign in at all. The OAuth endpoints a client needs
+   * before it has a token are open for the same reason; the consent screen and
+   * the route that answers it are not, because that is where a person signs in.
+   */
+  '/api/mcp',
+  '/api/oauth/register',
+  '/api/oauth/token',
+  '/api/oauth/revoke',
+  '/api/oauth/well-known',
+  '/.well-known/',
+];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -92,6 +92,7 @@ and how each was caught.
 | --- | --- |
 | `docs/PLAN.md` | what was built, in the order it was built |
 | `docs/CUTOVER.md` | moving the content into the database, and the seven defects that only a prerendered-HTML diff could find |
+| `docs/AI-MCP.md` | working the panel from Claude, Claude Code or ChatGPT over MCP: connecting, permissions, approvals, and adding a tool |
 | `deploy/README.md` | putting it somewhere |
 | `CLAUDE.md` | the rules that hold across both apps |
 | `apps/web/CLAUDE.md` | the design system's own non-negotiables |

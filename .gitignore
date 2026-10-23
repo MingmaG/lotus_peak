@@ -30,3 +30,7 @@ deploy/logs/
 # The media library on its way between two S3 stores (deploy/media-sync.mjs).
 # A full copy of every photograph: it belongs in a bucket, not in git.
 deploy/media-export/
+
+# The real environment files PM2 loads on the server. They hold the JWT secrets,
+# the database URL and the Resend key; only the .example beside each is tracked.
+deploy/env/*.env

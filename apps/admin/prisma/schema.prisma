@@ -373,6 +373,14 @@ model User {
   failedLogins Int       @default(0)
   lockedUntil  DateTime?
 
+  /// Whether this person may drive the panel from an AI client.
+  ///
+  /// Off for everybody, the owner included, until somebody turns it on. It is
+  /// a second switch beside the role's `ai.write`, not a replacement for it:
+  /// the role says what a kind of person may do, and this says that this
+  /// particular person has asked for it and been given it.
+  mcpAccessEnabled Boolean @default(false)
+
   sessions      Session[]
   resetTokens   PasswordResetToken[]
   activityLogs  ActivityLog[]
@@ -383,6 +391,12 @@ model User {
   authoredPosts Post[]               @relation("PostAuthor")
   bookings      Booking[]            @relation("BookingAssignee")
   payments      Payment[]            @relation("PaymentRecordedBy")
+  mcpAuthCodes  McpAuthCode[]        @relation("McpAuthCodeUser")
+  mcpTokens     McpToken[]           @relation("McpTokenUser")
+  mcpRequested  McpApproval[]        @relation("McpApprovalRequester")
+  mcpApproved   McpApproval[]        @relation("McpApprovalApprover")
+  mcpRejected   McpApproval[]        @relation("McpApprovalRejecter")
+  mcpAuditLogs  McpAuditLog[]        @relation("McpAuditUser")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -2615,4 +2629,247 @@ model EmailEvent {
   @@index([messageId])
   @@index([type])
   @@map("email_events")
+}
+
+/* -------------------------------------------------------------------------- */
+/*  AI clients over MCP                                                        */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * The panel speaks the Model Context Protocol at /api/mcp, so somebody in the
+ * office can point Claude or ChatGPT at it and work by conversation. These
+ * tables are what that needs and nothing more: who connected, what they were
+ * given, what waits for a person, and what happened. See docs/AI-MCP.md.
+ */
+
+enum McpApprovalStatus {
+  PENDING
+  /// Claimed by an approver and being performed. A row stuck here means the
+  /// process died between the claim and the write, and is worth a look.
+  EXECUTING
+  COMPLETED
+  REJECTED
+  EXPIRED
+  FAILED
+}
+
+/// How consequential a tool is. Colours the approval card and, through the
+/// policy, decides whether a person has to say yes at all.
+enum McpRisk {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+/// How one tool call ended, as the AI activity log records it.
+enum McpCallStatus {
+  SUCCESS
+  DENIED
+  APPROVAL_REQUIRED
+  REJECTED
+  FAILED
+}
+
+/// An AI client that registered itself with this panel.
+///
+/// Registration is RFC 7591 dynamic registration: Claude and ChatGPT register
+/// on first connect rather than being configured by hand. The row exists so
+/// the office can see which clients exist and block one without touching
+/// anybody's password.
+model McpOAuthClient {
+  id           String   @id @default(cuid())
+  /// The `client_id` handed to the client. Separate from `id` so the public
+  /// identifier is never a database key.
+  clientId     String   @unique
+  name         String
+  /// Null for a public client — Claude, ChatGPT — which proves itself with
+  /// PKCE and holds no secret. Null means "public", not "missing".
+  secretHash   String?
+  redirectUris String[] @default([])
+  grantTypes   String[] @default([])
+  scope        String   @default("")
+  clientUri    String?
+  softwareId   String?
+  /// Checked on every call, not at issue time, so blocking a client stops its
+  /// tokens working on the next request.
+  isBlocked    Boolean  @default(false)
+
+  tokens McpToken[]
+  codes  McpAuthCode[]
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastUsedAt DateTime?
+
+  @@map("mcp_oauth_clients")
+}
+
+/// A one-time authorization code, bound to the person who consented.
+///
+/// Hashed and single-use. `usedAt` is set by the same conditional update that
+/// checks it is unset, so a replayed code cannot mint a second token.
+model McpAuthCode {
+  id       String @id @default(cuid())
+  codeHash String @unique
+
+  userId String
+  user   User   @relation("McpAuthCodeUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  clientId String
+  client   McpOAuthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+
+  redirectUri         String
+  scopes              String[]  @default([])
+  /// RFC 8707 — the server the token is for, checked again at the token
+  /// endpoint so a code minted here cannot be redeemed for somewhere else.
+  resource            String?
+  codeChallenge       String
+  codeChallengeMethod String    @default("S256")
+  expiresAt           DateTime
+  usedAt              DateTime?
+  createdAt           DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("mcp_auth_codes")
+}
+
+/// An access and refresh pair, issued to one client on behalf of one person.
+///
+/// Opaque and hashed rather than a JWT, unlike the panel's own session. The
+/// point of an AI token is that revoking it works at once: a JWT would save a
+/// query per call and cost exactly that.
+model McpToken {
+  id               String  @id @default(cuid())
+  accessTokenHash  String  @unique
+  refreshTokenHash String? @unique
+  /// The rotation chain. A refresh token presented after it was exchanged is
+  /// a theft or a replay, so the whole family is revoked.
+  rotatedToId      String?
+  familyId         String
+
+  userId String
+  user   User   @relation("McpTokenUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  clientId String
+  client   McpOAuthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+
+  scopes           String[]  @default([])
+  resource         String?
+  expiresAt        DateTime
+  refreshExpiresAt DateTime?
+  revokedAt        DateTime?
+  lastUsedAt       DateTime?
+  userAgent        String?
+  ipAddress        String?
+  createdAt        DateTime  @default(now())
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([familyId])
+  @@index([expiresAt])
+  @@map("mcp_tokens")
+}
+
+/// A write an AI asked for that waits for a person.
+///
+/// The only code path that performs one is the Approve button in the panel,
+/// pressed by somebody signed in. A model can file as many of these as it
+/// likes and not one of them does anything on its own.
+model McpApproval {
+  id String @id @default(cuid())
+
+  requestedById String
+  requestedBy   User   @relation("McpApprovalRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  /// The client's own name as it registered — "Claude", "ChatGPT" — so the
+  /// card says which surface the request came through.
+  requestedVia  String
+
+  toolName    String
+  /// The permission the operation needs. The approver must hold it too:
+  /// being allowed to approve AI requests is not a way around it.
+  permission  String
+  risk        McpRisk @default(HIGH)
+  entityType  String
+  entityId    String?
+  entityLabel String?
+  /// One sentence naming the operation. The card's heading.
+  summary     String
+
+  /// The validated arguments, kept as the record of what was asked.
+  input           Json
+  /// `{ field: { from, to } }` — what the person deciding actually reads.
+  proposedChanges Json
+  /// The record's state when it was asked for: its `updatedAt` and whatever
+  /// the operation depends on. If any of it moved, the approval is refused.
+  preconditions   Json
+
+  status McpApprovalStatus @default(PENDING)
+
+  approvedById    String?
+  approvedBy      User?     @relation("McpApprovalApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt      DateTime?
+  rejectedById    String?
+  rejectedBy      User?     @relation("McpApprovalRejecter", fields: [rejectedById], references: [id], onDelete: SetNull)
+  rejectedAt      DateTime?
+  rejectionReason String?
+
+  executedAt   DateTime?
+  errorCode    String?
+  errorMessage String?
+  result       Json?
+
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([status, createdAt])
+  @@index([requestedById])
+  @@index([entityType, entityId])
+  @@index([expiresAt])
+  @@map("mcp_approvals")
+}
+
+/// Every call an AI client made, including the refused ones.
+///
+/// Separate from `ActivityLog`, which records what changed. This records what
+/// was *asked*, which is the question after a surprise: a refused write never
+/// reaches the activity log, and it is often the interesting line. A write an
+/// AI made appears in both — here as the call, there as the change, under the
+/// name of the person whose token it was.
+model McpAuditLog {
+  id String @id @default(cuid())
+
+  userId String?
+  user   User?   @relation("McpAuditUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  clientId     String?
+  clientLabel  String?
+  tool         String
+  /// As sent, with anything secret-shaped redacted and long strings cut.
+  arguments    Json?
+  entityType   String?
+  entityId     String?
+  entityLabel  String?
+  status       McpCallStatus
+  errorCode    String?
+  /// Trimmed. Enough to understand the outcome, never a whole record.
+  result       Json?
+  approvalId   String?
+  approvedById String?
+  rejectedById String?
+  durationMs   Int?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime      @default(now())
+
+  @@index([userId])
+  @@index([tool])
+  @@index([status])
+  @@index([createdAt])
+  @@index([approvalId])
+  @@map("mcp_audit_logs")
 }
