@@ -27,6 +27,7 @@
     "db:deploy": "npm run db:deploy --workspace=@lotuspeak/admin",
     "db:push": "npm run db:push --workspace=@lotuspeak/admin",
     "db:seed": "npm run db:seed --workspace=@lotuspeak/admin",
+    "db:seed:owner": "npm run db:seed:owner --workspace=@lotuspeak/admin",
     "db:studio": "npm run db:studio --workspace=@lotuspeak/admin"
   },
   "devDependencies": {

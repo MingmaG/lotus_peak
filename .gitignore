@@ -34,3 +34,7 @@ deploy/media-export/
 # The real environment files PM2 loads on the server. They hold the JWT secrets,
 # the database URL and the Resend key; only the .example beside each is tracked.
 deploy/env/*.env
+
+# A pg_dump on its way to the server (deploy/README.md). The whole database,
+# password hashes and enquiries included.
+*.dump
