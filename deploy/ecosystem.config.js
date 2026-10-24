@@ -32,7 +32,7 @@ const ROOT = path.resolve(__dirname, "..");
 const NEXT = path.join(ROOT, "node_modules/next/dist/bin/next");
 
 /** Loopback unless told otherwise. See the note at the top. */
-const BIND = process.env.LOTUSPEAK_BIND || "127.0.0.1";
+const BIND = process.env.LOTUSPEAK_BIND || "0.0.0.0";
 
 function app(name, dir, port) {
     return {
