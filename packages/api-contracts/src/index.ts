@@ -342,6 +342,16 @@ export interface ApiSite {
     whatsappNumber: string | null;
     whatsappPrefill: string | null;
     tripadvisorWidgetId: string | null;
+    /**
+     * Cloudflare Turnstile's site key, which is public by design — it is
+     * printed into every page that shows the check. Null when the panel has
+     * no Turnstile keys, and then the forms show no check and the panel asks
+     * for none. Served from here rather than set on the website so the key
+     * and its secret are configured together, in one place: a site that
+     * showed no check to a panel that demanded one would refuse every
+     * enquiry.
+     */
+    turnstileSiteKey: string | null;
   };
   announcement: {
     message: string;
@@ -982,6 +992,41 @@ export interface ApiRedirect {
 
 export type EnquirySource = 'contact' | 'trip-detail' | 'drawer' | 'newsletter';
 
+/**
+ * What an enquiry may hold, checked by the form, the website's route and the
+ * panel alike.
+ *
+ * Values and one function in a package that is otherwise types, because these
+ * are the shape of what crosses the boundary as much as `adults: number` is:
+ * a form that allows 120 adults to a panel that allows 100 is the
+ * `adults`-as-a-string failure again — the traveller is told to fix a field
+ * the form said was fine.
+ */
+export const ENQUIRY_LIMITS = {
+  adults: { min: 0, max: 100 },
+  children: { min: 0, max: 50 },
+  /** In words, not characters: what a person writing can actually count. */
+  messageWords: 500,
+  /** E.164 allows fifteen digits; seven is the shortest real national number. */
+  phoneDigits: { min: 7, max: 15 },
+} as const;
+
+/** Words as `ENQUIRY_LIMITS.messageWords` counts them: runs of non-space. */
+export function countWords(text: string): number {
+  const trimmed = text.trim();
+  return trimmed ? trimmed.split(/\s+/).length : 0;
+}
+
+/**
+ * A telephone number as a person types one: digits, with spaces, dashes,
+ * dots and brackets between them and an optional leading `+`.
+ */
+export function isPhoneNumber(text: string): boolean {
+  if (!/^\+?[\d\s().-]+$/.test(text)) return false;
+  const digits = text.replace(/\D/g, '').length;
+  return digits >= ENQUIRY_LIMITS.phoneDigits.min && digits <= ENQUIRY_LIMITS.phoneDigits.max;
+}
+
 export interface ApiEnquiryInput {
   name: string;
   email: string;
@@ -997,6 +1042,11 @@ export interface ApiEnquiryInput {
   source: EnquirySource;
   /** Must arrive empty. A bot filled it in. */
   honeypot?: string;
+  /**
+   * The Turnstile token the form's check produced. Required by the panel
+   * whenever it has Turnstile keys, and good for one verification only.
+   */
+  captchaToken?: string;
   /** Where the enquiry was made, for attribution. */
   pagePath?: string;
   utm?: Record<string, string>;
