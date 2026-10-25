@@ -1,5 +1,7 @@
-import { renderStoredRichText } from '@/lib/rich-text'
+import { renderNoticeText, renderStoredRichText } from '@/lib/rich-text'
 import type {
+  ApiAnnouncement,
+  ApiBanner,
   ApiActivity,
   ApiAddress,
   ApiContactChannel,
@@ -43,6 +45,8 @@ import type {
   Season,
   SeasonKey,
   SiteSettings,
+  Announcement,
+  Banner,
   Trip,
   TripPhoto,
   TripSections,
@@ -537,6 +541,66 @@ export function toSettings(site: ApiSite): SiteSettings {
       title: site.defaultSeo.defaultTitle,
       description: site.defaultSeo.description,
     },
+    announcements: site.announcements.map(toAnnouncement).filter((row) => row.message),
+    banners: site.banners.map(toBanner),
+  }
+}
+
+/**
+ * An announcement, its message rebuilt from the notice allowlist.
+ *
+ * One whose message sanitises to nothing is dropped rather than drawn as an
+ * empty coloured bar across the top of every page.
+ */
+export function toAnnouncement(row: ApiAnnouncement): Announcement {
+  return {
+    id: row.id,
+    version: row.version,
+    tone: row.tone,
+    label: row.label?.trim() || null,
+    message: renderNoticeText(row.message),
+    href: row.href,
+    linkLabel: row.linkLabel,
+    dismissible: row.dismissible,
+    startsAt: row.startsAt,
+    endsAt: row.endsAt,
+    showOn: row.showOn,
+    hideOn: row.hideOn,
+  }
+}
+
+/**
+ * A banner. The photograph travels on the record, alt and size included —
+ * the banner is drawn by a client component, and the media registry is not
+ * there on the client (docs/CUTOVER.md).
+ */
+export function toBanner(row: ApiBanner): Banner {
+  return {
+    id: row.id,
+    version: row.version,
+    placement: row.placement,
+    layout: row.layout,
+    theme: row.theme,
+    eyebrow: row.eyebrow,
+    heading: row.heading,
+    body: renderStoredRichText(row.body),
+    image: row.image
+      ? {
+          src: row.image.url,
+          alt: row.image.decorative ? '' : row.image.alt,
+          width: row.image.width || null,
+          height: row.image.height || null,
+          focal: row.image.focal,
+        }
+      : null,
+    href: row.href,
+    linkLabel: row.linkLabel,
+    secondaryHref: row.secondaryHref,
+    secondaryLabel: row.secondaryLabel,
+    startsAt: row.startsAt,
+    endsAt: row.endsAt,
+    showOn: row.showOn,
+    hideOn: row.hideOn,
   }
 }
 

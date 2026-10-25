@@ -943,3 +943,275 @@
   .lp-search-hit { grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-4) }
   .lp-search-thumb { aspect-ratio: 1 }
 }
+
+/* ---------------------------------------------------------------------------
+   Announcements — the bar above the navigation (sections/shared/AnnouncementBar)
+
+   Three columns: the arrows (or a spacer the same width), the message, and the
+   close button (or its spacer). The spacers keep the message centred on the
+   page whether or not the bar has arrows and a close button.
+   --------------------------------------------------------------------------- */
+.lp-notice-bar {
+  font-family: var(--font-sans-body);
+}
+.lp-notice-inner {
+  display: grid;
+  grid-template-columns: var(--space-9) minmax(0, 1fr) var(--space-9);
+  align-items: center;
+  gap: var(--space-4);
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-2) var(--gutter);
+  min-height: 44px;
+}
+.lp-notice-stack { display: grid }
+.lp-notice-slide {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2) var(--space-4);
+  text-align: center;
+}
+.lp-notice-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--notice-chip-bg);
+  color: var(--notice-chip-fg);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.lp-notice-text { min-width: 0 }
+.lp-notice p {
+  margin: 0;
+  font-size: var(--text-label);
+  line-height: 1.5;
+}
+.lp-notice p + p { margin-top: 2px }
+.lp-notice p[data-size='sm'] { font-size: var(--text-micro); opacity: .86 }
+.lp-notice p[data-size='lg'] { font-size: var(--text-small); font-weight: var(--weight-medium) }
+.lp-notice p[data-size='xl'] {
+  font-size: var(--text-lead);
+  font-weight: var(--weight-light);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.lp-notice a {
+  color: var(--notice-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.lp-notice-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--notice-link);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-slow) var(--ease-settle);
+}
+.lp-notice-link:hover,
+.lp-notice-link:focus-visible { border-bottom-color: currentColor }
+.lp-notice-link svg { transition: transform var(--dur-slow) var(--ease-settle) }
+.lp-notice-link:hover svg { transform: translateX(3px) }
+.lp-notice-steps {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+  opacity: .8;
+}
+.lp-notice-count { min-width: 2.2em; text-align: center }
+.lp-notice-step,
+.lp-notice-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--dur-slow) var(--ease-settle);
+}
+.lp-notice-close { justify-self: end; opacity: .8 }
+/* A tint of the bar's own text colour, so the hover reads on every tone without
+   borrowing the label's colour — saffron behind an arrow is louder than the offer. */
+.lp-notice-step:hover,
+.lp-notice-close:hover { background: color-mix(in srgb, currentColor 12%, transparent); opacity: 1 }
+.lp-notice-step:focus-visible,
+.lp-notice-close:focus-visible,
+.lp-notice-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+@media (max-width: 720px) {
+  /* The message takes the width. The close button keeps the top corner, and
+     of the arrows only "next" survives, beneath it — a row of its own cost
+     a phone forty pixels of bar on every page. */
+  .lp-notice-inner {
+    grid-template-columns: minmax(0, 1fr) 32px;
+    grid-template-rows: auto auto;
+    gap: 0 var(--space-2);
+    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  }
+  .lp-notice-inner > .lp-notice-spacer:first-child { display: none }
+  .lp-notice-stack { grid-row: 1 / span 2; grid-column: 1; align-self: center }
+  .lp-notice-close,
+  .lp-notice-inner > .lp-notice-spacer:last-child { grid-row: 1; grid-column: 2 }
+  .lp-notice-steps { grid-row: 2; grid-column: 2; align-self: start }
+  .lp-notice-steps > :not(:last-child) { display: none }
+  .lp-notice-slide { gap: var(--space-1) var(--space-3) }
+  .lp-notice-link { padding: 0 }
+  .lp-notice p[data-size='xl'] { font-size: var(--text-body-size) }
+}
+
+/* ---------------------------------------------------------------------------
+   Banners — above the footer, and the pop-up (sections/shared/Banners)
+   --------------------------------------------------------------------------- */
+.lp-banner { display: block; color: inherit; text-decoration: none }
+.lp-banner-container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-9) var(--gutter);
+}
+.lp-banner-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: center;
+}
+.lp-banner-split[data-image='right'] > .lp-banner-photo { order: 2 }
+.lp-banner-text-only { grid-template-columns: minmax(0, var(--container-text)) }
+.lp-banner-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+.lp-banner-photo img { transition: transform var(--dur-reveal) var(--ease-settle) }
+.lp-banner-whole:hover .lp-banner-photo img,
+.lp-banner-whole:hover.lp-banner-backdrop img { transform: scale(1.02) }
+.lp-banner-words {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+/* Type from the site's own `h2`; only the measure is the banner's. */
+.lp-banner-heading { margin: 0; max-width: 22ch; text-wrap: balance }
+.lp-banner-body { max-width: var(--measure-narrow); font-size: var(--text-body-size); line-height: var(--leading-body) }
+.lp-banner-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+  margin-top: var(--space-2);
+}
+.lp-banner-whole .lp-banner-heading {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color var(--dur-slow) var(--ease-settle);
+}
+.lp-banner-whole:hover .lp-banner-heading,
+.lp-banner-whole:focus-visible .lp-banner-heading { text-decoration-color: currentColor }
+.lp-banner-backdrop {
+  position: relative;
+  overflow: hidden;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  background: var(--surface-ground-deep);
+  color: var(--text-on-ground);
+}
+.lp-banner-backdrop > .lp-banner-container { width: 100% }
+@media (max-width: 900px) {
+  .lp-banner-container { padding: var(--space-8) var(--gutter) }
+  .lp-banner-split { grid-template-columns: minmax(0, 1fr); gap: var(--space-6) }
+  /* On a phone the photograph always leads, whichever side it sat on. */
+  .lp-banner-split[data-image='right'] > .lp-banner-photo { order: 0 }
+}
+
+.lp-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5) var(--space-4);
+  transition: opacity var(--dur-slow) var(--ease-breath);
+}
+.lp-popup-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  backdrop-filter: blur(2px);
+}
+.lp-popup-panel {
+  position: relative;
+  display: grid;
+  width: min(100%, 880px);
+  max-height: calc(100svh - var(--space-7));
+  overflow: auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dialog);
+  transition: transform var(--dur-slow) var(--ease-settle);
+}
+.lp-popup-has-image { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr) }
+.lp-popup-panel:not(.lp-popup-has-image) { width: min(100%, 560px) }
+.lp-popup-photo { position: relative; min-height: 360px }
+.lp-popup-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-7) var(--space-6) var(--space-6);
+  color: inherit;
+  text-decoration: none;
+}
+.lp-popup-body .lp-banner-body { font-size: var(--text-small) }
+.lp-popup-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-veil);
+  color: var(--ink);
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background-color var(--dur-slow) var(--ease-settle);
+}
+.lp-popup-close:hover { background: var(--paper) }
+.lp-popup-close:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px }
+@media (max-width: 720px) {
+  .lp-popup { align-items: end; padding: 0 }
+  .lp-popup-panel { width: 100%; max-height: 88svh; border-radius: var(--radius-md) var(--radius-md) 0 0 }
+  .lp-popup-has-image { grid-template-columns: minmax(0, 1fr) }
+  .lp-popup-photo { min-height: 0; aspect-ratio: 16 / 9 }
+  .lp-popup-body { padding: var(--space-5) var(--space-4) var(--space-6) }
+}

@@ -14,6 +14,7 @@ import {
   Save,
   Youtube,
 } from 'lucide-react';
+import Link from 'next/link';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -102,12 +103,6 @@ export interface CompanyFormValue {
   contacts: ContactRow[];
   socials: SocialRow[];
   officeHours: HoursRow[];
-  announcement: {
-    message: string;
-    href: string | null;
-    linkLabel: string | null;
-    isActive: boolean;
-  } | null;
   integrations: {
     googleAnalyticsId: string | null;
     googleTagManagerId: string | null;
@@ -1048,62 +1043,17 @@ export function CompanyForm({ initial }: { initial: CompanyFormValue }) {
             </Section>
 
             <Section
-              title="Announcement"
-              description="A bar across the top of every page. Leave it switched off when there is nothing to say."
+              title="Announcements and banners"
+              description="The bar above the navigation, the banners above the footer and the pop-ups have screens of their own now, with dates to run between and pages to appear on."
             >
-              <Field label="Message">
-                <Input
-                  value={form.announcement?.message ?? ''}
-                  onChange={(event) =>
-                    set('announcement', {
-                      message: event.target.value,
-                      href: form.announcement?.href ?? null,
-                      linkLabel: form.announcement?.linkLabel ?? null,
-                      isActive: form.announcement?.isActive ?? false,
-                    })
-                  }
-                />
-              </Field>
-              {form.announcement && (
-                <>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Link">
-                      <Input
-                        value={form.announcement.href ?? ''}
-                        onChange={(event) =>
-                          set('announcement', {
-                            ...form.announcement!,
-                            href: event.target.value || null,
-                          })
-                        }
-                      />
-                    </Field>
-                    <Field label="Link text">
-                      <Input
-                        value={form.announcement.linkLabel ?? ''}
-                        onChange={(event) =>
-                          set('announcement', {
-                            ...form.announcement!,
-                            linkLabel: event.target.value || null,
-                          })
-                        }
-                      />
-                    </Field>
-                  </div>
-                  <label className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      checked={form.announcement.isActive}
-                      onCheckedChange={(checked) =>
-                        set('announcement', {
-                          ...form.announcement!,
-                          isActive: checked === true,
-                        })
-                      }
-                    />
-                    Show it on the site
-                  </label>
-                </>
-              )}
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/announcements">Announcements</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/banners">Banners</Link>
+                </Button>
+              </div>
             </Section>
           </>
         )}

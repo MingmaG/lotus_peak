@@ -119,6 +119,8 @@ export const TAGS_FOR: Record<string, RevalidateTag[]> = {
   person: ['pages'],
   menu: ['navigation', 'site'],
   company: ['site', 'discovery'],
+  /* Announcements and banners ride on the site payload the layout reads. */
+  notice: ['site'],
   redirect: ['redirects'],
   media: ['trips', 'destinations', 'activities', 'seasons', 'culture', 'gallery', 'journal', 'pages', 'site'],
   email: ['emails'],

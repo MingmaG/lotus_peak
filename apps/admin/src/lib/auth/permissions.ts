@@ -50,6 +50,7 @@ export const RESOURCES = [
   'bookings',
   'payments',
   'coupons',
+  'banners',
 
   /**
    * Reserved, for the parts of the business this panel does not run yet.
@@ -58,14 +59,13 @@ export const RESOURCES = [
    * now because a role is a thing the office sets up once and rarely revisits
    * — adding one later would mean going back through every role to grant it,
    * and until then every new screen would be visible to everybody or to
-   * nobody. Bookings, payments and coupons were in this list until they were
-   * built, and the roles that had been granted them needed no revisiting,
+   * nobody. Bookings, payments, coupons and banners were in this list until they
+   * were built, and the roles that had been granted them needed no revisiting,
    * which is the argument.
    */
   'reviews',
   'comments',
   'moments',
-  'banners',
   'countries',
   'categories',
   'documents',
@@ -196,7 +196,11 @@ export const RESOURCE_META: Record<Resource, ResourceMeta> = {
   moments: { label: 'Moments', group: 'The website' },
   reviews: { label: 'Reviews', group: 'The website' },
   comments: { label: 'Comments', group: 'The website' },
-  banners: { label: 'Banners', group: 'The website' },
+  banners: {
+    label: 'Banners and announcements',
+    group: 'The website',
+    hint: 'The bar above the navigation, the banners and pop-ups, and the dates they run',
+  },
   seo: { label: 'Search', group: 'The website', hint: 'Redirects, the sitemap, structured data' },
 
   enquiries: { label: 'Enquiries', group: 'Travellers', hint: 'What a traveller wrote, and their reply' },
@@ -343,6 +347,7 @@ export const SYSTEM_ROLES: {
       'pages.publish',
       'people.publish',
       'navigation.write',
+      'banners.delete',
       'media.delete',
       'seo.write',
       'activity.read',
@@ -398,6 +403,7 @@ export const SYSTEM_ROLES: {
       'journal.read',
       'pages.read',
       'people.read',
+      'banners.read',
       'media.read',
       'seo.read',
     ],

@@ -182,16 +182,6 @@ export const companySchema = z.object({
   socials: z.array(socialSchema).max(20).default([]),
   officeHours: z.array(hoursSchema).max(10).default([]),
 
-  announcement: z
-    .object({
-      message: z.string().max(300),
-      href: z.string().max(500).nullable().optional(),
-      linkLabel: z.string().max(60).nullable().optional(),
-      isActive: z.boolean().default(false),
-    })
-    .nullable()
-    .optional(),
-
   integrations: z
     .object({
       googleAnalyticsId: z.string().max(60).nullable().optional(),
