@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { ENQUIRY_LIMITS, countWords } from '@lotuspeak/api-contracts'
 import { Button, Checkbox, Input, Select } from '@/design-system'
+import { enquiryErrors } from '@/lib/enquiry-rules'
 import { sendEnquiry } from '@/lib/send-enquiry'
+import { Captcha } from './Captcha'
 import { useInquiry } from './SiteChrome'
 
 export type EnquiryFormProps = {
@@ -15,18 +18,18 @@ export type EnquiryFormProps = {
 }
 
 export function EnquiryForm({ source, fixedTrip, tripOptions, variant = 'compact' }: EnquiryFormProps) {
-  const { notify, email } = useInquiry()
+  const { notify, email, captchaSiteKey } = useInquiry()
   const [pending, setPending] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [words, setWords] = useState(0)
+  const [captchaReset, setCaptchaReset] = useState(0)
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = e.currentTarget
     const data = Object.fromEntries(new FormData(form)) as Record<string, string>
 
-    const next: Record<string, string> = {}
-    if (!data.name?.trim()) next.name = 'We need a name to write back to.'
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email ?? '')) next.email = 'That email does not look right.'
+    const next = enquiryErrors(data, { captcha: captchaSiteKey !== null })
     setErrors(next)
     if (Object.keys(next).length > 0) {
       form.querySelector<HTMLElement>(`[name="${Object.keys(next)[0]}"]`)?.focus()
@@ -40,6 +43,9 @@ export function EnquiryForm({ source, fixedTrip, tripOptions, variant = 'compact
       tripSlug: fixedTrip?.slug ?? data.tripSlug,
     }, email)
     setPending(false)
+    /* The token is spent whatever the answer was; the next attempt needs a
+       fresh one, and a refusal keeps everything else that was written. */
+    setCaptchaReset((n) => n + 1)
 
     /* The form is reset only once the server says it holds the enquiry —
        otherwise what the traveller wrote is cleared along with it. */
@@ -49,11 +55,13 @@ export function EnquiryForm({ source, fixedTrip, tripOptions, variant = 'compact
     }
 
     form.reset()
+    setWords(0)
     notify('Sent. We will write back within two days.')
   }
 
   return (
     <form
+      noValidate
       onSubmit={onSubmit}
       style={
         variant === 'full'
@@ -120,15 +128,44 @@ export function EnquiryForm({ source, fixedTrip, tripOptions, variant = 'compact
 
       <div className="lp-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <Input label="Country" name="country" autoComplete="country-name" placeholder="Where you live" />
-        <Input label="Contact number" name="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="+" />
+        <Input
+          label="Contact number"
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="+"
+          maxLength={40}
+          error={errors.phone}
+        />
       </div>
 
       {!fixedTrip && tripOptions && <Select label="Trip" name="tripSlug" options={tripOptions} />}
 
       {variant === 'full' ? (
         <div className="lp-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-          <Input label="Adults" name="adults" inputMode="numeric" placeholder="2" />
-          <Input label="Children" name="children" inputMode="numeric" placeholder="0" />
+          <Input
+            label="Adults"
+            name="adults"
+            type="number"
+            inputMode="numeric"
+            min={ENQUIRY_LIMITS.adults.min}
+            max={ENQUIRY_LIMITS.adults.max}
+            step={1}
+            placeholder="2"
+            error={errors.adults}
+          />
+          <Input
+            label="Children"
+            name="children"
+            type="number"
+            inputMode="numeric"
+            min={ENQUIRY_LIMITS.children.min}
+            max={ENQUIRY_LIMITS.children.max}
+            step={1}
+            placeholder="0"
+            error={errors.children}
+          />
         </div>
       ) : (
         <div className="lp-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
@@ -146,10 +183,22 @@ export function EnquiryForm({ source, fixedTrip, tripOptions, variant = 'compact
         name="message"
         multiline
         placeholder="A festival, a long walk, some days of silence…"
+        hint={`${words} of ${ENQUIRY_LIMITS.messageWords} words`}
+        error={errors.message}
+        onChange={(e) => setWords(countWords(e.currentTarget.value))}
       />
 
       {variant === 'full' && (
         <Checkbox label="I would like rest days written in" name="restDays" defaultChecked />
+      )}
+
+      {captchaSiteKey && (
+        <Captcha
+          siteKey={captchaSiteKey}
+          resetKey={captchaReset}
+          error={errors.captchaToken}
+          onChange={(ready) => ready && setErrors(({ captchaToken: _, ...rest }) => rest)}
+        />
       )}
 
       <div>

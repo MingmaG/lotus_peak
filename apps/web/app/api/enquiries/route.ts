@@ -2,6 +2,7 @@ import { NextResponse, after } from 'next/server'
 
 import { EnquiryRefused, getContent } from '@/content'
 import type { EnquiryReceipt } from '@/content/repository'
+import { enquiryErrors } from '@/lib/enquiry-rules'
 import { deliverEnquiryMail } from '@/lib/mail/enquiry'
 
 export const runtime = 'nodejs'
@@ -64,24 +65,40 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true })
   }
 
+  /**
+   * Whether the panel wants a Turnstile token, from the cached site settings.
+   *
+   * The token itself is not checked here. It is good for one verification,
+   * and that one belongs to the panel, which is reachable without this route;
+   * this only refuses an enquiry that arrives with no token at all, which is
+   * also the only guard the mail below has when the panel cannot be reached.
+   * Settings that cannot be read mean no such refusal — a missing check must
+   * not become a missing enquiry.
+   */
+  const captcha = await getContent()
+    .settings.get()
+    .then((settings) => settings.captchaSiteKey !== null)
+    .catch(() => false)
+
+  /* The forms run the same rules first, so a traveller should only ever see
+     one of these from a form that was bypassed. */
+  const problems = Object.values(enquiryErrors(body, { captcha }))
+  if (problems.length > 0) {
+    return NextResponse.json({ ok: false, error: problems[0] }, { status: 422 })
+  }
+
   const name = String(body.name ?? '').trim()
   const email = String(body.email ?? '').trim()
-  if (name.length < 2 || name.length > 100) {
-    return NextResponse.json({ ok: false, error: 'Please give us a name.' }, { status: 422 })
-  }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 254) {
-    return NextResponse.json({ ok: false, error: 'Please check the email address.' }, { status: 422 })
-  }
 
   const str = (v: unknown, max: number) => {
     const s = String(v ?? '').trim()
     return s ? s.slice(0, max) : undefined
   }
 
-  /** A party size, or nothing. An unreadable one is dropped, not guessed at. */
+  /** A party size, or nothing. The range was checked above. */
   const count = (v: unknown) => {
     const n = Number.parseInt(String(v ?? '').trim(), 10)
-    return Number.isFinite(n) && n >= 0 && n <= 60 ? n : undefined
+    return Number.isFinite(n) ? n : undefined
   }
 
   const enquiry = {
@@ -99,6 +116,7 @@ export async function POST(request: Request) {
     preferredDates: str(body.preferredDates, 120),
     message: str(body.message, 4000),
     restDays: body.restDays === 'on' || body.restDays === true,
+    captchaToken: str(body.captchaToken, 4096),
     source: (['contact', 'trip-detail', 'drawer'] as const).includes(body.source as never)
       ? (body.source as 'contact' | 'trip-detail' | 'drawer')
       : ('contact' as const),

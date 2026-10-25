@@ -425,6 +425,11 @@ export type SiteSettings = {
   socials: { platform: SocialPlatform; label: string; url: string }[]
   journeyBands: Record<'places' | 'culture' | 'journal' | 'related', JourneyBandCopy>
   contact: { phone: string; email: string; replyPromise: string }
+  /**
+   * Cloudflare Turnstile's public site key, from the panel that holds its
+   * secret. Null means the panel asks for no check, and the forms draw none.
+   */
+  captchaSiteKey: string | null
   pledge: { percent: number; beneficiary: string }
   sdfPerNightUsd: number
   defaultSeo: { title: string; description: string }

@@ -15,8 +15,11 @@ import {
   type NavItem,
 } from '@/design-system'
 import { Dignities, Halo } from '@/motion'
+import { ENQUIRY_LIMITS, countWords } from '@lotuspeak/api-contracts'
+import { enquiryErrors } from '@/lib/enquiry-rules'
 import { sendEnquiry } from '@/lib/send-enquiry'
 import type { Destination, SiteSettings, Trip } from '@/content/types'
+import { Captcha } from './Captcha'
 import { WhatsAppFloat } from './WhatsAppFloat'
 
 type DrawerCtx = {
@@ -24,8 +27,10 @@ type DrawerCtx = {
   notify: (message: string) => void
   /** The company's email, for a form to offer when its enquiry did not arrive. */
   email: string
+  /** Turnstile's site key, or null when the panel asks for no check. */
+  captchaSiteKey: string | null
 }
-const Ctx = createContext<DrawerCtx>({ open: () => {}, notify: () => {}, email: '' })
+const Ctx = createContext<DrawerCtx>({ open: () => {}, notify: () => {}, email: '', captchaSiteKey: null })
 
 /** Any CTA anywhere can open the enquiry drawer or raise the toast. */
 export function useInquiry() {
@@ -75,7 +80,8 @@ export function SiteChrome({
   }, [])
 
   const email = settings.contact.email
-  const ctx = useMemo(() => ({ open, notify, email }), [open, notify, email])
+  const captchaSiteKey = settings.captchaSiteKey
+  const ctx = useMemo(() => ({ open, notify, email, captchaSiteKey }), [open, notify, email, captchaSiteKey])
 
   // Close the drawer on navigation.
   useEffect(() => setDrawerOpen(false), [pathname])
@@ -132,6 +138,8 @@ export function SiteChrome({
       >
         <DrawerForm
           email={email}
+          captchaSiteKey={captchaSiteKey}
+          open={drawerOpen}
           options={journeyOptions}
           preselect={preselect}
           onSent={() => {
@@ -167,28 +175,47 @@ export function SiteChrome({
 
 function DrawerForm({
   email,
+  captchaSiteKey,
+  open,
   options,
   preselect,
   onSent,
   onFailed,
 }: {
   email: string
+  captchaSiteKey: string | null
+  /** Whether the drawer is showing. The form stays mounted when it is not. */
+  open: boolean
   options: { label: string; value: string }[]
   preselect?: string
   onSent: () => void
   onFailed: (message: string) => void
 }) {
   const [pending, setPending] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [words, setWords] = useState(0)
+  const [captchaReset, setCaptchaReset] = useState(0)
 
   return (
     <form
+      noValidate
       style={{ display: 'grid', gap: 32 }}
       onSubmit={async (e) => {
         e.preventDefault()
+        const form = e.currentTarget
+        const data = Object.fromEntries(new FormData(form))
+        const next = enquiryErrors(data, { captcha: captchaSiteKey !== null })
+        setErrors(next)
+        if (Object.keys(next).length > 0) {
+          form.querySelector<HTMLElement>(`[name="${Object.keys(next)[0]}"]`)?.focus()
+          return
+        }
+
         setPending(true)
-        const data = Object.fromEntries(new FormData(e.currentTarget))
         const outcome = await sendEnquiry({ ...data, source: 'drawer' }, email)
         setPending(false)
+        /* The token is spent whatever the answer was. */
+        setCaptchaReset((n) => n + 1)
         /* A refused enquiry leaves the drawer open with the words still in it,
            so there is something to try again with. */
         if (!outcome.sent) {
@@ -198,16 +225,45 @@ function DrawerForm({
         onSent()
       }}
     >
-      <Input label="Your name" name="name" required placeholder="As it appears in your passport" autoComplete="name" />
-      <Input label="Email" name="email" type="email" required placeholder="you@example.com" autoComplete="email" />
+      <Input
+        label="Your name"
+        name="name"
+        required
+        placeholder="As it appears in your passport"
+        autoComplete="name"
+        error={errors.name}
+      />
+      <Input
+        label="Email"
+        name="email"
+        type="email"
+        required
+        placeholder="you@example.com"
+        autoComplete="email"
+        error={errors.email}
+      />
       <Select label="Which journey" name="tripSlug" options={options} defaultValue={preselect} />
       <Input
         label="What are you hoping for"
         name="message"
         multiline
         placeholder="A festival, a long walk, some quiet…"
+        hint={`${words} of ${ENQUIRY_LIMITS.messageWords} words`}
+        error={errors.message}
+        onChange={(e) => setWords(countWords(e.currentTarget.value))}
       />
       <Checkbox label="I would like rest days written in" name="restDays" defaultChecked />
+      {/* Only while the drawer is open. The form is mounted on every page,
+          and a check drawn behind a closed drawer would load Cloudflare's
+          script everywhere and spend its token's five minutes unseen. */}
+      {captchaSiteKey && open && (
+        <Captcha
+          siteKey={captchaSiteKey}
+          resetKey={captchaReset}
+          error={errors.captchaToken}
+          onChange={(ready) => ready && setErrors(({ captchaToken: _, ...rest }) => rest)}
+        />
+      )}
       <Button type="submit" disabled={pending}>
         {pending ? 'Sending' : 'Send'}
       </Button>
