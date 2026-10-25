@@ -7,6 +7,7 @@ import { Badge, Button, Divider, Eyebrow, Reflection, SiteIcon, Tooltip } from '
 import { getContent } from '@/content'
 import { fmt, type TripPhoto } from '@/content/types'
 import { ogImage } from '@/lib/seo'
+import { whatsappHref } from '@/lib/whatsapp'
 import { Reveal } from '@/motion'
 import { BandLink } from '@/sections/shared/BandCta'
 import { EnquiryForm } from '@/sections/shared/EnquiryForm'
@@ -351,14 +352,43 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
               We are here to help you on your way
             </h2>
             <div style={{ display: 'grid', gap: 20, marginTop: 36 }}>
+              {/* WhatsApp only where the office has a number, and its message
+                  names this journey — the same link as the floating button. */}
               {(
                 [
                   ['Call', settings.contact.phone],
+                  ...(settings.whatsapp
+                    ? [
+                        [
+                          settings.whatsapp.label,
+                          <a
+                            key="whatsapp"
+                            href={whatsappHref(settings.whatsapp, trip)}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            style={{
+                              color: 'inherit',
+                              textDecoration: 'underline',
+                              textDecorationColor: 'var(--gold)',
+                              textUnderlineOffset: 4,
+                            }}
+                          >
+                            {settings.whatsapp.display}
+                          </a>,
+                        ] as const,
+                      ]
+                    : []),
                   ['Write', settings.contact.email],
                   ['Reply', settings.contact.replyPromise],
                 ] as const
               ).map(([t, b]) => (
-                <div key={t} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: 16 }}>
+                /* 72px fits "Call", "Write" and "Reply"; "WhatsApp" in the
+                   same letter-spaced caps needs 104, and every row widens
+                   together so the values still start on one line. */
+                <div
+                  key={t}
+                  style={{ display: 'grid', gridTemplateColumns: `${settings.whatsapp ? 104 : 72}px 1fr`, gap: 16 }}
+                >
                   <Eyebrow tone="muted" style={{ paddingTop: 4 }}>
                     {t}
                   </Eyebrow>

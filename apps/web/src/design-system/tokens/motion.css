@@ -24,8 +24,12 @@
 --dur-veil:1.1s;
 --dur-rise:1.6s;
 --dur-drift:2.6s;
+/* One ring of the WhatsApp button's beam, from the button's edge to nothing.
+   Slow enough to read as a breath beside the page, not a ping asking for
+   attention. */
+--dur-beam:4s;
 --delay-rise:.15s;
 --delay-drift:.45s;
 --delay-veil-out:.65s;
 }
-@media (prefers-reduced-motion:reduce){:root{--dur-quick:0s;--dur-slow:0s;--dur-reveal:0s;--dur-breath:0s;--dur-mist:0s;--dur-map-settle:0s;--dur-turn:0s;--dur-veil:0s;--dur-rise:0s;--dur-drift:0s;--delay-rise:0s;--delay-drift:0s;--delay-veil-out:0s}}
+@media (prefers-reduced-motion:reduce){:root{--dur-quick:0s;--dur-slow:0s;--dur-reveal:0s;--dur-breath:0s;--dur-mist:0s;--dur-map-settle:0s;--dur-turn:0s;--dur-veil:0s;--dur-rise:0s;--dur-drift:0s;--dur-beam:0s;--delay-rise:0s;--delay-drift:0s;--delay-veil-out:0s}}

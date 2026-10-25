@@ -400,8 +400,20 @@ export const SETTINGS: SiteSettings = {
   address: { lines: ['Thimphu, Bhutan'], mapUrl: null },
   contacts: [
     { kind: 'phone', label: 'Telephone', display: '+975 17984485', href: 'tel:+97517984485' },
+    {
+      kind: 'whatsapp',
+      label: 'WhatsApp',
+      display: '+975 17984485',
+      href: `https://wa.me/97517984485?text=${encodeURIComponent('Hello — I am writing about a journey with Lotus Peak.')}`,
+    },
     { kind: 'email', label: 'Email', display: 'info@lotuspeak.org', href: 'mailto:info@lotuspeak.org' },
   ],
+  whatsapp: {
+    label: 'WhatsApp',
+    number: '97517984485',
+    display: '+975 17984485',
+    prefill: 'Hello — I am writing about a journey with Lotus Peak.',
+  },
   socials: [
     {
       platform: 'FACEBOOK',

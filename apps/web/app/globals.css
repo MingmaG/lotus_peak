@@ -95,6 +95,58 @@
   color: var(--text-on-ground);
 }
 
+/* The floating WhatsApp button (sections/shared/WhatsAppFloat). 56px, the size
+   a thumb finds without looking. z-index 45: over the page and the dignity
+   rail (40), under the navigation (50) and so under the menu and the enquiry
+   drawer, which must cover it when they open. */
+.lp-whatsapp {
+  position: fixed;
+  left: var(--space-5);
+  bottom: var(--space-5);
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--whatsapp);
+  color: var(--whatsapp-fg);
+  box-shadow: var(--shadow-lift);
+  transition: background-color var(--dur-quick) var(--ease-breath);
+}
+.lp-whatsapp:hover,
+.lp-whatsapp:focus-visible {
+  background: var(--whatsapp-hover);
+  color: var(--whatsapp-fg);
+}
+.lp-whatsapp:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+.lp-whatsapp > svg { position: relative }
+
+/* The beam: two rings of the same green swelling out of the button and
+   fading, half a cycle apart, so one is always on its way out. */
+.lp-whatsapp-beam {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--whatsapp-beam);
+  pointer-events: none;
+  animation: lp-beam var(--dur-beam) var(--ease-drift) infinite;
+}
+.lp-whatsapp-beam + .lp-whatsapp-beam { animation-delay: calc(var(--dur-beam) / -2) }
+@keyframes lp-beam {
+  from { transform: scale(1); opacity: 1 }
+  to   { transform: scale(1.9); opacity: 0 }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-whatsapp-beam { display: none }
+}
+@media (max-width: 620px) {
+  .lp-whatsapp { left: var(--space-4); bottom: var(--space-4); width: 52px; height: 52px }
+}
+
 /* The navigation's search field is a fixed 200px sitting beside the brand and
    the menu button. Below about 720px the three of them are wider than the
    viewport, and the whole site scrolled sideways by 174px on a 390px phone —

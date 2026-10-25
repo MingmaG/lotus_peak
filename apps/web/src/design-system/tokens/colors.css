@@ -68,6 +68,13 @@
 --cta-2-bg:var(--saffron);
 --cta-2-bg-hover:#C97A20;
 --cta-2-fg:var(--ink);
+/* WhatsApp's own green, used only on the WhatsApp button. Not a brand colour of
+   this site: a traveller has to recognise the button as WhatsApp at a glance,
+   and that green is how. The beam is the same green, faded. */
+--whatsapp:#25D366;
+--whatsapp-hover:#1DA851;
+--whatsapp-fg:#FFFFFF;
+--whatsapp-beam:rgba(37,211,102,.5);
 --focus-ring:var(--sky-2);
 --surface-veil:rgba(255,255,255,.72);/* translucent chrome standing over imagery */
 --scrim:rgba(12,62,92,.55);/* modal grounds — lotus sky ink, never pine */
