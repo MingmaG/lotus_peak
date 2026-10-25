@@ -63,6 +63,25 @@ function secret(name: string): string {
   return `insecure-development-${name.toLowerCase()}`;
 }
 
+/**
+ * Two variables that mean something only together: both, or neither.
+ *
+ * One without the other is refused at startup rather than at the first
+ * enquiry. A Turnstile secret with no site key would demand a check the forms
+ * never show — every enquiry refused, which is the one failure this site
+ * cannot have — and nothing would say so until somebody noticed the silence.
+ */
+function pair(a: string, b: string): [string, string] {
+  const first = optional(a);
+  const second = optional(b);
+  if (Boolean(first) !== Boolean(second)) {
+    throw new EnvError(first ? b : a, `It is set only together with ${first ? a : b}; set both or neither.`);
+  }
+  return [first, second];
+}
+
+const [turnstileSiteKey, turnstileSecretKey] = pair('TURNSTILE_SITE_KEY', 'TURNSTILE_SECRET_KEY');
+
 export type StorageDriver = 'local' | 's3';
 
 export const env = {
@@ -172,6 +191,18 @@ export const env = {
   },
 
   /**
+   * Cloudflare Turnstile, the check in front of every enquiry form.
+   *
+   * The site key is public and reaches the website through the site settings;
+   * the secret stays here, where enquiries are verified. Both empty means no
+   * check anywhere — the forms do not draw one and this panel does not ask.
+   */
+  captcha: {
+    siteKey: turnstileSiteKey,
+    secretKey: turnstileSecretKey,
+  },
+
+  /**
    * The MCP endpoint an AI client connects to. See docs/AI-MCP.md.
    *
    * No API key and no model key: the office uses its own Claude or ChatGPT
@@ -204,6 +235,11 @@ export const env = {
       .filter(Boolean),
   },
 } as const;
+
+/** True when every enquiry has to come with a Turnstile token. */
+export function captchaConfigured(): boolean {
+  return env.captcha.secretKey.length > 0;
+}
 
 /** True when publishing will actually reach the website. */
 export function revalidationConfigured(): boolean {
