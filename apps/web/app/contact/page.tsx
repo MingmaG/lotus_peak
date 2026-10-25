@@ -6,6 +6,7 @@ import { Divider, Eyebrow } from '@/design-system'
 import { getContent } from '@/content'
 import { ogImage } from '@/lib/seo'
 import { IMG } from '@/lib/assets'
+import { whatsappHref } from '@/lib/whatsapp'
 import { Reveal } from '@/motion'
 import { EnquiryForm } from '@/sections/shared/EnquiryForm'
 
@@ -57,6 +58,22 @@ export default async function ContactPage() {
         {settings.contact.phone}
       </a>,
     ],
+    ...(settings.whatsapp
+      ? [
+          [
+            settings.whatsapp.label,
+            <a
+              key="whatsapp"
+              href={whatsappHref(settings.whatsapp)}
+              target="_blank"
+              rel="noreferrer noopener"
+              style={LINK}
+            >
+              {settings.whatsapp.display}
+            </a>,
+          ] as [string, ReactNode],
+        ]
+      : []),
     [
       'Email',
       <a key="email" href={`mailto:${settings.contact.email}`} style={LINK}>

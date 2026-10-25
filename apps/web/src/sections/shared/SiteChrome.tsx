@@ -17,6 +17,7 @@ import {
 import { Dignities, Halo } from '@/motion'
 import { sendEnquiry } from '@/lib/send-enquiry'
 import type { Destination, SiteSettings, Trip } from '@/content/types'
+import { WhatsAppFloat } from './WhatsAppFloat'
 
 type DrawerCtx = {
   open: (tripSlug?: string) => void
@@ -141,10 +142,23 @@ export function SiteChrome({
         />
       </InquiryDrawer>
 
+      {settings.whatsapp && <WhatsAppFloat whatsapp={settings.whatsapp} pathname={pathname} trips={trips} />}
+
       {/* Bounded on the right as well as the left: the toast is inline-flex, so
           on a phone the sentence wraps inside the screen instead of running off
-          it. On a wide screen it still hugs its text in the bottom corner. */}
-      <div style={{ position: 'fixed', left: 32, right: 32, bottom: 32, zIndex: 200, pointerEvents: 'none' }}>
+          it. On a wide screen it still hugs its text in the bottom corner —
+          above the WhatsApp button where there is one, which shares the corner
+          and would otherwise sit on top of the first words. */}
+      <div
+        style={{
+          position: 'fixed',
+          left: 32,
+          right: 32,
+          bottom: settings.whatsapp ? 104 : 32,
+          zIndex: 200,
+          pointerEvents: 'none',
+        }}
+      >
         <Toast open={!!toast} message={toast ?? ''} />
       </div>
     </Ctx.Provider>
