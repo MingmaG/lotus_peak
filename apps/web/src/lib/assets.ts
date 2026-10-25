@@ -13,7 +13,7 @@ export function asset(path: string): string {
 
 /** Imagery used across the site, matching the design project's IMG map. */
 export const IMG = {
-  hero: asset('hero-section-image.jpg'),
+  hero: asset('hero-section-image-low.jpeg'),
   dress: asset('imagery/traditional-dress.jpg'),
   dzong: asset('imagery/punakha-foggy-dzong.webp'),
   chorten: asset('imagery/memorial-chorten.webp'),
@@ -101,9 +101,9 @@ export type MediaAsset = {
 
 const RECORDS: Record<string, Omit<MediaAsset, 'src'>> = {
   [IMG.hero]: {
-    alt: 'Taktshang, the Tiger’s Nest, on its granite cliff above a forested valley, with the path climbing to it on the left',
-    width: 4032,
-    height: 3024,
+    alt: 'Taktshang, the Tiger’s Nest, on its granite cliff above a forested valley, with hazy ridges beyond',
+    width: 2560,
+    height: 1706,
   },
   [IMG.taktshang]: {
     alt: 'Taktshang monastery on the granite cliff above the Paro valley, white walls and red roofs among pine forest',
