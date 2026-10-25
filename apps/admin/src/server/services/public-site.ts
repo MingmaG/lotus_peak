@@ -350,6 +350,8 @@ export async function getSite(): Promise<ApiSite> {
       whatsappNumber: whatsapp?.value ?? null,
       whatsappPrefill: whatsapp?.prefillMessage ?? null,
       tripadvisorWidgetId: setting('tripadvisorWidgetId'),
+      /* No check until the panel holds Turnstile keys (feature/enquiry-captcha). */
+      turnstileSiteKey: null,
     },
     announcement: announcement
       ? {

@@ -242,6 +242,7 @@ function fileSite(): ApiSite {
       whatsappNumber: null,
       whatsappPrefill: null,
       tripadvisorWidgetId: null,
+      turnstileSiteKey: null,
     },
     announcement: null,
   }
