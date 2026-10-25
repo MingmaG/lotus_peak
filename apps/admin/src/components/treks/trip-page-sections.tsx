@@ -14,8 +14,9 @@ import type { TripTrailForm } from './trip-editor';
  * What the journey's page draws around the itinerary, and what goes in it.
  *
  * Its own file because the Links tab was already the longest in the editor,
- * and these six switches, the band above the itinerary and two pickers are
- * one decision: "what does this page offer somebody reading down it".
+ * and these switches and the pickers under them are one decision: "what does
+ * this page offer somebody reading down it". The band above the itinerary is
+ * here too, but it is drawn on the Journey tab — see `TripTrailBand`.
  */
 
 export interface TripSectionsForm {
@@ -27,12 +28,9 @@ export interface TripSectionsForm {
   related: boolean;
 }
 
-const BANDS: { key: keyof TripSectionsForm; label: string; hint: string }[] = [
-  {
-    key: 'trail',
-    label: 'On the trail',
-    hint: 'The photograph across the page, above the itinerary. Its words and its picture are below.',
-  },
+/* No "On the trail" here: its switch sits with its photograph and words on
+   the Journey tab, so the office finds all of the band in one place. */
+const BANDS: { key: Exclude<keyof TripSectionsForm, 'trail'>; label: string; hint: string }[] = [
   {
     key: 'gallery',
     label: 'Photographs',
@@ -98,10 +96,11 @@ export function TripPageSections({
 /**
  * The band above the itinerary: a photograph, and the words over it.
  *
- * Beside the switches rather than on the Journey tab with the hero and the
- * overview, because what it is *for* is the question the switches ask — this
- * is the part of the page that says what the walking is like, and an office
- * deciding whether to draw it is deciding that and this together.
+ * On the Journey tab, with the hero and the overview, and carrying its own
+ * switch. It sat on the Links tab beside the other bands' switches, and the
+ * office could not find it there: a photograph and three lines of copy are
+ * what a journey says about itself, not a link to somewhere else. The switch
+ * came with it, so whether the band is drawn is decided beside what it says.
  *
  * The photograph is what decides whether the band exists: without one the
  * site draws nothing, because the band is a photograph under two scrims and
@@ -112,11 +111,13 @@ export function TripTrailBand({
   value,
   onChange,
   shown,
+  onShownChange,
 }: {
   value: TripTrailForm;
   onChange: (next: TripTrailForm) => void;
-  /** The switch above is off: the words are kept, and the field says so. */
+  /** Off: the photograph and the words are kept, and the field says so. */
   shown: boolean;
+  onShownChange: (shown: boolean) => void;
 }) {
   const set = <K extends keyof TripTrailForm>(key: K, next: TripTrailForm[K]) =>
     onChange({ ...value, [key]: next });
@@ -127,9 +128,22 @@ export function TripTrailBand({
       description={
         shown
           ? 'The photograph across the page between the enquiry form and the itinerary, and the words over it. Without a photograph the band is not drawn.'
-          : 'Switched off above, so none of this shows. It is kept.'
+          : 'Switched off, so none of this shows. It is kept.'
       }
     >
+      <label
+        htmlFor="band-trail"
+        className="flex cursor-pointer items-start justify-between gap-4 rounded-lg border p-3"
+      >
+        <span className="text-sm">
+          Show this band
+          <span className="mt-0.5 block text-xs text-muted-foreground">
+            Above the itinerary, on this journey&rsquo;s page.
+          </span>
+        </span>
+        <Switch id="band-trail" checked={shown} onCheckedChange={onShownChange} />
+      </label>
+
       <div className={cn('space-y-4', !shown && 'opacity-60')}>
         <MediaPicker
           value={value.image}
