@@ -738,6 +738,13 @@ export function TripEditor({
               </div>
             </div>
           </Section>
+
+          <TripTrailBand
+            value={form.trail}
+            onChange={(next) => set('trail', next)}
+            shown={form.sections.trail}
+            onShownChange={(trail) => set('sections', { ...form.sections, trail })}
+          />
         </div>
       )}
 
@@ -1299,12 +1306,6 @@ export function TripEditor({
           </Section>
 
           <TripPageSections value={form.sections} onChange={(next) => set('sections', next)} />
-
-          <TripTrailBand
-            value={form.trail}
-            onChange={(next) => set('trail', next)}
-            shown={form.sections.trail}
-          />
 
           <OrderedPicker
             title="Culture to offer"
