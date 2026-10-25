@@ -440,5 +440,7 @@ export const SETTINGS: SiteSettings = {
     title: 'Lotus Peak',
     description:
       'Mindful journeys through Bhutan, led slowly, with monks and Lams, and days written in for doing nothing.',
-  },
+  },  /* The fixture has no notices: what it would announce is the office's to write. */
+  announcements: [],
+  banners: [],
 }

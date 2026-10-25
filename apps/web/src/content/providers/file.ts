@@ -244,7 +244,8 @@ function fileSite(): ApiSite {
       tripadvisorWidgetId: null,
       turnstileSiteKey: null,
     },
-    announcement: null,
+    announcements: [],
+    banners: [],
   }
 }
 

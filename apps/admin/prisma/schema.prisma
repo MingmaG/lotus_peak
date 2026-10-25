@@ -594,6 +594,7 @@ model Media {
   companyLogos      CompanyProfile[]  @relation("CompanyLogo")
   companyMarks      CompanyProfile[]  @relation("CompanyMark")
   siteOgImages      CompanyProfile[]  @relation("CompanyOgImage")
+  bannerImages      Banner[]          @relation("BannerImage")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -1891,20 +1892,128 @@ model OfficeHours {
   @@map("office_hours")
 }
 
-/// A bar across the top of the site, or nothing.
+/// How an announcement reads at a glance.
+///
+/// A meaning, not a colour. Each one is a pair of the design's own colours,
+/// chosen on the website, so the office says "this is an advisory" and can
+/// never say "this is red" — a colour picker on this screen would be the
+/// first place the design system's palette stopped being the only one.
+enum NoticeTone {
+  /// Sky ink. News, a new journey, anything that is simply worth saying.
+  GENERAL
+  /// Sky wash with a saffron label. A discount, an early-booking rate.
+  OFFER
+  /// Maroon. A road closed, a permit rule changed, a weather warning.
+  ADVISORY
+  /// Saffron. A tshechu, a national day, something to celebrate.
+  FESTIVAL
+}
+
+/// A bar across the top of the website, above the navigation.
+///
+/// Several may be live at once; the website shows them one at a time, in
+/// `sortOrder`, turning slowly. The message is rich text from the panel's
+/// notice editor — paragraphs with a size each, emphasis and links, nothing
+/// else — and the website rebuilds it from its own allowlist before drawing it.
+///
+/// `startsAt` and `endsAt` are enforced twice: here, so a row that has ended
+/// is not sent at all, and on the website, against the visitor's clock, so a
+/// prerendered page does not go on showing an offer that ended at noon until
+/// the next rebuild happens to come round.
 model Announcement {
-  id        String    @id @default(cuid())
+  id   String @id @default(cuid())
+  /// What the office calls it in the panel. Never shown on the website.
+  name String @default("")
+
+  /// A short word before the message — "Offer", "Advisory". Optional.
+  label     String?
   message   String
   href      String?
   linkLabel String?
+  tone      NoticeTone @default(GENERAL)
+  /// Whether a visitor may close it. Off for something they must not miss.
+  dismissible Boolean @default(true)
+
+  /// Paths it appears on — `/trips/*` matches every journey. Empty is every page.
+  showOn String[] @default([])
+  /// Paths it never appears on, whatever `showOn` says.
+  hideOn String[] @default([])
+
   isActive  Boolean   @default(false)
   startsAt  DateTime?
   endsAt    DateTime?
+  sortOrder Int       @default(0)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
+  @@index([isActive, sortOrder])
   @@map("announcements")
+}
+
+/// Where a banner is drawn.
+enum BannerPlacement {
+  /// A band between the page and the footer.
+  PAGE_END
+  /// A window that opens over the page once, a few seconds after it loads,
+  /// and is not opened again for that visitor until the banner is edited.
+  POPUP
+}
+
+/// Where the photograph sits. Ignored when there is no photograph.
+enum BannerLayout {
+  IMAGE_LEFT
+  IMAGE_RIGHT
+  /// Behind the words, under the same scrim a cover photograph has.
+  BACKDROP
+}
+
+/// The ground a banner stands on — the three the design allows a section.
+enum BannerTheme {
+  PAPER
+  MIST
+  INK
+}
+
+/// A promotion with room in it: a photograph, a heading, a paragraph or two,
+/// and up to two links. Scheduled and targeted the same way an announcement is.
+model Banner {
+  id   String @id @default(cuid())
+  name String @default("")
+
+  placement BannerPlacement @default(PAGE_END)
+  layout    BannerLayout    @default(IMAGE_RIGHT)
+  theme     BannerTheme     @default(MIST)
+
+  eyebrow String?
+  heading String
+  /// Rich text, rendered by the website's prose allowlist.
+  body    String  @default("")
+
+  imageId String?
+  image   Media?  @relation("BannerImage", fields: [imageId], references: [id], onDelete: SetNull)
+
+  /// The main link. With an address and no words, the whole banner is the link.
+  href           String?
+  linkLabel      String?
+  secondaryHref  String?
+  secondaryLabel String?
+
+  showOn String[] @default([])
+  hideOn String[] @default([])
+
+  isActive  Boolean   @default(false)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  sortOrder Int       @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([isActive, placement, sortOrder])
+  @@map("banners")
 }
 
 /// Everything else, as (group, key) → Json.

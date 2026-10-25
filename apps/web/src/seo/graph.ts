@@ -318,7 +318,8 @@ async function base(settings: SiteSettings): Promise<ApiSite> {
       tripadvisorWidgetId: null,
       turnstileSiteKey: null,
     },
-    announcement: null,
+    announcements: [],
+    banners: [],
   }
 }
 

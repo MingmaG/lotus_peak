@@ -353,11 +353,75 @@ export interface ApiSite {
      */
     turnstileSiteKey: string | null;
   };
-  announcement: {
-    message: string;
-    href: string | null;
-    linkLabel: string | null;
-  } | null;
+  /** Live and upcoming bars for the top of the page, in the office's order. */
+  announcements: ApiAnnouncement[];
+  /** Live and upcoming banners, both placements, in the office's order. */
+  banners: ApiBanner[];
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Announcements and banners                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * When a notice runs, and where.
+ *
+ * Sent with every notice that has not yet ended — including ones that have not
+ * started — because the website is prerendered: a page built at nine has to be
+ * able to show, at ten, the offer that starts at ten, without a rebuild in
+ * between. The website compares these against the visitor's clock.
+ *
+ * `showOn` and `hideOn` are paths; a trailing `/*` matches everything below
+ * it. An empty `showOn` is every page.
+ */
+export interface ApiNoticeSchedule {
+  /** ISO 8601, or null for "from whenever it was switched on". */
+  startsAt: string | null;
+  /** ISO 8601, or null for "until it is switched off". */
+  endsAt: string | null;
+  showOn: string[];
+  hideOn: string[];
+}
+
+export type ApiNoticeTone = 'general' | 'offer' | 'advisory' | 'festival';
+
+export interface ApiAnnouncement extends ApiNoticeSchedule {
+  id: string;
+  /**
+   * Changes whenever the row does. A visitor who closed an announcement is
+   * shown it again once the office has edited it, because it is then a
+   * different thing to say.
+   */
+  version: string;
+  tone: ApiNoticeTone;
+  label: string | null;
+  /** Rich text as stored. The website sanitises it before drawing it. */
+  message: string;
+  href: string | null;
+  linkLabel: string | null;
+  dismissible: boolean;
+}
+
+export type ApiBannerPlacement = 'page-end' | 'popup';
+export type ApiBannerLayout = 'image-left' | 'image-right' | 'backdrop';
+export type ApiBannerTheme = 'paper' | 'mist' | 'ink';
+
+export interface ApiBanner extends ApiNoticeSchedule {
+  id: string;
+  /** As on an announcement: a pop-up closed once opens again after an edit. */
+  version: string;
+  placement: ApiBannerPlacement;
+  layout: ApiBannerLayout;
+  theme: ApiBannerTheme;
+  eyebrow: string | null;
+  heading: string;
+  /** Rich text as stored. */
+  body: string;
+  image: ApiImage | null;
+  href: string | null;
+  linkLabel: string | null;
+  secondaryHref: string | null;
+  secondaryLabel: string | null;
 }
 
 /* -------------------------------------------------------------------------- */

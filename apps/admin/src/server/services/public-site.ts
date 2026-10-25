@@ -2,6 +2,9 @@ import 'server-only';
 
 import type {
   ApiActivity,
+  ApiBannerLayout,
+  ApiBannerTheme,
+  ApiNoticeTone,
   ApiCompany,
   ApiCultureArticle,
   ApiCultureSummary,
@@ -26,7 +29,10 @@ import type {
   JournalCategory,
 } from '@lotuspeak/api-contracts';
 import type {
+  BannerLayout,
+  BannerTheme,
   Difficulty,
+  NoticeTone,
   MenuItem,
   Prisma,
   SeasonKey,
@@ -185,7 +191,7 @@ function visible(preview: boolean) {
  * publish they came from.
  */
 export async function getSite(): Promise<ApiSite> {
-  const [company, address, contacts, socials, hours, menus, announcement, settings] =
+  const [company, address, contacts, socials, hours, menus, announcements, banners, settings] =
     await Promise.all([
       db.companyProfile.findFirst({
         where: { isSingleton: true },
@@ -203,7 +209,12 @@ export async function getSite(): Promise<ApiSite> {
       db.socialLink.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } }),
       db.officeHours.findMany({ orderBy: { sortOrder: 'asc' } }),
       db.menu.findMany({ include: { items: { orderBy: { sortOrder: 'asc' } } } }),
-      db.announcement.findFirst({ where: { isActive: true }, orderBy: { updatedAt: 'desc' } }),
+      db.announcement.findMany({ where: liveOrUpcoming(), orderBy: { sortOrder: 'asc' } }),
+      db.banner.findMany({
+        where: liveOrUpcoming(),
+        orderBy: { sortOrder: 'asc' },
+        include: { image: { include: MEDIA_INCLUDE } },
+      }),
       db.setting.findMany({ where: { group: 'integrations' } }),
     ]);
 
@@ -353,15 +364,78 @@ export async function getSite(): Promise<ApiSite> {
       /* Only ever set together with the secret — `env.ts` refuses one alone. */
       turnstileSiteKey: env.captcha.siteKey || null,
     },
-    announcement: announcement
-      ? {
-          message: announcement.message,
-          href: announcement.href,
-          linkLabel: announcement.linkLabel,
-        }
-      : null,
+    announcements: announcements.map((row) => ({
+      id: row.id,
+      version: row.updatedAt.getTime().toString(36),
+      tone: TONE[row.tone],
+      label: row.label,
+      message: row.message,
+      href: row.href,
+      linkLabel: row.linkLabel,
+      dismissible: row.dismissible,
+      ...schedule(row),
+    })),
+    banners: banners.map((row) => ({
+      id: row.id,
+      version: row.updatedAt.getTime().toString(36),
+      placement: row.placement === 'POPUP' ? 'popup' : 'page-end',
+      layout: LAYOUT[row.layout],
+      theme: THEME[row.theme],
+      eyebrow: row.eyebrow,
+      heading: row.heading,
+      body: row.body,
+      image: img(row.image),
+      href: row.href,
+      linkLabel: row.linkLabel,
+      secondaryHref: row.secondaryHref,
+      secondaryLabel: row.secondaryLabel,
+      ...schedule(row),
+    })),
   };
 }
+
+/**
+ * Switched on, not removed, and not yet over.
+ *
+ * Rows that have not *started* are sent as well. The site is prerendered, so
+ * the page that is to show an offer at ten may well have been built at nine;
+ * it holds the row and starts showing it when the visitor's clock says so.
+ */
+function liveOrUpcoming() {
+  return {
+    isActive: true,
+    deletedAt: null,
+    OR: [{ endsAt: null }, { endsAt: { gt: new Date() } }],
+  };
+}
+
+function schedule(row: { startsAt: Date | null; endsAt: Date | null; showOn: string[]; hideOn: string[] }) {
+  return {
+    startsAt: row.startsAt?.toISOString() ?? null,
+    endsAt: row.endsAt?.toISOString() ?? null,
+    showOn: row.showOn,
+    hideOn: row.hideOn,
+  };
+}
+
+const TONE = {
+  GENERAL: 'general',
+  OFFER: 'offer',
+  ADVISORY: 'advisory',
+  FESTIVAL: 'festival',
+} as const satisfies Record<NoticeTone, ApiNoticeTone>;
+
+const LAYOUT = {
+  IMAGE_LEFT: 'image-left',
+  IMAGE_RIGHT: 'image-right',
+  BACKDROP: 'backdrop',
+} as const satisfies Record<BannerLayout, ApiBannerLayout>;
+
+const THEME = {
+  PAPER: 'paper',
+  MIST: 'mist',
+  INK: 'ink',
+} as const satisfies Record<BannerTheme, ApiBannerTheme>;
 
 /** Builds one level of the menu tree, with its children beneath it. */
 function toNavLink(all: MenuItem[]) {

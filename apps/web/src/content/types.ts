@@ -433,6 +433,66 @@ export type SiteSettings = {
   pledge: { percent: number; beneficiary: string }
   sdfPerNightUsd: number
   defaultSeo: { title: string; description: string }
+  /** Live and upcoming, in the office's order. See `lib/notices.ts` for when each shows. */
+  announcements: Announcement[]
+  banners: Banner[]
+}
+
+/* ---------------------------------------------------------------------------
+   Announcements and banners
+   --------------------------------------------------------------------------- */
+
+/**
+ * When a notice runs and where — compared against the visitor's clock and
+ * path in the browser, because the page it is on was prerendered and may be
+ * older than the offer it should be showing.
+ */
+export type NoticeSchedule = {
+  startsAt: string | null
+  endsAt: string | null
+  /** Paths, `/trips/*` for everything below. Empty is every page. */
+  showOn: string[]
+  hideOn: string[]
+}
+
+export type NoticeTone = 'general' | 'offer' | 'advisory' | 'festival'
+
+export type Announcement = NoticeSchedule & {
+  id: string
+  /** Changes with every edit, so a closed announcement reopens once it says something new. */
+  version: string
+  tone: NoticeTone
+  label: string | null
+  /** Sanitised HTML — already through `renderNoticeText`. */
+  message: string
+  href: string | null
+  linkLabel: string | null
+  dismissible: boolean
+}
+
+export type BannerImage = {
+  src: string
+  alt: ImageAlt
+  width: number | null
+  height: number | null
+  focal: [x: number, y: number]
+}
+
+export type Banner = NoticeSchedule & {
+  id: string
+  version: string
+  placement: 'page-end' | 'popup'
+  layout: 'image-left' | 'image-right' | 'backdrop'
+  theme: 'paper' | 'mist' | 'ink'
+  eyebrow: string | null
+  heading: string
+  /** Sanitised HTML — already through `renderRichText`. */
+  body: string
+  image: BannerImage | null
+  href: string | null
+  linkLabel: string | null
+  secondaryHref: string | null
+  secondaryLabel: string | null
 }
 
 /* ---------------------------------------------------------------------------
