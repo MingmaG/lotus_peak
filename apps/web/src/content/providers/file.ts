@@ -239,9 +239,10 @@ function fileSite(): ApiSite {
       googleTagManagerId: null,
       googleSiteVerification: null,
       metaPixelId: null,
-      whatsappNumber: null,
-      whatsappPrefill: null,
+      whatsappNumber: s.whatsapp?.number ?? null,
+      whatsappPrefill: s.whatsapp?.prefill ?? null,
       tripadvisorWidgetId: null,
+      turnstileSiteKey: null,
     },
     announcement: null,
   }

@@ -316,6 +316,7 @@ async function base(settings: SiteSettings): Promise<ApiSite> {
       whatsappNumber: null,
       whatsappPrefill: null,
       tripadvisorWidgetId: null,
+      turnstileSiteKey: null,
     },
     announcement: null,
   }

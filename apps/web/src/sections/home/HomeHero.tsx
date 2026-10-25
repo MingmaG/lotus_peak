@@ -6,13 +6,15 @@ import { Parallax, Reveal, ScrollCue } from "@/motion";
 import { heroOffset } from "../shared/Section";
 import { HeroFilm } from "./HeroFilm";
 
-/* Where Taktshang sits in the photograph. The picture is 4:3 and the frame is
-   a full viewport, so on any screen wider than 4:3 `cover` throws away the top
+/* Where Taktshang sits in the photograph. The picture is 3:2 and the frame is
+   a full viewport, so on any screen wider than 3:2 `cover` throws away the top
    and bottom — centred, that took the monastery's roofline with it, and the
    1.14 overscan and the navigation laid over the top took more. Anchoring both
    the crop and the scale to the top edge keeps the building whole; what is
-   lost is the foot of the cliff. */
-const FOCUS = "50% 0%";
+   lost is the foot of the cliff. The monastery stands a third of the way in
+   from the left, so on a portrait phone, where `cover` crops the sides
+   instead, a centred crop would cut it in half. */
+const FOCUS = "33% 0%";
 
 /**
  * The home hero. Parallax at speed .6 with the 24s `mist` drift layered on top

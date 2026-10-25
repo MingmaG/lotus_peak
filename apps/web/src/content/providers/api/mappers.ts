@@ -478,6 +478,9 @@ export function toSettings(site: ApiSite): SiteSettings {
     (contact) => contact.kind === 'PHONE' || contact.kind === 'MOBILE',
   )
   const email = site.company.contacts.find((contact) => contact.kind === 'EMAIL')
+  const whatsapp = site.company.contacts.find((contact) => contact.kind === 'WHATSAPP')
+  /* wa.me takes digits only; the panel stores `+97517984485` or `97517984485`. */
+  const whatsappNumber = whatsapp?.value.replace(/\D/g, '') ?? ''
 
   return {
     brand: site.company.name,
@@ -504,6 +507,15 @@ export function toSettings(site: ApiSite): SiteSettings {
       mapUrl: site.company.address.mapUrl,
     },
     contacts: site.company.contacts.map(toContactLine),
+    whatsapp:
+      whatsapp && whatsappNumber
+        ? {
+            label: whatsapp.label,
+            number: whatsappNumber,
+            display: whatsapp.display,
+            prefill: whatsapp.prefillMessage?.trim() || null,
+          }
+        : null,
     socials: site.company.socials.map((social) => ({
       platform: social.platform,
       label: social.label,
@@ -515,6 +527,7 @@ export function toSettings(site: ApiSite): SiteSettings {
       email: email?.value ?? '',
       replyPromise: site.replyPromise,
     },
+    captchaSiteKey: site.integrations.turnstileSiteKey,
     pledge: {
       percent: site.pledge?.percent ?? 0,
       beneficiary: site.pledge?.beneficiary ?? '',

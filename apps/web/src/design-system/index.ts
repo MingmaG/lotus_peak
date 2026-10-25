@@ -4,6 +4,7 @@ export { Divider, type DividerProps } from './core/Divider'
 export { Eyebrow, type EyebrowProps } from './core/Eyebrow'
 export { SiteIcon, type SiteIconProps, type SiteIconName } from './core/SiteIcon'
 export { SocialIcon, type SocialPlatform } from './core/SocialIcon'
+export { WhatsAppIcon } from './core/WhatsAppIcon'
 export { Tooltip, type TooltipProps } from './core/Tooltip'
 export { WindowFrame, type WindowFrameProps } from './core/WindowFrame'
 

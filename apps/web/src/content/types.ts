@@ -372,6 +372,17 @@ export type ContactLine = {
   href: string | null
 }
 
+export type WhatsApp = {
+  /** What the office called it in the panel. "WhatsApp". */
+  label: string
+  /** Digits only, `97517984485` — the `wa.me` path segment. */
+  number: string
+  /** `+975 17984485`, for a person to read. */
+  display: string
+  /** What the message opens with, as the office wrote it. */
+  prefill: string | null
+}
+
 /** A band at the foot of a journey page: its heading and the words on its link. */
 export type JourneyBandCopy = { title: string; more: string }
 
@@ -404,9 +415,21 @@ export type SiteSettings = {
   /** The office's address, one printed line per entry. */
   address: { lines: string[]; mapUrl: string | null }
   contacts: ContactLine[]
+  /**
+   * The office's WhatsApp, apart from `contacts`, because a link to it is not
+   * one fixed string: on a journey page the message names the journey. Null
+   * when the office has entered no WhatsApp number, and then nothing on the
+   * site offers it — the floating button included.
+   */
+  whatsapp: WhatsApp | null
   socials: { platform: SocialPlatform; label: string; url: string }[]
   journeyBands: Record<'places' | 'culture' | 'journal' | 'related', JourneyBandCopy>
   contact: { phone: string; email: string; replyPromise: string }
+  /**
+   * Cloudflare Turnstile's public site key, from the panel that holds its
+   * secret. Null means the panel asks for no check, and the forms draw none.
+   */
+  captchaSiteKey: string | null
   pledge: { percent: number; beneficiary: string }
   sdfPerNightUsd: number
   defaultSeo: { title: string; description: string }
