@@ -124,7 +124,7 @@ export function seoColumns(seo: SeoInput | undefined) {
  * concurrent create cannot be silently pushed to position zero.
  */
 export async function reorder(
-  table: 'destination' | 'activity' | 'cultureArticle' | 'galleryImage' | 'reflection' | 'person' | 'trip',
+  table: 'destination' | 'activity' | 'cultureArticle' | 'galleryImage' | 'reflection' | 'person' | 'trip' | 'announcement' | 'banner',
   ids: string[],
 ): Promise<void> {
   await db.$transaction(

@@ -23,7 +23,7 @@ export interface CompanyForm extends Omit<CompanyInput, 'logoId' | 'markId' | 'o
 const MEDIA = { include: { renditions: { where: { format: 'webp' as const } } } };
 
 export async function companyForm(): Promise<CompanyForm | null> {
-  const [company, address, contacts, socials, hours, announcement, settings] =
+  const [company, address, contacts, socials, hours, settings] =
     await Promise.all([
       db.companyProfile.findFirst({
         where: { isSingleton: true },
@@ -33,7 +33,6 @@ export async function companyForm(): Promise<CompanyForm | null> {
       db.contactChannel.findMany({ orderBy: { sortOrder: 'asc' } }),
       db.socialLink.findMany({ orderBy: { sortOrder: 'asc' } }),
       db.officeHours.findMany({ orderBy: { sortOrder: 'asc' } }),
-      db.announcement.findFirst({ orderBy: { updatedAt: 'desc' } }),
       db.setting.findMany({ where: { group: 'integrations' } }),
     ]);
 
@@ -131,14 +130,6 @@ export async function companyForm(): Promise<CompanyForm | null> {
       note: row.note,
     })),
 
-    announcement: announcement
-      ? {
-          message: announcement.message,
-          href: announcement.href,
-          linkLabel: announcement.linkLabel,
-          isActive: announcement.isActive,
-        }
-      : null,
 
     integrations: {
       googleAnalyticsId: setting('googleAnalyticsId'),
@@ -216,21 +207,6 @@ export async function saveCompany(input: CompanyInput): Promise<void> {
         sortOrder: index,
       })),
     });
-
-    if (input.announcement) {
-      const existing = await tx.announcement.findFirst({ orderBy: { updatedAt: 'desc' } });
-      const fields = {
-        message: input.announcement.message,
-        href: input.announcement.href || null,
-        linkLabel: input.announcement.linkLabel || null,
-        isActive: input.announcement.isActive,
-      };
-      if (existing) {
-        await tx.announcement.update({ where: { id: existing.id }, data: fields });
-      } else {
-        await tx.announcement.create({ data: fields });
-      }
-    }
 
     for (const [key, value] of Object.entries(input.integrations ?? {})) {
       await tx.setting.upsert({
