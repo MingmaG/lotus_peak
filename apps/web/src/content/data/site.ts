@@ -420,6 +420,8 @@ export const SETTINGS: SiteSettings = {
     email: 'info@lotuspeak.org',
     replyPromise: 'Personally, within two days',
   },
+  /* The file provider records nothing, so there is nothing to protect. */
+  captchaSiteKey: null,
   pledge: { percent: 30, beneficiary: 'Osel Ling Perila Goenpa' },
   sdfPerNightUsd: 100,
   defaultSeo: {

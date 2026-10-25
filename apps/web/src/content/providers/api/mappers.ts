@@ -515,6 +515,7 @@ export function toSettings(site: ApiSite): SiteSettings {
       email: email?.value ?? '',
       replyPromise: site.replyPromise,
     },
+    captchaSiteKey: site.integrations.turnstileSiteKey,
     pledge: {
       percent: site.pledge?.percent ?? 0,
       beneficiary: site.pledge?.beneficiary ?? '',
