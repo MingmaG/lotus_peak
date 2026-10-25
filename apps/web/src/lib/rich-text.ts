@@ -408,8 +408,12 @@ function safeInteger(value: string): string | null {
  * link's text survives as text. An iframe never reaches here: it is rebuilt as
  * a façade before this is called.
  */
-function attributesFor(tag: string, attrs: Map<string, string>): string | null {
-  const allowed = ALLOWED[tag] ?? [];
+function attributesFor(
+  tag: string,
+  attrs: Map<string, string>,
+  vocabulary: Record<string, readonly string[]> = ALLOWED,
+): string | null {
+  const allowed = vocabulary[tag] ?? [];
   let out = "";
 
   for (const name of allowed) {
@@ -435,6 +439,11 @@ function attributesFor(tag: string, attrs: Map<string, string>): string | null {
     if (name === "colspan" || name === "rowspan" || name === "start" || name === "width" || name === "height") {
       const n = safeInteger(raw);
       if (n) out += ` ${name}="${n}"`;
+      continue;
+    }
+
+    if (name === "data-size") {
+      if (NOTICE_SIZES.has(raw)) out += ` data-size="${raw}"`;
       continue;
     }
 
@@ -508,7 +517,10 @@ function escapeText(text: string): string {
  * the end, so a body that was truncated somewhere upstream renders as much of
  * itself as it has instead of breaking the page it is on.
  */
-export function sanitizeRichText(html: string | null | undefined): string {
+export function sanitizeRichText(
+  html: string | null | undefined,
+  vocabulary: Record<string, readonly string[]> = ALLOWED,
+): string {
   if (!html) return "";
 
   let out = "";
@@ -552,7 +564,7 @@ export function sanitizeRichText(html: string | null | undefined): string {
       continue;
     }
 
-    if (!(tag in ALLOWED)) continue; // Unwrapped: the children still render.
+    if (!(tag in vocabulary)) continue; // Unwrapped: the children still render.
 
     const attrs = parseAttributes(token[2] ?? "");
 
@@ -590,7 +602,7 @@ export function sanitizeRichText(html: string | null | undefined): string {
       continue;
     }
 
-    const rendered = attributesFor(tag, attrs);
+    const rendered = attributesFor(tag, attrs, vocabulary);
     if (rendered === null) continue; // Unrenderable: unwrap and keep the text.
 
     if (VOID.has(tag)) {
@@ -605,6 +617,36 @@ export function sanitizeRichText(html: string | null | undefined): string {
   while (open.length) out += `</${open.pop()}>`;
 
   return out;
+}
+
+/**
+ * What an announcement may contain: lines, emphasis and links.
+ *
+ * Smaller than a body's vocabulary on purpose. A bar above the navigation has
+ * no room for a heading, a list or a photograph, and if the panel ever sent one
+ * this drops the tag and keeps the words — so the bar still says what it said.
+ * The one thing it has that a body does not is `data-size` on a paragraph,
+ * which `.lp-notice` maps onto the type scale; any value but the three named
+ * in `NOTICE_SIZES` is dropped, and the line is drawn at the regular size.
+ */
+const NOTICE: Record<string, readonly string[]> = {
+  p: ["style", "data-size"],
+  br: [],
+  strong: [],
+  b: [],
+  em: [],
+  i: [],
+  u: [],
+  s: [],
+  strike: [],
+  a: ["href"],
+};
+
+const NOTICE_SIZES = new Set(["sm", "lg", "xl"]);
+
+/** An announcement's message, rebuilt from the `NOTICE` allowlist. */
+export function renderNoticeText(html: string | null | undefined): string {
+  return sanitizeRichText(html, NOTICE);
 }
 
 const TABLE_OPEN = /<table(\s|>)/gi;

@@ -19,6 +19,8 @@ import { ENQUIRY_LIMITS, countWords } from '@lotuspeak/api-contracts'
 import { enquiryErrors } from '@/lib/enquiry-rules'
 import { sendEnquiry } from '@/lib/send-enquiry'
 import type { Destination, SiteSettings, Trip } from '@/content/types'
+import { AnnouncementBar } from './AnnouncementBar'
+import { BannerPopup, PageEndBanners } from './Banners'
 import { Captcha } from './Captcha'
 import { WhatsAppFloat } from './WhatsAppFloat'
 
@@ -56,12 +58,19 @@ export function SiteChrome({
   settings,
   trips,
   destinations,
+  renderedAt,
   children,
 }: {
   settings: SiteSettings
   trips: Pick<Trip, 'slug' | 'title' | 'durationDays'>[]
   /** The valleys, for the menu map's places to lead to. */
   destinations: Pick<Destination, 'name' | 'path'>[]
+  /**
+   * When the server rendered this page. Announcements and banners compare
+   * their dates against it until the browser's own clock takes over, so the
+   * server's HTML and the first client render agree (see `lib/notices.ts`).
+   */
+  renderedAt: number
   children: ReactNode
 }) {
   const pathname = usePathname()
@@ -102,6 +111,8 @@ export function SiteChrome({
       <Dignities />
       <Halo />
 
+      <AnnouncementBar announcements={settings.announcements} pathname={pathname} renderedAt={renderedAt} />
+
       <NavBar
         items={navItems}
         active={active}
@@ -118,6 +129,8 @@ export function SiteChrome({
       >
         {children}
       </div>
+
+      <PageEndBanners banners={settings.banners} pathname={pathname} renderedAt={renderedAt} />
 
       <Footer
         brand={settings.brand}
@@ -149,6 +162,13 @@ export function SiteChrome({
           onFailed={notify}
         />
       </InquiryDrawer>
+
+      <BannerPopup
+        banners={settings.banners}
+        pathname={pathname}
+        renderedAt={renderedAt}
+        suppressed={drawerOpen}
+      />
 
       {settings.whatsapp && <WhatsAppFloat whatsapp={settings.whatsapp} pathname={pathname} trips={trips} />}
 

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getContent } from '@/content'
 import { IMG } from '@/lib/assets'
 import { siteUrl } from '@/lib/env'
+import { HIDE_CLOSED_NOTICES } from '@/lib/notice-script'
 import { ogImage } from '@/lib/seo'
 import { SiteChrome } from '@/sections/shared/SiteChrome'
 import './globals.css'
@@ -57,6 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           crossOrigin="anonymous"
         />
         <script dangerouslySetInnerHTML={{ __html: MOTION_READY }} />
+        <script dangerouslySetInnerHTML={{ __html: HIDE_CLOSED_NOTICES }} />
       </head>
       <body>
         <a className="skip-link" href="#main">
@@ -70,6 +72,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           destinations={destinations
             .filter((d) => d.parentSlug === null)
             .map((d) => ({ name: d.name, path: d.path }))}
+          renderedAt={Date.now()}
         >
           {children}
         </SiteChrome>

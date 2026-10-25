@@ -120,6 +120,16 @@ export function NavBar({
     }
   }, [open])
 
+  /* How far down the screen the bar starts. Nought, except when the office's
+     announcement bar is above it and the page has not scrolled past that —
+     then the panel below has that much less room, and sized to the whole
+     screen its foot would hang off the bottom. Read on opening; the page
+     cannot scroll while the menu is open, so it cannot change. */
+  const [barTop, setBarTop] = useState(0)
+  useEffect(() => {
+    if (open) setBarTop(Math.max(0, Math.round(barRef.current?.getBoundingClientRect().top ?? 0)))
+  }, [open])
+
   /**
    * Both search boxes land on `/search?q=`. The forms are real GET forms, so
    * they work before hydration; with scripts this keeps it a client-side
@@ -399,7 +409,7 @@ export function NavBar({
             right: 0,
             top: '100%',
             zIndex: 1,
-            height: 'calc(100svh - 100%)',
+            height: `calc(100svh - 100% - ${barTop}px)`,
             overflowY: 'auto',
             overscrollBehavior: 'contain',
             padding: 'var(--space-8) var(--gutter) var(--space-9)',
