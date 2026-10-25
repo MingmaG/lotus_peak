@@ -1,10 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { ENQUIRY_LIMITS, countWords, isPhoneNumber } from '@lotuspeak/api-contracts';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
-import { env } from '@/lib/env';
+import { captchaConfigured, env } from '@/lib/env';
 import { enquiryReference } from '@/lib/reference';
 import { ok, publicRoute } from '@/lib/api/public';
+import { verifyCaptcha } from '@/server/services/captcha';
 import { checkQuota } from '@/server/services/mailer';
 
 export const dynamic = 'force-dynamic';
@@ -23,28 +25,54 @@ export const dynamic = 'force-dynamic';
  *   because the right number is different on the day a festival departure is
  *   announced and the office should not need a deploy to raise it.
  * - **Length caps on every field**, so a POST cannot put a megabyte of text
- *   into a row somebody then opens in a table.
- *
- * What it deliberately does *not* have is a CAPTCHA. This form receives a
- * handful of enquiries a week from people who have already decided to spend
- * several thousand dollars; a puzzle between them and the office is a worse
- * trade than a spam row somebody marks as spam.
+ *   into a row somebody then opens in a table, and the limits the form shows
+ *   (`ENQUIRY_LIMITS`, shared with it through the contract).
+ * - **Cloudflare Turnstile**, when the panel has its keys. This used to be
+ *   left out on purpose — a puzzle between a traveller and the office is a
+ *   poor trade for a spam row — and Turnstile is what changed that: most
+ *   people pass it without being asked anything. It is checked here, not on
+ *   the website, because this endpoint can be reached without the website.
  */
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Please tell us your name.').max(120),
   email: z.string().trim().email('That does not look like an email address.').max(200),
   country: z.string().trim().max(80).optional(),
-  phone: z.string().trim().max(40).optional(),
   tripSlug: z.string().trim().max(120).optional(),
   travellers: z.string().trim().max(80).optional(),
-  adults: z.number().int().min(0).max(60).optional(),
-  children: z.number().int().min(0).max(60).optional(),
+  phone: z
+    .string()
+    .trim()
+    .max(40)
+    .refine((value) => value === '' || isPhoneNumber(value), 'Please check the telephone number.')
+    .optional(),
+  adults: z
+    .number()
+    .int()
+    .min(ENQUIRY_LIMITS.adults.min)
+    .max(ENQUIRY_LIMITS.adults.max, `Up to ${ENQUIRY_LIMITS.adults.max} adults.`)
+    .optional(),
+  children: z
+    .number()
+    .int()
+    .min(ENQUIRY_LIMITS.children.min)
+    .max(ENQUIRY_LIMITS.children.max, `Up to ${ENQUIRY_LIMITS.children.max} children.`)
+    .optional(),
   preferredDates: z.string().trim().max(120).optional(),
-  message: z.string().trim().max(5_000).optional(),
+  message: z
+    .string()
+    .trim()
+    .max(5_000)
+    .refine(
+      (value) => countWords(value) <= ENQUIRY_LIMITS.messageWords,
+      `Please keep the message to ${ENQUIRY_LIMITS.messageWords} words.`,
+    )
+    .optional(),
   restDays: z.boolean().optional(),
   source: z.enum(['contact', 'trip-detail', 'drawer', 'newsletter']),
   honeypot: z.string().max(200).optional(),
+  /* Turnstile's tokens run to about two thousand characters. */
+  captchaToken: z.string().max(4_096).optional(),
   pagePath: z.string().trim().max(300).optional(),
   utm: z.record(z.string().max(200)).optional(),
 });
@@ -102,6 +130,23 @@ export const POST = publicRoute(
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       request.headers.get('x-real-ip') ??
       null;
+
+    /**
+     * The check, before anything is counted or written.
+     *
+     * After the honeypot, so a bot that gave itself away is still told it
+     * succeeded rather than handed a reason to try harder. The messages are
+     * the traveller's to read — the website shows a refusal in its own words.
+     */
+    if (captchaConfigured()) {
+      if (!input.captchaToken) {
+        return refuse('CAPTCHA_REQUIRED', 'Please complete the check above the button, then send again.');
+      }
+      const verdict = await verifyCaptcha(input.captchaToken, ip);
+      if (verdict === 'failed') {
+        return refuse('CAPTCHA_FAILED', 'The check did not go through. Please try it once more, then send again.');
+      }
+    }
 
     if (ip && (await overLimit(ip))) {
       return NextResponse.json(
@@ -175,6 +220,11 @@ export const POST = publicRoute(
     });
   },
 );
+
+/** A 422 the website passes to the traveller in these words. */
+function refuse(code: string, message: string) {
+  return NextResponse.json({ error: { code, message } }, { status: 422 });
+}
 
 /**
  * Too many from one address in the last hour.
